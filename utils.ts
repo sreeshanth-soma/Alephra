@@ -12,10 +12,18 @@ export async function queryPineconeVectorStore(
   query: string
 ): Promise<string> {
   try {
-    const apiOutput = await hf.featureExtraction({
-      model: "mixedbread-ai/mxbai-embed-large-v1",
-      inputs: query,
-    });
+    if (!process.env.HF_TOKEN) {
+      return "<nomatches>";
+    }
+
+    const timeoutMs = 2500;
+    const apiOutput = await Promise.race([
+      hf.featureExtraction({
+        model: "mixedbread-ai/mxbai-embed-large-v1",
+        inputs: query,
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("embed-timeout")), timeoutMs))
+    ]) as any;
     console.log(apiOutput);
     
     const queryEmbedding = Array.from(apiOutput);
@@ -56,11 +64,20 @@ export async function createAndStoreVectorEmbeddings(
   try {
     console.log("Creating vector embeddings for report:", reportId);
     
-    // Generate embeddings using Hugging Face
-    const apiOutput = await hf.featureExtraction({
-      model: "mixedbread-ai/mxbai-embed-large-v1",
-      inputs: reportData,
-    });
+    if (!process.env.HF_TOKEN) {
+      console.warn("HF_TOKEN missing; skipping embedding generation");
+      return false;
+    }
+
+    // Generate embeddings using Hugging Face with timeout
+    const timeoutMs = 2500;
+    const apiOutput = await Promise.race([
+      hf.featureExtraction({
+        model: "mixedbread-ai/mxbai-embed-large-v1",
+        inputs: reportData,
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("embed-timeout")), timeoutMs))
+    ]) as any;
     
     const embedding = Array.from(apiOutput);
     console.log("Generated embedding with dimensions:", embedding.length);

@@ -28,10 +28,7 @@ const Messages = ({ messages, isLoading, data }: Props) => {
         return <MessageBox key={index} role={m.role} content={m.content} />
       })}
       
-      {/* Display assistant reply when API returns JSON { text } or stringified JSON */}
-      {parsedObject?.text && (
-        <MessageBox role="assistant" content={parsedObject.text} />
-      )}
+      {/* Assistant reply is appended to messages by the client handler; avoid duplicate rendering from data */}
 
       {/* Display streaming/extra data if array */}
       {Array.isArray(data) && data.map((item, index) => {
