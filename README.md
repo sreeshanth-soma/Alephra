@@ -122,15 +122,6 @@ Content-Type: application/json
 | Rate limits | Retry later or reduce request frequency |
 | Build errors | Check Node.js version (18+) and run `npm install` |
 
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 👨‍💻 Author
-
-**Sowmith Bachu**
-- GitHub: [@SowmithBachu](https://github.com/SowmithBachu)
-
 ---
 
 <div align="center">
