@@ -14,10 +14,18 @@ export function LampDemo() {
           duration: 0.8,
           ease: "easeInOut",
         }}
-        className="mt-8 bg-gradient-to-br from-slate-300 to-slate-500 py-4 bg-clip-text text-center text-4xl font-medium tracking-tight text-transparent md:text-7xl"
+        className="mt-8 py-4 text-center text-6xl md:text-9xl font-extrabold tracking-tight"
       >
-        Med Scan <br />
-        <span className="block text-base md:text-2xl mt-2 text-slate-400">
+        <motion.span
+          initial={{ color: "#94a3b8" }}
+          whileInView={{ color: "#f1f5f9", textShadow: "0 0 8px rgba(255,255,255,0.12)" }}
+          transition={{ delay: 0.5, duration: 0.8, ease: "easeInOut" }}
+          className="block"
+        >
+          Med Scan
+        </motion.span>
+        <br />
+        <span className="block text-base md:text-2xl mt-2 text-slate-300">
           Where care meets technology
         </span>
         <motion.span 

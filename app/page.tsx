@@ -7,19 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Mic, Brain, Database, Languages, Shield, Zap } from "lucide-react";
+import RadialOrbitalTimelineDemo from "@/components/RadialOrbitalTimelineDemo";
 
 export default function Home() {
   return (
     <>
       <LampDemo />
-      <div className="flex flex-col overflow-hidden pb-24 pt-16 bg-black">
+      <div className="flex flex-col overflow-hidden pb-24 pt-2 bg-black">
         <ContainerScroll
           titleComponent={
             <>
               <h1 className="text-4xl font-semibold text-white">
                 Unleash the power of <br />
                 <span className="text-4xl md:text-[6rem] font-bold mt-1 leading-none">
-                  Scroll Animations
+                  Data Driven Diagnosis
                 </span>
               </h1>
               {/* Buttons moved below the image */}
@@ -49,26 +50,30 @@ export default function Home() {
         </div>
       </div>
 
-      {/* AI Voice Assistant Section */}
+      {/* Interactive Features Timeline */}
       <div className="py-24 px-4 bg-black">
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4 text-sm font-medium">
-              <Mic className="w-4 h-4 mr-2" />
-              AI-Powered Voice Technology
+          <div className="text-center mb-6">
+            <Badge variant="outline" className="mb-2 text-sm font-medium">
+              <Brain className="w-4 h-4 mr-2" />
+              Interactive Feature Timeline
             </Badge>
-            <h2 className="text-4xl font-bold text-black dark:text-white mb-6">
-              Intelligent Voice Medical Assistant
+            <h2 className="text-4xl font-bold text-white mb-2">
+              Explore MedScan's Capabilities
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Experience the future of healthcare with our AI-driven voice assistant that understands your medical reports, 
-              provides intelligent insights, and communicates in multiple Indian languages.
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              Click on any feature to discover how MedScan's AI-powered healthcare technology works together to provide comprehensive medical assistance.
             </p>
           </div>
 
-          {/* Feature Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {/* Radial Orbital Timeline */}
+          <div className="-mt-8">
+            <RadialOrbitalTimelineDemo.RadialOrbitalTimelineDemo />
+          </div>
+
+          {/* Feature Cards Grid - Hidden for now */}
+          <div className="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {/* Vector Database Intelligence */}
             <Card className="border-0 shadow-lg bg-white dark:bg-zinc-900 hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-4">

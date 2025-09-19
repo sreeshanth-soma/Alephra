@@ -7,6 +7,8 @@ import ChatComponent from "@/components/chat/chatcomponent";
 import PrescriptionHistory from "@/components/PrescriptionHistory";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PrescriptionRecord } from "@/lib/prescription-storage";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const AnalysisPage = () => {
   const { toast } = useToast()
@@ -41,6 +43,14 @@ const AnalysisPage = () => {
           <p className="text-xl text-gray-600 dark:text-gray-300 font-medium">
             AI-powered medical report analysis
           </p>
+        </div>
+        <div className="flex justify-center gap-4 mb-12">
+          <Link href="/dashboard">
+            <Button variant="outline">Go to Dashboard</Button>
+          </Link>
+          <Link href="/voice">
+            <Button variant="outline">Go to Voice Agent</Button>
+          </Link>
         </div>
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
