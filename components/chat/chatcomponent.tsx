@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Textarea } from '../ui/textarea'
 import { Button } from '../ui/button';
 import { CornerDownLeft, Loader2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import Messages from './messages';
 import type { Message } from 'ai';
+import { prescriptionStorage } from '@/lib/prescription-storage';
 
 type Props = {
   reportData?: string
@@ -16,6 +17,22 @@ const ChatComponent = ({ reportData }: Props) => {
   const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [data, setData] = useState<any>(undefined);
+  const [allReportsData, setAllReportsData] = useState<string>("");
+
+  // Load all reports when no specific report is provided
+  useEffect(() => {
+    if (!reportData) {
+      const allPrescriptions = prescriptionStorage.getAllPrescriptions();
+      if (allPrescriptions.length > 0) {
+        const combinedReports = allPrescriptions
+          .map((prescription, index) => 
+            `**Report ${index + 1} (${prescription.fileName} - ${prescriptionStorage.formatDate(prescription.uploadedAt)}):**\n${prescription.reportData}`
+          )
+          .join('\n\n---\n\n');
+        setAllReportsData(combinedReports);
+      }
+    }
+  }, [reportData]);
     
   return (
     <div className="h-[500px] bg-white dark:bg-zinc-900 relative flex flex-col rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl">
@@ -23,12 +40,12 @@ const ChatComponent = ({ reportData }: Props) => {
         <Badge 
           variant="secondary" 
           className={`text-sm font-semibold transition-all duration-200 ${
-            reportData 
+            reportData || allReportsData
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700" 
               : "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300 border-gray-200 dark:border-gray-700"
           }`}
         >
-          {reportData ? "✓ Report Loaded" : "No Report"}
+          {reportData ? "✓ Report Loaded" : allReportsData ? `✓ ${prescriptionStorage.getPrescriptionsCount()} Reports Available` : "No Report"}
         </Badge>
       </div>
       
@@ -50,7 +67,10 @@ const ChatComponent = ({ reportData }: Props) => {
             fetch('/api/medichatgemini', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ messages: nextMessages, reportData }),
+              body: JSON.stringify({ 
+                messages: nextMessages, 
+                reportData: reportData || allReportsData 
+              }),
             })
               .then(async (res) => {
                 const json = await res.json().catch(() => ({}));
