@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, Activity, Calendar, Filter } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 // Removed dropdown menu in Appointments to keep a single add button
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string };
@@ -628,14 +629,25 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold text-black dark:text-white"><span className="bg-gradient-to-r from-cyan-500 to-emerald-500 bg-clip-text text-transparent">MedScan</span> Dashboard</h1>
               <p className="text-gray-600 dark:text-gray-400">Overview of vitals, labs, meds, and care timeline</p>
             </div>
-            <Link href="/voice">
-              <Button variant="outline" className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-                Voice Assistant
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/analysis">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2"></path>
+                  </svg>
+                  Analysis
+                </Button>
+              </Link>
+              <Link href="/voice">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+                  Voice Assistant
+                </Button>
+              </Link>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
         {/* Hero banner */}

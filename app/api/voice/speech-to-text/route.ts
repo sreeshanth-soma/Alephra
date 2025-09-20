@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const sarvamResponse = await fetch('https://api.sarvam.ai/speech-to-text', {
       method: 'POST',
       headers: {
-        'api-subscription-key': 'sk_ss9et7z4_epcVYu9AyouzQebioHCTIamD',
+        'api-subscription-key': 'sk_vnf56acj_KuD1DN8dhtnk1E5M200PWLoY',
       },
       body: sarvamFormData,
     });

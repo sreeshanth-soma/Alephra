@@ -57,6 +57,7 @@
   },
   "devDependencies": {
     "@types/dompurify": "^3.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/markdown-it": "^14.0.1",
     "@types/node": "^20",
     "@types/react": "^18",

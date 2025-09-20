@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { VoiceChat } from '@/components/VoiceChat';
 
 // TypeScript declarations for browser speech recognition
 declare global {
@@ -30,6 +31,7 @@ export default function VoiceAgentPage() {
   const [currentText, setCurrentText] = useState('');
   const [isMuted, setIsMuted] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en-IN');
+  const [selectedSpeaker, setSelectedSpeaker] = useState('anushka');
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechMethod, setSpeechMethod] = useState<'browser' | 'sarvam' | 'unknown'>('unknown');
 
@@ -48,6 +50,16 @@ export default function VoiceAgentPage() {
     { code: 'kn-IN', name: 'Kannada (India)', browserCode: 'kn-IN', fallbackCode: 'kn' },
     { code: 'ml-IN', name: 'Malayalam (India)', browserCode: 'ml-IN', fallbackCode: 'ml' },
     { code: 'pa-IN', name: 'Punjabi (India)', browserCode: 'pa-IN', fallbackCode: 'pa' }
+  ];
+
+  const sarvamSpeakers = [
+    { code: 'anushka', name: 'Anushka (Female) - Default', gender: 'female' },
+    { code: 'manisha', name: 'Manisha (Female)', gender: 'female' },
+    { code: 'vidya', name: 'Vidya (Female)', gender: 'female' },
+    { code: 'arya', name: 'Arya (Female)', gender: 'female' },
+    { code: 'abhilash', name: 'Abhilash (Male)', gender: 'male' },
+    { code: 'karun', name: 'Karun (Male)', gender: 'male' },
+    { code: 'hitesh', name: 'Hitesh (Male)', gender: 'male' }
   ];
 
   useEffect(() => {
@@ -73,7 +85,12 @@ export default function VoiceAgentPage() {
 
     // Load voices when they become available (some browsers load them asynchronously)
     if ('speechSynthesis' in window) {
-      speechSynthesis.onvoiceschanged = loadVoices;
+      speechSynthesis.onvoiceschanged = () => {
+        loadVoices();
+        // Debug: Log all available voices
+        const voices = speechSynthesis.getVoices();
+        console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang, voiceURI: v.voiceURI })));
+      };
     }
 
     return () => {
@@ -84,6 +101,7 @@ export default function VoiceAgentPage() {
   }, []);
 
   const startRecording = async () => {
+    console.log('startRecording called');
     try {
       // Try browser's built-in speech recognition first (more reliable)
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -373,6 +391,81 @@ export default function VoiceAgentPage() {
     const browserLangCode = language?.browserCode || langCode;
     const fallbackCode = language?.fallbackCode || langCode.split('-')[0];
     
+    console.log('Looking for voice for language:', langCode, 'browserCode:', browserLangCode);
+    
+        // Special handling for Telugu - prioritize Telugu voices
+        if (langCode === 'te-IN') {
+          console.log('Available voices for Telugu selection:', availableVoices.map(v => ({ name: v.name, lang: v.lang })));
+          
+          // First try exact Telugu matches
+          let voice = availableVoices.find(v => 
+            v.lang === 'te-IN' || 
+            v.lang === 'te' ||
+            v.name.toLowerCase().includes('telugu')
+          );
+          if (voice) {
+            console.log('Found Telugu voice:', voice.name, voice.lang);
+            return voice;
+          }
+          
+          // Try to find any voice that can handle Telugu text better
+          // Look for voices that support multiple Indian languages
+          voice = availableVoices.find(v => 
+            v.name.toLowerCase().includes('indian') ||
+            v.name.toLowerCase().includes('multilingual') ||
+            v.name.toLowerCase().includes('hindi') // Hindi voices often work better for Telugu than Tamil
+          );
+          if (voice) {
+            console.log('Using multilingual/Indian voice for Telugu:', voice.name, voice.lang);
+            return voice;
+          }
+          
+          // Try other South Indian languages (closer to Telugu)
+          voice = availableVoices.find(v => 
+            v.lang.includes('ta') || // Tamil
+            v.lang.includes('kn') || // Kannada
+            v.lang.includes('ml')    // Malayalam
+          );
+          if (voice) {
+            console.log('Using South Indian language voice for Telugu:', voice.name, voice.lang);
+            return voice;
+          }
+          
+          // Try Hindi voices first (they often handle Telugu better)
+          voice = availableVoices.find(v => 
+            v.lang.includes('hi') || 
+            v.name.toLowerCase().includes('hindi')
+          );
+          if (voice) {
+            console.log('Using Hindi voice for Telugu (better Telugu support):', voice.name, voice.lang);
+            return voice;
+          }
+          
+          // Try other Indian languages but avoid English
+          voice = availableVoices.find(v => 
+            (v.lang.includes('IN') && !v.lang.includes('en')) || 
+            v.lang.includes('bn') || 
+            v.lang.includes('mr') || 
+            v.lang.includes('gu') || 
+            v.lang.includes('pa')
+          );
+          if (voice) {
+            console.log('Using Indian language voice for Telugu:', voice.name, voice.lang);
+            return voice;
+          }
+          
+          // Last resort - any non-English voice
+          voice = availableVoices.find(v => !v.lang.includes('en'));
+          if (voice) {
+            console.log('Using non-English voice for Telugu:', voice.name, voice.lang);
+            return voice;
+          }
+          
+          console.log('No suitable voice found for Telugu');
+          return null;
+        }
+    
+    // For other languages, use the original logic
     // Try to find a voice that matches the language exactly
     let voice = availableVoices.find(v => v.lang === browserLangCode);
     if (voice) return voice;
@@ -411,6 +504,9 @@ export default function VoiceAgentPage() {
   };
 
   const textToSpeech = async (text: string) => {
+    console.log('textToSpeech called with text:', text.substring(0, 50) + '...');
+    console.log('textToSpeech called from:', new Error().stack);
+    
     if (isMuted) return;
 
     try {
@@ -421,15 +517,19 @@ export default function VoiceAgentPage() {
         },
         body: JSON.stringify({
           text: text,
-          target_language_code: selectedLanguage
+          target_language_code: selectedLanguage,
+          speaker: selectedSpeaker
         }),
       });
 
       const result = await response.json();
       console.log('TTS API result:', result);
+      console.log('Selected language for TTS:', selectedLanguage);
+      console.log('Selected speaker for TTS:', selectedSpeaker);
 
       // Try Sarvam TTS first
       if (result.success && result.audio_base64) {
+        console.log('Using Sarvam TTS with audio data length:', result.audio_base64.length);
         try {
           // Convert base64 to audio blob
           const audioData = atob(result.audio_base64);
@@ -443,20 +543,25 @@ export default function VoiceAgentPage() {
           
           // Create audio element and play
           const audio = new Audio(audioUrl);
+          audioRef.current = audio; // Store reference for stopping
           audio.onplay = () => setIsPlaying(true);
           audio.onended = () => {
             setIsPlaying(false);
             URL.revokeObjectURL(audioUrl);
+            audioRef.current = null;
           };
-          audio.onerror = () => {
-            console.error('Audio playback error');
+          audio.onerror = (error) => {
+            console.error('Audio playback error:', error);
+            console.log('Falling back to browser TTS due to audio error');
             setIsPlaying(false);
             URL.revokeObjectURL(audioUrl);
+            audioRef.current = null;
             // Fallback to browser TTS
             fallbackToBrowserTTS(text);
           };
           
           await audio.play();
+          console.log('Sarvam TTS audio playing successfully');
           return;
         } catch (audioError) {
           console.error('Audio processing error:', audioError);
@@ -465,6 +570,13 @@ export default function VoiceAgentPage() {
         }
       } else {
         // Sarvam TTS failed, use browser TTS
+        console.log('Sarvam TTS failed, falling back to browser TTS. Result:', result);
+        
+        // Show user-friendly message for subscription issues
+        if (result.error === 'Subscription issue') {
+          console.log('Sarvam API subscription issue - using browser TTS with improved voice selection');
+        }
+        
         fallbackToBrowserTTS(text);
       }
     } catch (error) {
@@ -475,6 +587,7 @@ export default function VoiceAgentPage() {
   };
 
   const fallbackToBrowserTTS = (text: string) => {
+    console.log('fallbackToBrowserTTS called with text:', text.substring(0, 50) + '...');
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       const language = languages.find(lang => lang.code === selectedLanguage);
@@ -485,9 +598,14 @@ export default function VoiceAgentPage() {
       utterance.lang = voice ? voice.lang : browserLangCode;
       if (voice) {
         utterance.voice = voice;
-        console.log('Using voice:', voice.name, 'for language:', voice.lang);
+        // console.log('Using voice:', voice.name, 'for language:', voice.lang);
       } else {
         console.log('No voice found, using language code:', utterance.lang);
+        // For Telugu, try to avoid English voices
+        if (selectedLanguage === 'te-IN') {
+          utterance.lang = 'te-IN';
+          console.log('Forcing Telugu language code for utterance');
+        }
       }
       
       // Force language setting
@@ -495,7 +613,8 @@ export default function VoiceAgentPage() {
       console.log('Final utterance settings:', {
         text: text.substring(0, 50) + '...',
         lang: utterance.lang,
-        voice: voice?.name || 'default'
+        voice: voice?.name || 'default',
+        selectedLanguage: selectedLanguage
       });
       
       utterance.onstart = () => setIsPlaying(true);
@@ -505,15 +624,26 @@ export default function VoiceAgentPage() {
   };
 
   const stopAudio = () => {
-    // Stop any playing audio elements
+    console.log('stopAudio called');
+    
+    // Stop the current audio element (Sarvam TTS)
+    if (audioRef.current) {
+      console.log('Stopping current audio element');
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    
+    // Stop any other playing audio elements
     const audioElements = document.querySelectorAll('audio');
     audioElements.forEach(audio => {
       audio.pause();
       audio.currentTime = 0;
     });
     
-    // Stop speech synthesis
+    // Stop speech synthesis (browser TTS)
     if ('speechSynthesis' in window && speechSynthesis.speaking) {
+      console.log('Stopping speech synthesis');
       speechSynthesis.cancel();
     }
     
@@ -543,7 +673,7 @@ export default function VoiceAgentPage() {
         <Card className="mb-6">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <div className="flex-1">
+              <div className="flex-1 mr-4">
                 <h3 className="text-sm font-medium text-black dark:text-white mb-2">Response Language</h3>
                 <select
                   value={selectedLanguage}
@@ -553,6 +683,20 @@ export default function VoiceAgentPage() {
                   {languages.map((lang) => (
                     <option key={lang.code} value={lang.code}>
                       {lang.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-black dark:text-white mb-2">Voice Speaker</h3>
+                <select
+                  value={selectedSpeaker}
+                  onChange={(e) => setSelectedSpeaker(e.target.value)}
+                  className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 text-black dark:text-white w-full"
+                >
+                  {sarvamSpeakers.map((speaker) => (
+                    <option key={speaker.code} value={speaker.code}>
+                      {speaker.name}
                     </option>
                   ))}
                 </select>
@@ -579,81 +723,23 @@ export default function VoiceAgentPage() {
               </div>
             </div>
             
-            {/* Voice Information */}
-            {availableVoices.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  Voice for {languages.find(l => l.code === selectedLanguage)?.name}:
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-300">
-                  {(() => {
-                    const voice = getVoiceForLanguage(selectedLanguage);
-                    if (voice) {
-                      return `${voice.name} (${voice.lang})`;
-                    } else {
-                      return 'Using default browser voice';
-                    }
-                  })()}
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        {/* Voice Controls */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center gap-4">
-              <Button
-                onClick={isRecording ? stopRecording : startRecording}
-                disabled={isProcessing}
-                className={`h-16 w-16 rounded-full ${
-                  isRecording 
-                    ? 'bg-red-600 hover:bg-red-700' 
-                    : 'bg-cyan-600 hover:bg-cyan-700'
-                } text-white`}
-              >
-                {isRecording ? <MicOff className="h-8 w-8" /> : <Mic className="h-8 w-8" />}
-              </Button>
-              
-              {isPlaying && (
-                <Button
-                  onClick={stopAudio}
-                  variant="outline"
-                  className="h-12 w-12 rounded-full"
-                >
-                  <Pause className="h-6 w-6" />
-                </Button>
-              )}
+        {/* Modern Voice Interface */}
+        <div className="mb-6">
+          <VoiceChat
+            onStart={startRecording}
+            onStop={stopRecording}
+            onStopAudio={stopAudio}
+            onVolumeChange={(volume) => console.log(`Volume: ${volume}%`)}
+            demoMode={false}
+            isRecording={isRecording}
+            isProcessing={isProcessing}
+            isPlaying={isPlaying}
+            className="min-h-[500px]"
+          />
             </div>
-            
-            <div className="text-center mt-4">
-              {isRecording && (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-red-600">Recording...</span>
-                </div>
-              )}
-              {isProcessing && (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-sm text-cyan-600">Processing...</span>
-                </div>
-              )}
-              {!isRecording && !isProcessing && (
-                <p className="text-sm text-gray-500">Click the microphone to start speaking</p>
-              )}
-            </div>
-            
-            {speechMethod !== 'unknown' && (
-              <div className="text-center mt-2">
-                <Badge variant="outline" className="text-xs">
-                  {speechMethod === 'browser' ? 'Browser Speech Recognition' : 'Sarvam AI'}
-                </Badge>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Current Text Display */}
         {currentText && (

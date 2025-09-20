@@ -1,129 +1,113 @@
-# MedScan - AI Medical Report Analysis
+# MedScan
 
-<div align="center">
-  <h3>🤖 AI-Powered Medical Report Analysis & Chat Assistant</h3>
-  <p>Upload medical reports and get intelligent insights with conversational AI</p>
-</div>
+**MedScan** is an AI-powered healthcare intelligence platform designed to revolutionize how individuals interact with their medical data. Leveraging advanced AI models, vector databases, and multi-language voice capabilities, MedScan provides intelligent analysis of medical reports, personalized health insights, and an intuitive conversational interface.
 
----
+## ✨ Key Features
 
-## ✨ Features
+-   **AI-Powered Medical Report Analysis**: Utilize Google Gemini to analyze medical reports, extract key information, and summarize findings. Supports image-based report uploads with automatic text extraction.
+-   **Retrieval-Augmented Generation (RAG)**: Integrates with Pinecone vector database and HuggingFace embeddings (`mixedbread-ai/mxbai-embed-large-v1`) to retrieve relevant clinical findings and enrich AI responses, ensuring accuracy and context-awareness.
+-   **Multi-Language Voice Assistant**: A conversational AI powered by Sarvam AI for Speech-to-Text (STT) and Text-to-Speech (TTS), and Google Gemini for natural language understanding. Supports multiple Indian languages for inclusive healthcare access.
+-   **Interactive Radial Orbital Timeline**: An engaging visual component on the landing page that showcases MedScan's core features and their interconnectedness through a dynamic, clickable orbital interface.
+-   **Comprehensive Health Dashboard**: A personalized dashboard to track vital signs (heart rate, SpO2), manage medications, view lab results, set medical reminders, and organize appointments.
+-   **Prescription History & Management**: Securely stores and manages past medical reports and prescriptions, allowing users to query their entire medical history.
+-   **Dynamic UI with Animations**: Built with Next.js, React, and Tailwind CSS, featuring smooth animations powered by Framer Motion for an enhanced user experience.
 
-- 📄 **Report Upload**: Support for PDF and image formats
-- 🧠 **AI Analysis**: Powered by Google Gemini 1.5 Flash
-- 💬 **Interactive Chat**: Ask questions about your medical reports
-- 🔍 **Smart Retrieval**: Enhanced answers using Pinecone vector database
-- 🎨 **Modern UI**: Built with Next.js 14, Tailwind CSS, and Radix UI
-- 📱 **Responsive Design**: Works seamlessly on all devices
+## 🛠️ Technologies Used
 
-## 🚀 Quick Start
+-   **Framework**: Next.js 14 (React)
+-   **Styling**: Tailwind CSS
+-   **AI/ML**: Google Gemini (LLM), HuggingFace Inference (Embeddings via `mixedbread-ai/mxbai-embed-large-v1`)
+-   **Vector Database**: Pinecone
+-   **Voice AI**: Sarvam AI (Speech-to-Text, Text-to-Speech)
+-   **Animations**: Framer Motion
+-   **Charts**: Recharts
+-   **Authentication**: Google OAuth (currently simplified for demo purposes)
+-   **Deployment**: Vercel (recommended)
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Google Gemini API key
-- Pinecone API key
+## 🚀 Setup & Installation
 
-### Installation
+Follow these steps to get MedScan up and running on your local machine.
+
+### 1. Clone the repository
 
 ```bash
-# Clone the repository
-git clone https://github.com/SowmithBachu/MedScan.git
+git clone https://github.com/your-username/MedScan.git
 cd MedScan
+```
 
-# Install dependencies
+### 2. Install Dependencies
+
+```bash
 npm install
+# or
+yarn install
+```
 
-# Start development server
+### 3. Environment Variables
+
+Create a `.env.local` file in the root directory and add the following environment variables:
+
+```
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+PINECONE_API_KEY=YOUR_PINECONE_API_KEY
+HF_TOKEN=YOUR_HUGGINGFACE_TOKEN
+SARVAM_API_KEY=YOUR_SARVAM_AI_API_KEY
+AUTH_SECRET=YOUR_AUTH_SECRET_FOR_JWT
+```
+
+-   **`NEXT_PUBLIC_GOOGLE_CLIENT_ID`**: Obtain this from Google Cloud Console for OAuth.
+-   **`GOOGLE_CLIENT_SECRET`**: Google OAuth client secret.
+-   **`GEMINI_API_KEY`**: Your API key for Google Gemini (can be obtained from Google AI Studio).
+-   **`PINECONE_API_KEY`**: Your API key for Pinecone (vector database).
+-   **`HF_TOKEN`**: Your HuggingFace API token for embedding models.
+-   **`SARVAM_API_KEY`**: Your API key for Sarvam AI (Speech-to-Text & Text-to-Speech services).
+-   **`AUTH_SECRET`**: A strong, random string for JWT signing. You can generate one using `openssl rand -base64 32`.
+
+### 4. Run the Development Server
+
+```bash
 npm run dev
+# or
+yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-## ⚙️ Environment Setup
+## 💡 Usage
 
-Create a `.env.local` file in the project root:
+1.  **Landing Page (`/`)**: Explore MedScan's features through the interactive radial timeline.
+2.  **Analysis Page (`/analysis`)**: Upload medical reports (images) for AI analysis and chat with the AI about your reports. You can also view and select from your prescription history.
+3.  **Dashboard Page (`/dashboard`)**: Access a comprehensive overview of your health metrics, including vitals, lab results, medications, and reminders. Navigate to specific sections like `/dashboard/vitals`, `/dashboard/labs`, etc.
+4.  **Voice Agent Page (`/voice`)**: Interact with the AI using your voice, ask questions about your health, and receive spoken responses in multiple Indian languages.
 
-```env
-GEMINI_API_KEY=your_google_generative_ai_key
-PINECONE_API_KEY=your_pinecone_key
+## 📂 Project Structure
+
 ```
-
-### Pinecone Configuration
-
-If you use a different Pinecone setup, adjust the settings in `app/config.ts`:
-
-```typescript
-export const indexName = "index-one"
-export const namespace = "diagnosis2"
-export const topK = 5
-export const modelname = 'mixedbread-ai/mxbai-embed-large-v1'
+MedScan-phase1/
+├── app/                      # Next.js app router: pages, API routes, and global config
+│   ├── analysis/             # Medical report upload & AI chat interface
+│   ├── api/                  # Backend API routes (Gemini chat, report extraction, voice, auth)
+│   ├── dashboard/            # Health dashboard with sub-pages (vitals, labs, timeline, questions, devices)
+│   ├── voice/                # Voice AI assistant interface
+│   ├── globals.css           # Global CSS styles
+│   ├── layout.tsx            # Root layout for the application
+│   └── page.tsx              # Landing page
+├── components/               # Reusable UI components
+│   ├── chat/                 # Chat UI components (chatcomponent, messagebox, messages)
+│   ├── ui/                   # Shadcn/ui components (button, card, input, etc.) and custom UI (lamp, container-scroll-animation, radial-orbital-timeline)
+│   ├── RadialOrbitalTimelineDemo.tsx # Demo data and usage of RadialOrbitalTimeline
+│   ├── PrescriptionHistory.tsx # Component for displaying prescription history
+│   └── ReportComponent.tsx   # Component for uploading and confirming reports
+├── lib/                      # Utility functions and libraries (e.g., prescription-storage, utils)
+├── public/                   # Static assets (images, fonts)
+├── utils.ts                  # General utility functions (e.g., Pinecone vector store interactions, embedding generation)
+├── middleware.ts             # Next.js middleware
+├── package.json              # Project dependencies and scripts
+└── README.md                 # Project documentation
 ```
-
-## 🛠️ Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-
-## 🏗️ Architecture
-
-### API Endpoints
-
-- **Report Extraction**: `POST /api/extractreportgemini`
-  - Extracts text from medical reports using Gemini 1.5 Flash
-  - Supports PDF and image formats
-
-- **Medical Chat**: `POST /api/medichatgemini`
-  - Conversational AI with report context
-  - Enhanced with Pinecone vector retrieval
-
-### Tech Stack
-
-- **Frontend**: Next.js 14, React, TypeScript
-- **Styling**: Tailwind CSS, Radix UI
-- **AI**: Google Gemini 1.5 Flash
-- **Vector DB**: Pinecone
-- **Deployment**: Vercel-ready
-
-## 📖 API Usage
-
-### Extract Medical Report
-
-```bash
-POST /api/extractreportgemini
-Content-Type: application/json
-
-{
-  "base64": "data:application/pdf;base64,...."
-}
-```
-
-### Chat with Report Context
-
-```bash
-POST /api/medichatgemini
-Content-Type: application/json
-
-{
-  "messages": [
-    { "role": "user", "content": "What are the key findings in this report?" }
-  ],
-  "data": { "reportData": "<extracted_report_text>" }
-}
-```
-
-## 🔧 Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Missing API keys | Ensure `GEMINI_API_KEY` and `PINECONE_API_KEY` are set in `.env.local` |
-| Rate limits | Retry later or reduce request frequency |
-| Build errors | Check Node.js version (18+) and run `npm install` |
 
 ---
 
-<div align="center">
-  <p>Made with ❤️ for better healthcare insights</p>
-</div>
+MedScan is an ongoing project, and contributions are welcome!

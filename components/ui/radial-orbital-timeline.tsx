@@ -36,6 +36,7 @@ export default function RadialOrbitalTimeline({
     y: 0,
   });
   const [activeNodeId, setActiveNodeId] = useState<number | null>(1); // Set AI Analysis as active on load
+  const [isClient, setIsClient] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const orbitRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -64,7 +65,8 @@ export default function RadialOrbitalTimeline({
       if (!prev[id]) {
         // Opening a node
         setActiveNodeId(id);
-        setAutoRotate(false);
+        // Keep rotation going even when a node is expanded
+        setAutoRotate(true);
 
         const relatedItems = getRelatedItems(id);
         const newPulseEffect: Record<number, boolean> = {};
@@ -85,8 +87,15 @@ export default function RadialOrbitalTimeline({
     });
   };
 
+  // Set up client-side rendering
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Set up initial state for AI Analysis expansion
   useEffect(() => {
+    if (!isClient) return;
+    
     const relatedItems = getRelatedItems(1); // AI Analysis related items
     const newPulseEffect: Record<number, boolean> = {};
     relatedItems.forEach((relId) => {
@@ -94,7 +103,7 @@ export default function RadialOrbitalTimeline({
     });
     setPulseEffect(newPulseEffect);
     centerViewOnNode(1);
-  }, []);
+  }, [isClient]);
 
   useEffect(() => {
     // Always clear the existing timer when autoRotate or viewMode changes
@@ -140,10 +149,10 @@ export default function RadialOrbitalTimeline({
     const y = radius * Math.sin(radian) + centerOffset.y;
 
     const zIndex = Math.round(100 + 50 * Math.cos(radian));
-    const opacity = Math.max(
-      0.4,
-      Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2))
-    );
+    // Fix precision issues by rounding to a specific decimal place
+    const opacity = Math.round(
+      Math.max(0.4, Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2))) * 1000
+    ) / 1000;
 
     return { x, y, angle, zIndex, opacity };
   };
@@ -172,6 +181,19 @@ export default function RadialOrbitalTimeline({
     }
   };
 
+  // Show loading state during hydration
+  if (!isClient) {
+    return (
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden -mt-6">
+        <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-teal-500 animate-pulse flex items-center justify-center z-10">
+            <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden -mt-6"
@@ -184,7 +206,7 @@ export default function RadialOrbitalTimeline({
           ref={orbitRef}
           style={{
             perspective: "1000px",
-            transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)`,
+            transform: `translate(${Math.round(centerOffset.x * 100) / 100}px, ${Math.round(centerOffset.y * 100) / 100}px)`,
           }}
         >
           <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-teal-500 animate-pulse flex items-center justify-center z-10">
@@ -206,7 +228,7 @@ export default function RadialOrbitalTimeline({
             const Icon = item.icon;
 
             const nodeStyle = {
-              transform: `translate(${position.x}px, ${position.y}px)`,
+              transform: `translate(${Math.round(position.x * 100) / 100}px, ${Math.round(position.y * 100) / 100}px)`,
               zIndex: isExpanded ? 200 : position.zIndex,
               opacity: isExpanded ? 1 : position.opacity,
             };
