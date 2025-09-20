@@ -1,5 +1,5 @@
-import { Message } from 'ai';
-import React from 'react'
+import type { UIMessage as Message } from 'ai';
+import React, { useEffect, useRef } from 'react'
 import MessageBox from './messagebox';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -12,6 +12,15 @@ type Props = {
 }
 
 const Messages = ({ messages, isLoading, data }: Props) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [messages, isLoading]);
+
   // Normalize possible data shapes from API
   let parsedObject: any | null = null;
   if (data && !Array.isArray(data)) {
@@ -23,9 +32,17 @@ const Messages = ({ messages, isLoading, data }: Props) => {
   }
 
   return (
-    <div className='flex flex-col gap-3 overflow-y-auto max-h-[280px] pr-2'>
+    <div className='flex flex-col gap-3 overflow-y-auto flex-1 custom-scrollbar max-h-[500px]'>
       {messages.map((m, index) => {
-        return <MessageBox key={index} role={m.role} content={m.content} />
+        // Extract content from parts array or fallback to content string
+        let messageContent = '';
+        if (m.parts && m.parts.length > 0) {
+          messageContent = m.parts.map(part => part.text || '').join('');
+        } else if (m.content) {
+          messageContent = m.content;
+        }
+        
+        return <MessageBox key={index} role={m.role} content={messageContent} />
       })}
       
       {/* Assistant reply is appended to messages by the client handler; avoid duplicate rendering from data */}
@@ -120,6 +137,7 @@ const Messages = ({ messages, isLoading, data }: Props) => {
           <span>MedScan is thinking...</span>
         </div>
       )}
+      <div ref={messagesEndRef} />
     </div>
   )
 }

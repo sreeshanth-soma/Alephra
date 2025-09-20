@@ -30,7 +30,7 @@ const MessageBox = ({ role, content }: Props) => {
         <CardContent className="p-4 text-sm">
           <Markdown text={displayContent} />
         </CardContent>
-        {!isUser && (
+        {!isUser && displayContent && displayContent.length > 20 && !displayContent.toLowerCase().includes('you\'re welcome') && !displayContent.toLowerCase().includes('hello') && (
           <CardFooter className="border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2 text-xs text-slate-500 dark:text-slate-400">
             Disclaimer: Medical advice is for informational purposes only and should not replace professional medical diagnosis.
           </CardFooter>

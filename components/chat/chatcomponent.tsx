@@ -35,7 +35,7 @@ const ChatComponent = ({ reportData }: Props) => {
   }, [reportData]);
     
   return (
-    <div className="h-[500px] bg-white dark:bg-zinc-900 relative flex flex-col rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl">
+    <div className="h-[600px] bg-white dark:bg-zinc-900 relative flex flex-col rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl">
       <div className="absolute -top-3 left-6 px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-300 dark:border-gray-700 shadow-lg">
         <Badge 
           variant="secondary" 
@@ -49,11 +49,11 @@ const ChatComponent = ({ reportData }: Props) => {
         </Badge>
       </div>
       
-      <div className="flex-1 p-6 pt-8 overflow-hidden">
+      <div className="flex-1 px-6 pt-6 pb-2 overflow-hidden">
         <Messages messages={messages} isLoading={isLoading} data={data} />
       </div>
       
-      <div className="p-6 pt-0">
+      <div className="px-6 pb-6 pt-2">
         <form
           className="relative group"
           onSubmit={(event) => {
