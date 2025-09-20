@@ -57,9 +57,9 @@ export async function POST(req: Request) {
         console.log("Creating vector embeddings...");
         const vectorSuccess = await createAndStoreVectorEmbeddings(
             pinecone,
-            'key2', // index name
+            'med-rag', // index name
             'diagnosis2', // namespace
-            textResponse,
+            textResponse || '',
             reportId
         );
         

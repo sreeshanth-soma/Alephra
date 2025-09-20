@@ -6,7 +6,7 @@ const pinecone = new Pinecone({
 
 export async function GET() {
     try {
-        const index = pinecone.Index('key2');
+        const index = pinecone.Index('med-rag');
         
         // Get index stats
         const stats = await index.describeIndexStats();
