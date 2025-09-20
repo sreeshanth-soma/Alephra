@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { CornerDownLeft, Loader2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import Messages from './messages';
-import type { Message } from 'ai';
+import type { UIMessage as Message } from 'ai';
 import { prescriptionStorage } from '@/lib/prescription-storage';
 
 type Props = {
@@ -60,7 +60,7 @@ const ChatComponent = ({ reportData }: Props) => {
             event.preventDefault();
             const msg = input.trim();
             if (!msg) return;
-            const nextMessages: Message[] = [...messages, { id: crypto.randomUUID(), role: 'user', content: msg }];
+            const nextMessages: Message[] = [...messages, { id: crypto.randomUUID(), role: 'user', parts: [{ type: 'text', text: msg }] }];
             setMessages(nextMessages);
             setInput("");
             setIsLoading(true);
@@ -77,7 +77,7 @@ const ChatComponent = ({ reportData }: Props) => {
                 setData(json);
                 const assistantText = typeof json === 'string' ? json : (json?.text ?? json?.message ?? '');
                 if (assistantText) {
-                  setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'assistant', content: assistantText }]);
+                  setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'assistant', parts: [{ type: 'text', text: assistantText }] }]);
                 }
               })
               .catch((err) => {

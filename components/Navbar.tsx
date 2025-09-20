@@ -3,13 +3,16 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Home, BarChart3, LayoutDashboard, Mic } from 'lucide-react';
+import { Menu, X, Home, BarChart3, LayoutDashboard, Mic, User, LogOut, LogIn } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
+import { Button } from './ui/button';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session, status } = useSession();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -17,6 +20,11 @@ const Navbar = () => {
 
   const closeMenu = () => {
     setIsOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+    closeMenu();
   };
 
   const navItems = [
@@ -98,8 +106,39 @@ const Navbar = () => {
                 </Link>
               );
             })}
-            <div className="ml-4 pl-4 border-l border-gray-200 dark:border-gray-700">
+            <div className="ml-4 pl-4 border-l border-gray-200 dark:border-gray-700 flex items-center space-x-3">
               <ThemeToggle />
+              {session ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {session.user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden lg:block">
+                    {session.user?.name?.split(' ')[0]}
+                  </span>
+                  <Button
+                    onClick={handleSignOut}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Link href="/signin">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
 
@@ -178,6 +217,44 @@ const Navbar = () => {
                   </motion.div>
                 );
               })}
+              
+              {/* Mobile Auth Section */}
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                {session ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">
+                          {session.user?.name?.charAt(0).toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-bold text-lg text-gray-900 dark:text-white">
+                          {session.user?.name}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {session.user?.email}
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleSignOut}
+                      variant="outline"
+                      className="w-full h-12 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </div>
+                ) : (
+                  <Link href="/signin" onClick={closeMenu}>
+                    <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white">
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Sign In with Google
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

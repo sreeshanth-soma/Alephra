@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 // import { Toaster } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/Navbar";
+import SessionWrapper from "@/components/SessionWrapper";
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -31,16 +32,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} ${playfair.variable} font-sans`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <Navbar />
-          <TooltipProvider>{children}</TooltipProvider>
-          <Toaster />
-        </ThemeProvider>
+        <SessionWrapper>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <Navbar />
+            <TooltipProvider>{children}</TooltipProvider>
+            <Toaster />
+          </ThemeProvider>
+        </SessionWrapper>
       </body>
     </html>
   );
