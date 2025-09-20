@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, Activity, Calendar, Filter } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Noise } from "@/components/ui/noise";
 // Removed dropdown menu in Appointments to keep a single add button
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string };
@@ -609,9 +610,21 @@ export default function DashboardPage() {
   };
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black relative overflow-hidden">
+      {/* Noise Background */}
+      <div className="absolute inset-0 z-0">
+        <Noise
+          patternSize={75}
+          patternScaleX={1}
+          patternScaleY={1}
+          patternRefreshInterval={2}
+          patternAlpha={35}
+          className="w-full h-full"
+        />
+      </div>
+      
       {/* Subtle grid background */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04] dark:opacity-[0.06]"
+        className="pointer-events-none absolute inset-0 opacity-[0.04] dark:opacity-[0.06] z-5"
         style={{
           backgroundImage:
             "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
@@ -620,9 +633,9 @@ export default function DashboardPage() {
         }}
       />
       {/* Ambient gradient glows */}
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl" />
-      <div className="container mx-auto px-4 py-10 relative">
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl z-5" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl z-5" />
+      <div className="container mx-auto px-4 py-10 relative z-10">
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>

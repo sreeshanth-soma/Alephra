@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Info } from "lucide-react";
 import Link from "next/link";
+import { Squares } from "@/components/ui/squares-background";
 
 const AnalysisPage = () => {
   const { toast } = useToast()
@@ -36,6 +37,20 @@ const AnalysisPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black relative">
+      {/* Squares Background */}
+      <div className="absolute inset-0 z-0">
+        <Squares 
+          direction="diagonal"
+          speed={0.5}
+          squareSize={40}
+          borderColor="#333" 
+          hoverFillColor="#444"
+        />
+      </div>
+      
+      {/* Overlay for better contrast */}
+      <div className="absolute inset-0 z-5 bg-black/10" />
+      
       <ThemeToggle />
       
       {/* Note Card - Top Right */}
