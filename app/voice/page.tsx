@@ -695,7 +695,7 @@ export default function VoiceAgentPage() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-black p-2 overflow-hidden relative">
+    <div className="h-screen bg-gray-50 dark:bg-black p-2 overflow-hidden relative pt-20">
       <ThemeToggle />
       <div className="w-full h-full flex flex-col">
         {/* Header - Compact */}

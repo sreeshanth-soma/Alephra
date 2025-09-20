@@ -4,7 +4,8 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 // import { Toaster } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
+import Navbar from "@/components/Navbar";
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -36,6 +37,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <Navbar />
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
         </ThemeProvider>

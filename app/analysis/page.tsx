@@ -36,7 +36,7 @@ const AnalysisPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-black relative pt-16">
       {/* Squares Background */}
       <div className="absolute inset-0 z-0">
         <Squares 

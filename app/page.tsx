@@ -13,7 +13,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export default function Home() {
   return (
     <>
-      <ThemeToggle />
       <LampDemo />
       <div className="flex flex-col overflow-hidden pb-24 pt-2 bg-black">
         <ContainerScroll

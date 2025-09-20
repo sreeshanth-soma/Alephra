@@ -609,7 +609,7 @@ export default function DashboardPage() {
     setCartItems(prev => prev.filter((_, i) => i !== index));
   };
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-black relative overflow-hidden pt-16">
       {/* Noise Background */}
       <div className="absolute inset-0 z-0">
         <Noise
