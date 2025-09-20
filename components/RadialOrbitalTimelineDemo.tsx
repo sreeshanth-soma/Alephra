@@ -7,7 +7,7 @@ const medicalFeaturesData = [
   {
     id: 1,
     title: "AI Analysis",
-    date: "2024",
+    date: "2025",
     content: "Advanced AI-powered medical report analysis using Google Gemini for intelligent insights and diagnosis.",
     category: "AI",
     icon: Brain,
@@ -18,7 +18,7 @@ const medicalFeaturesData = [
   {
     id: 2,
     title: "Voice Assistant",
-    date: "2024",
+    date: "2025",
     content: "Multi-language voice interface with real-time speech recognition and natural language processing.",
     category: "Voice",
     icon: Mic,
@@ -29,7 +29,7 @@ const medicalFeaturesData = [
   {
     id: 3,
     title: "Vector Database",
-    date: "2024",
+    date: "2025",
     content: "Pinecone vector database with semantic search for context-aware medical findings and recommendations.",
     category: "Database",
     icon: Database,
@@ -40,7 +40,7 @@ const medicalFeaturesData = [
   {
     id: 4,
     title: "Report Upload",
-    date: "2024",
+    date: "2025",
     content: "Seamless medical report upload and processing with automatic text extraction and analysis.",
     category: "Upload",
     icon: FileText,
@@ -51,7 +51,7 @@ const medicalFeaturesData = [
   {
     id: 5,
     title: "Dashboard",
-    date: "2024",
+    date: "2025",
     content: "Comprehensive health dashboard with vitals tracking, medication management, and appointment scheduling.",
     category: "Dashboard",
     icon: Calendar,

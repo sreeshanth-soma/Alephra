@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw, BarChart3, LayoutDashboard } from 'lucide-react';
-import { VoiceChat } from '@/components/VoiceChat';
+import { VoiceChatInteractive } from '@/components/VoiceChatInteractive';
 import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ui/conversation';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
@@ -790,7 +790,7 @@ export default function VoiceAgentPage() {
         <div className="flex gap-4 flex-1 min-h-0">
           {/* Left Side - Voice Interface (30%) */}
           <div className="w-[30%] border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
-            <VoiceChat
+            <VoiceChatInteractive
               onStart={startRecording}
               onStop={stopRecording}
               onStopAudio={stopAudio}

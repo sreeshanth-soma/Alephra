@@ -108,7 +108,7 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
       <Separator />
 
       {prescriptions.length === 0 ? (
-        <Card className="border-dashed border-2 border-gray-300 dark:border-gray-700">
+        <Card className="border-dashed border-2 border-gray-400 dark:border-gray-600">
           <CardContent className="text-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h4 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
@@ -124,7 +124,7 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
           {prescriptions.map((prescription) => (
             <Card
               key={prescription.id}
-              className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+              className={`cursor-pointer transition-all duration-200 hover:shadow-lg border border-gray-300 dark:border-gray-700 ${
                 selectedPrescriptionId === prescription.id
                   ? 'ring-2 ring-black dark:ring-white bg-gray-50 dark:bg-zinc-800'
                   : 'hover:bg-gray-50 dark:hover:bg-zinc-800'

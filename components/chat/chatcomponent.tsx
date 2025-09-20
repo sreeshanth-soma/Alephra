@@ -35,8 +35,8 @@ const ChatComponent = ({ reportData }: Props) => {
   }, [reportData]);
     
   return (
-    <div className="h-[500px] bg-white dark:bg-zinc-900 relative flex flex-col rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl">
-      <div className="absolute -top-3 left-6 px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-200 dark:border-gray-800 shadow-lg">
+    <div className="h-[500px] bg-white dark:bg-zinc-900 relative flex flex-col rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl">
+      <div className="absolute -top-3 left-6 px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-300 dark:border-gray-700 shadow-lg">
         <Badge 
           variant="secondary" 
           className={`text-sm font-semibold transition-all duration-200 ${

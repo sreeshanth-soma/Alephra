@@ -157,7 +157,7 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
     }
 
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-200/60 dark:border-gray-800 shadow-2xl p-8">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl p-8">
             <div className="space-y-8">
                 <div className="text-center">
                     <h3 className="text-2xl font-bold text-black dark:text-white mb-3 font-playfair">Medical Report Analysis</h3>
@@ -204,7 +204,7 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
                 </Button>
 
                 {isLoading && (
-                    <div className="absolute inset-0 bg-white/80 dark:bg-black/70 rounded-2xl flex items-center justify-center z-10">
+                    <div className="absolute inset-0 bg-white/80 dark:bg-black/70 rounded-2xl border border-gray-300 dark:border-gray-700 flex items-center justify-center z-10">
                         <div className="text-center">
                             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-black dark:text-white" />
                             <p className="text-sm text-gray-700 dark:text-gray-300">Processing your report...</p>
@@ -218,7 +218,7 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
                         value={reportData}
                         onChange={(e) => setReportData(e.target.value)}
                         placeholder="Summary will appear here (You can even add additional information to the summary for better insights)" 
-                        className="min-h-48 resize-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-0 transition-all duration-200"
+                        className="min-h-48 resize-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-0 transition-all duration-200"
                     />
                 </div>
 

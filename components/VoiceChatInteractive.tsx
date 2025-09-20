@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SplineBackground } from "./SplineBackground";
 
-interface VoiceChatProps {
+interface VoiceChatInteractiveProps {
   onStart?: () => void;
   onStop?: (duration: number) => void;
   onStopAudio?: () => void;
@@ -27,7 +27,7 @@ interface Particle {
   velocity: { x: number; y: number };
 }
 
-export function VoiceChat({
+export function VoiceChatInteractive({
   onStart,
   onStop,
   onStopAudio,
@@ -37,7 +37,7 @@ export function VoiceChat({
   isRecording: externalIsRecording = false,
   isProcessing: externalIsProcessing = false,
   isPlaying: externalIsPlaying = false
-}: VoiceChatProps) {
+}: VoiceChatInteractiveProps) {
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -208,12 +208,12 @@ export function VoiceChat({
   };
 
   return (
-    <div className={cn("flex flex-col min-h-screen bg-background relative overflow-hidden", className)}>
-      {/* Spline Animation Background - Full area for pointer interaction */}
-      <SplineBackground className="z-0" />
+    <div className={cn("relative w-full h-full overflow-hidden", className)}>
+      {/* Spline Animation - Top layer for pointer interaction */}
+      <SplineBackground className="absolute inset-0 z-20" />
 
-      {/* Overlay for better contrast - only in control areas */}
-      <div className="absolute top-0 left-0 right-0 h-48 z-5 bg-black/5" />
+      {/* Subtle overlay for better contrast */}
+      <div className="absolute inset-0 z-25 bg-black/5" />
 
       {/* Ambient particles */}
       <div className="absolute inset-0 overflow-hidden z-10">
@@ -238,52 +238,34 @@ export function VoiceChat({
         ))}
       </div>
 
-      {/* Background glow effects */}
-      <div className="absolute inset-0 flex items-center justify-center z-10">
+      {/* Voice Controls - Positioned at top middle */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30 flex flex-col items-center space-y-4">
+        {/* Main voice button */}
         <motion.div
-          className="w-96 h-96 rounded-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 blur-3xl"
-          animate={{
-            scale: actualIsListening ? [1, 1.2, 1] : [1, 1.1, 1],
-            opacity: actualIsListening ? [0.3, 0.6, 0.3] : [0.1, 0.2, 0.1]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      </div>
-
-      {/* Voice Controls positioned at the top */}
-      <div className="relative z-20 flex flex-col items-center pt-8 space-y-6">
-        {/* Main voice button and stop button */}
-        <div className="flex items-center gap-4">
-          <motion.div
-            className="relative"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          className="relative"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <motion.button
+            onClick={handleToggleListening}
+            className={cn(
+              "relative w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300",
+              "bg-white/95 backdrop-blur-sm border-2 shadow-lg",
+              actualIsListening ? "border-blue-500 shadow-blue-500/25" :
+              actualIsProcessing ? "border-yellow-500 shadow-yellow-500/25" :
+              actualIsSpeaking ? "border-green-500 shadow-green-500/25" :
+              "border-gray-300 hover:border-primary/50"
+            )}
+            animate={{
+              boxShadow: actualIsListening 
+                ? ["0 0 0 0 rgba(59, 130, 246, 0.4)", "0 0 0 20px rgba(59, 130, 246, 0)"]
+                : undefined
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: actualIsListening ? Infinity : 0
+            }}
           >
-              <motion.button
-                onClick={handleToggleListening}
-                className={cn(
-                  "relative w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300",
-                  "bg-gradient-to-br from-primary/20 to-primary/10 border-2",
-                  actualIsListening ? "border-blue-500 shadow-lg shadow-blue-500/25" :
-                  actualIsProcessing ? "border-yellow-500 shadow-lg shadow-yellow-500/25" :
-                  actualIsSpeaking ? "border-green-500 shadow-lg shadow-green-500/25" :
-                  "border-border hover:border-primary/50"
-                )}
-                style={{ pointerEvents: 'auto' }}
-              animate={{
-                boxShadow: actualIsListening 
-                  ? ["0 0 0 0 rgba(59, 130, 246, 0.4)", "0 0 0 20px rgba(59, 130, 246, 0)"]
-                  : undefined
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: actualIsListening ? Infinity : 0
-              }}
-            >
             <AnimatePresence mode="wait">
               {actualIsProcessing ? (
                 <motion.div
@@ -319,7 +301,7 @@ export function VoiceChat({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
-                  <Mic className="w-12 h-12 text-muted-foreground" />
+                  <Mic className="w-12 h-12 text-gray-600" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -359,15 +341,14 @@ export function VoiceChat({
         <AnimatePresence>
           {actualIsSpeaking && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, x: 20 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              exit={{ opacity: 0, scale: 0.8, x: 20 }}
+              initial={{ opacity: 0, scale: 0.8, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 10 }}
               transition={{ duration: 0.3 }}
             >
               <motion.button
                 onClick={onStopAudio}
                 className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-colors duration-200 shadow-lg"
-                style={{ pointerEvents: 'auto' }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -376,94 +357,59 @@ export function VoiceChat({
             </motion.div>
           )}
         </AnimatePresence>
-        </div>
 
-        {/* Waveform visualizer */}
-        <div className="flex items-center justify-center space-x-1 h-12">
-          {waveformData.map((height, index) => (
-            <motion.div
-              key={index}
-              className={cn(
-                "w-1 rounded-full transition-colors duration-300",
-                actualIsListening ? "bg-blue-500" :
-                actualIsProcessing ? "bg-yellow-500" :
-                actualIsSpeaking ? "bg-green-500" :
-                "bg-muted"
-              )}
-              animate={{
-                height: `${Math.max(4, height * 0.6)}px`,
-                opacity: actualIsListening || actualIsSpeaking ? 1 : 0.3
-              }}
-              transition={{
-                duration: 0.1,
-                ease: "easeOut"
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Status and timer */}
-        <div className="text-center space-y-2">
-          <motion.p
-            className={cn("text-lg font-medium transition-colors", getStatusColor())}
-            animate={{ opacity: [1, 0.7, 1] }}
-            transition={{
-              duration: 2,
-              repeat: actualIsListening || actualIsProcessing || actualIsSpeaking ? Infinity : 0
-            }}
-          >
-            {getStatusText()}
-          </motion.p>
-          
-          <p className="text-sm text-muted-foreground font-mono">
-            {formatTime(duration)}
-          </p>
-
-          {volume > 0 && (
-            <motion.div
-              className="flex items-center justify-center space-x-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <VolumeX className="w-4 h-4 text-muted-foreground" />
-              <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-blue-500 rounded-full"
-                  animate={{ width: `${volume}%` }}
-                  transition={{ duration: 0.1 }}
-                />
-              </div>
-              <Volume2 className="w-4 h-4 text-muted-foreground" />
-            </motion.div>
-          )}
-        </div>
-
-        {/* AI indicator */}
-        <motion.div
-          className="flex items-center space-x-2 text-sm text-muted-foreground"
-          animate={{ opacity: [0.5, 1, 0.5] }}
+        {/* Status text */}
+        <motion.p
+          className={cn("text-lg font-medium transition-colors bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full", getStatusColor())}
+          animate={{ opacity: [1, 0.7, 1] }}
           transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut"
+            duration: 2,
+            repeat: actualIsListening || actualIsProcessing || actualIsSpeaking ? Infinity : 0
           }}
         >
-          <Sparkles className="w-4 h-4" />
-          <span>MedScan voice assistant</span>
-        </motion.div>
+          {getStatusText()}
+        </motion.p>
       </div>
+
+      {/* Waveform visualizer - positioned higher up */}
+      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-20 flex items-center justify-center space-x-1 h-12">
+        {waveformData.map((height, index) => (
+          <motion.div
+            key={index}
+            className={cn(
+              "w-1 rounded-full transition-colors duration-300",
+              actualIsListening ? "bg-blue-500" :
+              actualIsProcessing ? "bg-yellow-500" :
+              actualIsSpeaking ? "bg-green-500" :
+              "bg-gray-400"
+            )}
+            animate={{
+              height: `${Math.max(4, height * 0.6)}px`,
+              opacity: actualIsListening || actualIsSpeaking ? 1 : 0.3
+            }}
+            transition={{
+              duration: 0.1,
+              ease: "easeOut"
+            }}
+          />
+        ))}
+      </div>
+
+      {/* AI indicator - positioned at bottom right */}
+      <motion.div
+        className="absolute bottom-4 right-4 flex items-center space-x-2 text-xs text-white/80 bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full"
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      >
+        <Sparkles className="w-3 h-3" />
+        <span>MedScan AI</span>
+      </motion.div>
     </div>
   );
 }
 
-// Usage example
-export default function VoiceChatDemo() {
-  return (
-    <VoiceChat
-      onStart={() => console.log("Voice recording started")}
-      onStop={(duration) => console.log(`Voice recording stopped after ${duration}s`)}
-      onVolumeChange={(volume) => console.log(`Volume: ${volume}%`)}
-      demoMode={true}
-    />
-  );
-}
+export default VoiceChatInteractive;
