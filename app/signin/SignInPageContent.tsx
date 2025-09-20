@@ -72,6 +72,7 @@ export default function SignInPageContent() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Google Sign-In Button */}
+            {/*
             <Button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
@@ -90,6 +91,7 @@ export default function SignInPageContent() {
                 </span>
               </div>
             </div>
+            */}
 
             <Button
               onClick={() => router.push(callbackUrl)}
