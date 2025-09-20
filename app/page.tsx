@@ -8,10 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Mic, Brain, Database, Languages, Shield, Zap } from "lucide-react";
 import RadialOrbitalTimelineDemo from "@/components/RadialOrbitalTimelineDemo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Home() {
   return (
     <>
+      <ThemeToggle />
       <LampDemo />
       <div className="flex flex-col overflow-hidden pb-24 pt-2 bg-black">
         <ContainerScroll

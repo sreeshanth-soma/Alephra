@@ -53,6 +53,7 @@
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^6.13.2",
+    "use-stick-to-bottom": "^1.1.1",
     "vaul": "^0.9.0"
   },
   "devDependencies": {

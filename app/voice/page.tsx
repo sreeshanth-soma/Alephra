@@ -4,8 +4,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw, BarChart3, LayoutDashboard } from 'lucide-react';
 import { VoiceChat } from '@/components/VoiceChat';
+import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ui/conversation';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 // TypeScript declarations for browser speech recognition
 declare global {
@@ -22,6 +26,36 @@ interface VoiceMessage {
   type: 'user' | 'assistant';
   audioUrl?: string;
 }
+
+// Message component for conversation UI - matching demo.tsx exactly
+type MessageProps = {
+  from: 'user' | 'bot';
+  children: React.ReactNode;
+};
+
+const Message = ({ from, children }: MessageProps) => (
+  <div
+    className={cn(
+      'my-2 flex',
+      from === 'user' ? 'justify-end' : 'justify-start'
+    )}
+  >
+    <div
+      className={cn(
+        'max-w-md lg:max-w-lg rounded-lg p-3',
+        from === 'user'
+          ? 'bg-blue-500 text-white'
+          : 'bg-gray-200 text-gray-800'
+      )}
+    >
+      {children}
+    </div>
+  </div>
+);
+
+const MessageContent = ({ children }: { children: React.ReactNode }) => (
+  <div>{children}</div>
+);
 
 export default function VoiceAgentPage() {
   const [isRecording, setIsRecording] = useState(false);
@@ -661,24 +695,51 @@ export default function VoiceAgentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black dark:text-white mb-2">Voice Medical Assistant</h1>
-          <p className="text-gray-600 dark:text-gray-400">Speak naturally in any Indian language for medical assistance</p>
+    <div className="h-screen bg-gray-50 dark:bg-black p-2 overflow-hidden relative">
+      <ThemeToggle />
+      <div className="w-full h-full flex flex-col">
+        {/* Header - Compact */}
+        <div className="mb-2 flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-black dark:text-white mb-1">Voice Agent</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Speak naturally in any Indian language for medical assistance</p>
+          </div>
+          
+          {/* Navigation Links */}
+          <div className="flex items-center gap-2 mr-12">
+            <Link href="/analysis">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2 text-xs px-3 py-2 h-8 border border-gray-400 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                <BarChart3 className="h-3 w-3" />
+                Analysis
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2 text-xs px-3 py-2 h-8 border border-gray-400 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                <LayoutDashboard className="h-3 w-3" />
+                Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        {/* Language Selection */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
+        {/* Language Selection - Compact */}
+        <Card className="mb-2 border border-gray-300 dark:border-gray-700">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex-1 mr-4">
-                <h3 className="text-sm font-medium text-black dark:text-white mb-2">Response Language</h3>
+                <h3 className="text-xs font-medium text-black dark:text-white mb-1">Response Language</h3>
                 <select
                   value={selectedLanguage}
                   onChange={(e) => setSelectedLanguage(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 text-black dark:text-white w-full"
+                  className="px-2 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white w-full focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none"
                 >
                   {languages.map((lang) => (
                     <option key={lang.code} value={lang.code}>
@@ -688,11 +749,11 @@ export default function VoiceAgentPage() {
                 </select>
               </div>
               <div className="flex-1">
-                <h3 className="text-sm font-medium text-black dark:text-white mb-2">Voice Speaker</h3>
+                <h3 className="text-xs font-medium text-black dark:text-white mb-1">Voice Speaker</h3>
                 <select
                   value={selectedSpeaker}
                   onChange={(e) => setSelectedSpeaker(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 text-black dark:text-white w-full"
+                  className="px-2 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white w-full focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none"
                 >
                   {sarvamSpeakers.map((speaker) => (
                     <option key={speaker.code} value={speaker.code}>
@@ -701,92 +762,79 @@ export default function VoiceAgentPage() {
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-2 ml-4">
+              <div className="flex items-center gap-1 ml-4">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsMuted(!isMuted)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-1 text-xs px-2 py-1 h-7 border border-gray-400 dark:border-gray-600"
                 >
-                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                  {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
                   {isMuted ? 'Unmute' : 'Mute'}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={clearMessages}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-1 text-xs px-2 py-1 h-7 border border-gray-400 dark:border-gray-600"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  <RotateCcw className="h-3 w-3" />
                   Clear
                 </Button>
               </div>
             </div>
-            
           </CardContent>
         </Card>
 
-        {/* Modern Voice Interface */}
-        <div className="mb-6">
-          <VoiceChat
-            onStart={startRecording}
-            onStop={stopRecording}
-            onStopAudio={stopAudio}
-            onVolumeChange={(volume) => console.log(`Volume: ${volume}%`)}
-            demoMode={false}
-            isRecording={isRecording}
-            isProcessing={isProcessing}
-            isPlaying={isPlaying}
-            className="min-h-[500px]"
-          />
-            </div>
+        {/* Main Content Layout */}
+        <div className="flex gap-4 flex-1 min-h-0">
+          {/* Left Side - Voice Interface (30%) */}
+          <div className="w-[30%] border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+            <VoiceChat
+              onStart={startRecording}
+              onStop={stopRecording}
+              onStopAudio={stopAudio}
+              onVolumeChange={(volume) => console.log(`Volume: ${volume}%`)}
+              demoMode={false}
+              isRecording={isRecording}
+              isProcessing={isProcessing}
+              isPlaying={isPlaying}
+              className="h-full"
+            />
+          </div>
 
-        {/* Current Text Display */}
-        {currentText && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg">You said:</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-black dark:text-white">{currentText}</p>
-            </CardContent>
-          </Card>
-        )}
+          {/* Right Side - Text Display and Chat (70%) */}
+          <div className="w-[70%] flex flex-col gap-2 min-h-0">
+            {/* Current Text Display - Compact */}
+            {currentText && (
+              <Card className="flex-shrink-0 border border-gray-300 dark:border-gray-700">
+                <CardHeader className="pb-1 pt-3">
+                  <CardTitle className="text-sm">You said:</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0 pb-3">
+                  <p className="text-sm text-black dark:text-white">{currentText}</p>
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Messages */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Conversation</CardTitle>
-          </CardHeader>
-          <CardContent className="max-h-96 overflow-y-auto">
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                      message.type === 'user'
-                        ? 'bg-cyan-600 text-white'
-                        : 'bg-gray-100 dark:bg-zinc-800 text-black dark:text-white'
-                    }`}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {message.type === 'user' ? 'You' : 'Assistant'}
-                      </Badge>
-                      <span className="text-xs opacity-70">
-                        {message.timestamp.toLocaleTimeString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            {/* Messages - New Conversation UI */}
+            <div className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden shadow-md min-h-0">
+              <Conversation className="relative w-full h-full">
+                <ConversationContent>
+                  {messages.map((message) => (
+                    <Message 
+                      key={message.id} 
+                      from={message.type === 'user' ? 'user' : 'bot'}
+                    >
+                      <MessageContent>{message.text}</MessageContent>
+                    </Message>
+                  ))}
+                </ConversationContent>
+                <ConversationScrollButton />
+              </Conversation>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

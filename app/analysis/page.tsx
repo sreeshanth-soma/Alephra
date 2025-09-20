@@ -8,6 +8,8 @@ import PrescriptionHistory from "@/components/PrescriptionHistory";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PrescriptionRecord } from "@/lib/prescription-storage";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Info } from "lucide-react";
 import Link from "next/link";
 
 const AnalysisPage = () => {
@@ -35,6 +37,21 @@ const AnalysisPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black relative">
       <ThemeToggle />
+      
+      {/* Note Card - Top Right */}
+      <div className="absolute top-16 right-4 z-20 max-w-sm">
+        <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                You can even add additional information to the summary for better insights
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
       <div className="container mx-auto px-4 py-12 relative z-10">
         <div className="text-center mb-12">
           <h1 className="text-6xl font-bold text-black dark:text-white mb-6 font-playfair">
