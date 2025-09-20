@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+
 "use client";
 
 import { Mic, MicOff, Volume2, VolumeX, Sparkles, Loader2 } from "lucide-react";

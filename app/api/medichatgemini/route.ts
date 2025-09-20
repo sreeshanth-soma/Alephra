@@ -77,8 +77,11 @@ export async function POST(req: Request, res: Response) {
   `;
         }
 
+        console.log("Final Prompt:", finalPrompt);
         const result = await model.generateContent(finalPrompt);
+        console.log("Gemini Response Result:", result);
         const text = result.response.text();
+        console.log("Extracted Text:", text);
 
         return new Response(JSON.stringify({ text, retrievals }), { headers: { "Content-Type": "application/json" } });
         

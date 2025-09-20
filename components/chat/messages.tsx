@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+
 import type { UIMessage as Message } from 'ai';
 import React, { useEffect, useRef } from 'react'
 import MessageBox from './messagebox';
@@ -37,9 +39,7 @@ const Messages = ({ messages, isLoading, data }: Props) => {
         // Extract content from parts array or fallback to content string
         let messageContent = '';
         if (m.parts && m.parts.length > 0) {
-          messageContent = m.parts.map(part => part.text || '').join('');
-        } else if (m.content) {
-          messageContent = m.content;
+          messageContent = m.parts.map(part => ('text' in part && typeof part.text === 'string') ? part.text : '').join('');
         }
         
         return <MessageBox key={index} role={m.role} content={messageContent} />

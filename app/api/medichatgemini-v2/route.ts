@@ -1,7 +1,7 @@
 import { queryPineconeVectorStore } from "@/utils";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { generateText, Message, StreamData, streamText } from "ai";
+import { createTextStreamResponse, generateText, UIMessage as Message, streamText } from "ai";
 import { indexName, namespace } from "@/app/config";
 
 // Allow streaming responses up to 60 seconds
@@ -14,29 +14,30 @@ const pinecone = new Pinecone({
 
 const google = createGoogleGenerativeAI({
     baseURL: 'https://generativelanguage.googleapis.com/v1beta',
-    apiKey: process.env.GEMINI_API_KEY
+    apiKey: process.env.GEMINI_API_KEY,
 });
 
 // Using gemini-1.5-pro-latest for enhanced capabilities
-const model = google('models/gemini-1.5-flash', {
-    safetySettings: [
-        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-    ],
-});
+const model = google('models/gemini-1.5-flash');
 
 export async function POST(req: Request, res: Response) {
-    const reqBody = await req.json();
-    console.log(reqBody);
+    try {
+        const reqBody = await req.json();
+        console.log(reqBody);
 
-    const messages: Message[] = reqBody.messages;
-    const userQuestion = `${messages[messages.length - 1].content}`;
+        const messages: Message[] = reqBody.messages;
+        let userQuestion = '';
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage && lastMessage.parts && lastMessage.parts.length > 0) {
+            userQuestion = lastMessage.parts.map(part => ('text' in part && typeof part.text === 'string') ? part.text : '').join('');
+        }
 
-    const reportData: string = reqBody.data.reportData;
-    const query = `Represent this for searching relevant passages: patient medical report says: \n${reportData}. \n\n${userQuestion}`;
+        const reportData: string = reqBody.data.reportData;
+        const query = `Represent this for searching relevant passages: patient medical report says: \n${reportData}. \n\n${userQuestion}`;
 
-    const retrievals = await queryPineconeVectorStore(pinecone, indexName, namespace, query);
+        const retrievals = await queryPineconeVectorStore(pinecone, indexName, namespace, query);
 
-    const finalPrompt = `Here is a summary of a patient's clinical report, and a user query. Some generic clinical findings are also provided that may or may not be relevant for the report.
+        const finalPrompt = `Here is a summary of a patient's clinical report, and a user query. Some generic clinical findings are also provided that may or may not be relevant for the report.
   Go through the clinical report and answer the user query.
   Ensure the response is factually accurate, and demonstrates a thorough understanding of the query topic and the clinical report.
   Before answering you may enrich your knowledge by going through the provided clinical findings. 
@@ -56,18 +57,14 @@ export async function POST(req: Request, res: Response) {
   \n\n**Answer:**
   `;
 
-    const data = new StreamData();
-    data.append({
-        retrievals: retrievals
-    });
+        const result = await streamText({
+            model: model,
+            prompt: finalPrompt,
+        });
 
-    const result = await streamText({
-        model: model,
-        prompt: finalPrompt,
-        onFinish() {
-            data.close();
-        }
-    });
-
-    return result.toDataStreamResponse({ data });
+        return createTextStreamResponse({ textStream: result.textStream });
+    } catch (error) {
+        console.error("Error in API route:", error);
+        return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+    }
 }

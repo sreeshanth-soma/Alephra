@@ -43,10 +43,9 @@ export async function POST(request: NextRequest) {
     const endTime = new Date(reminderDate.getTime() + 15 * 60000); // 15 minutes duration
 
     // Use the timezone sent from the client, or fallback to a default
-    const userTimeZone = timeZone || 'America/New_York';
+    const userTimeZone = timeZone || "America/New_York";
     
-    // Debug logging
-    console.log('Reminder creation debug:', {
+    console.log("Reminder creation debug:", {
       reminderTime,
       userTimeZone,
       reminderDate: reminderDate.toISOString(),
@@ -67,11 +66,11 @@ export async function POST(request: NextRequest) {
       reminders: {
         useDefault: false,
         overrides: [
-          { method: "popup", minutes: 0 }, // Immediate notification
-          { method: "email", minutes: 15 }, // 15 minutes before
+          { method: "popup", minutes: 0 },
+          { method: "email", minutes: 15 },
         ],
       },
-      colorId: "11", // Red color for medical reminders
+      colorId: "11",
     };
 
     const response = await calendar.events.insert({
@@ -88,12 +87,15 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("Google Calendar sync error:", error);
-    
-    // Handle specific Google API errors
-    if (error.code === 401) {
-      return NextResponse.json({ 
-        error: "Google authentication expired. Please sign in again." 
-      }, { status: 401 });
+
+    // ✅ Type-safe narrowing
+    if (typeof error === "object" && error !== null && "code" in error) {
+      const err = error as { code?: number };
+      if (err.code === 401) {
+        return NextResponse.json({ 
+          error: "Google authentication expired. Please sign in again." 
+        }, { status: 401 });
+      }
     }
     
     return NextResponse.json({ 

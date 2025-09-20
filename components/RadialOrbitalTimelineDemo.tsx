@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+
 "use client";
 
 import { Calendar, Code, FileText, User, Clock, Brain, Mic, Database } from "lucide-react";
