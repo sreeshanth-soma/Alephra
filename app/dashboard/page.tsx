@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Heart, Activity, Calendar, Filter, CalendarDays } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Noise } from "@/components/ui/noise";
+import { useSession } from "next-auth/react";
 // Removed dropdown menu in Appointments to keep a single add button
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string; bp?: { systolic: number; diastolic: number }; weight?: number; temperature?: number };
@@ -339,7 +340,7 @@ const HealthMetricsChart: React.FC = () => {
 
       {/* Add Data Form */}
       {showAddForm && (
-        <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-zinc-800">
+        <div className="p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800">
           <div className="text-sm font-medium text-black dark:text-white mb-3">Add New Health Data</div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
@@ -489,7 +490,7 @@ const HealthMetricsChart: React.FC = () => {
 
 const MetricCard = ({ label, value, unit, accent }: { label: string; value: string; unit?: string; accent?: string }) => (
   <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }} whileHover={{ y: -2 }}>
-    <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition">
+    <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow-sm hover:shadow-md transition">
       <CardContent className="p-4">
         <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</div>
         <div className="text-2xl font-semibold text-black dark:text-white">
@@ -506,6 +507,9 @@ const MetricCard = ({ label, value, unit, accent }: { label: string; value: stri
 );
 
 export default function DashboardPage() {
+  // Session for authentication
+  const { data: session, status } = useSession();
+  
   type Reminder = { id: string; text: string; time?: string; done: boolean };
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [newReminder, setNewReminder] = useState("");
@@ -544,6 +548,10 @@ export default function DashboardPage() {
   const [expandedCategories, setExpandedCategories] = useState<boolean[]>(new Array(medicineCategories.length).fill(false));
   // Flag to prevent saving empty data on initial load
   const [isInitialized, setIsInitialized] = useState(false);
+  // Show all labs or just recent ones
+  const [showAllLabs, setShowAllLabs] = useState(false);
+  // Lab chart filter
+  const [selectedLabType, setSelectedLabType] = useState<'all' | 'HDL' | 'LDL' | 'Triglycerides' | 'Total Cholesterol'>('all');
 
   useEffect(() => {
     // Clear any existing default/seeded data first
@@ -605,41 +613,61 @@ export default function DashboardPage() {
       setLabData([]);
     }
     
+    // Appointments
+    try {
+      const rawAppointments = localStorage.getItem("medscan.appointments");
+      if (rawAppointments) {
+        setAppointments(JSON.parse(rawAppointments));
+      } else {
+        setAppointments([]);
+      }
+    } catch { 
+      setAppointments([]);
+    }
+    
     // Mark as initialized after loading
     setIsInitialized(true);
   }, []);
 
   useEffect(() => {
     if (isInitialized) {
-      try {
-        localStorage.setItem("medscan.reminders", JSON.stringify(reminders));
-      } catch {}
+    try {
+      localStorage.setItem("medscan.reminders", JSON.stringify(reminders));
+    } catch {}
     }
   }, [reminders, isInitialized]);
 
   useEffect(() => {
     if (isInitialized) {
-      try {
-        localStorage.setItem("medscan.vitals", JSON.stringify(vitals));
-      } catch {}
+    try {
+      localStorage.setItem("medscan.vitals", JSON.stringify(vitals));
+    } catch {}
     }
   }, [vitals, isInitialized]);
 
   useEffect(() => {
     if (isInitialized) {
-      try {
-        localStorage.setItem("medscan.cart", JSON.stringify(cartItems));
-      } catch {}
+    try {
+      localStorage.setItem("medscan.cart", JSON.stringify(cartItems));
+    } catch {}
     }
   }, [cartItems, isInitialized]);
 
   useEffect(() => {
     if (isInitialized) {
-      try {
-        localStorage.setItem("medscan.labs", JSON.stringify(labData));
-      } catch {}
+    try {
+      localStorage.setItem("medscan.labs", JSON.stringify(labData));
+    } catch {}
     }
   }, [labData, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) {
+      try {
+        localStorage.setItem("medscan.appointments", JSON.stringify(appointments));
+      } catch {}
+    }
+  }, [appointments, isInitialized]);
 
   const addReminder = async () => {
     if (!newReminder.trim()) return;
@@ -737,10 +765,15 @@ export default function DashboardPage() {
     setAppointments(prev => [appointment, ...prev]);
     
     // Show immediate feedback
-    setAppointmentsStatus("Adding appointment to Google Calendar...");
+    if (session?.user) {
+      setAppointmentsStatus("Adding appointment to Google Calendar...");
+    } else {
+      setAppointmentsStatus("Appointment saved locally. Sign in to sync with Google Calendar.");
+    }
     
     // Try to sync with Google Calendar if user is signed in
-    try {
+    if (session?.user) {
+      try {
       // Create a datetime for the appointment
       const appointmentDateTime = new Date(`${apptDate}T${apptTime}`);
       const endDateTime = new Date(appointmentDateTime.getTime() + 30 * 60000); // 30 minutes duration
@@ -763,11 +796,16 @@ export default function DashboardPage() {
       if (response.ok) {
         setAppointmentsStatus(`✅ Appointment added to Google Calendar! Check your calendar app.`);
       } else {
-        setAppointmentsStatus(`⚠️ Appointment saved locally. Calendar sync failed: ${result.error || 'Unknown error'}`);
+        if (result.error?.includes("Unauthorized") || result.error?.includes("No Google access token")) {
+          setAppointmentsStatus(`⚠️ Please sign in with Google to sync appointments to your calendar.`);
+        } else {
+          setAppointmentsStatus(`⚠️ Appointment saved locally. Calendar sync failed: ${result.error || 'Unknown error'}`);
+        }
       }
-    } catch (error) {
-      console.error('Appointment calendar sync error:', error);
-      setAppointmentsStatus(`⚠️ Appointment saved locally. Calendar sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } catch (error) {
+        console.error('Appointment calendar sync error:', error);
+        setAppointmentsStatus(`⚠️ Appointment saved locally. Calendar sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
     
     // Clear the status message after 5 seconds
@@ -993,6 +1031,20 @@ export default function DashboardPage() {
     }
   };
 
+  // Process lab data for chart
+  const chartData = labData.reduce((acc, lab) => {
+    const existingDate = acc.find(item => item.date === lab.date);
+    if (existingDate) {
+      existingDate[lab.name] = lab.value;
+    } else {
+      acc.push({
+        date: lab.date,
+        [lab.name]: lab.value
+      });
+    }
+    return acc;
+  }, [] as any[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
   const addLabEntry = () => {
     console.log("Adding lab entry:", { newLabName, newLabValue, newLabDate, newLabUnit });
     
@@ -1096,7 +1148,7 @@ export default function DashboardPage() {
       {/* Ambient gradient glows */}
       <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl z-5" />
       <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl z-5" />
-      <div className="container mx-auto px-4 py-10 relative z-10">
+      <div className="w-full px-6 py-10 relative z-10">
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -1143,7 +1195,7 @@ export default function DashboardPage() {
         </div>
         {/* Hero banner */}
         <div className="mb-8">
-          <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-gradient-to-r from-cyan-50 to-emerald-50 dark:from-zinc-900 dark:to-zinc-900">
+          <div className="relative overflow-hidden rounded-2xl border border-gray-300 dark:border-gray-700 bg-gradient-to-r from-cyan-50 to-emerald-50 dark:from-zinc-900 dark:to-zinc-900">
             <div className="px-6 py-6 md:px-8 md:py-8">
               <div className="text-sm text-cyan-700 dark:text-cyan-300 mb-1">Welcome</div>
               <div className="text-2xl md:text-3xl font-semibold text-black dark:text-white">Your health at a glance</div>
@@ -1153,7 +1205,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Upload Report", classes: "bg-black text-white dark:bg-white dark:text-black", href: "/report" },
             { label: "Start AI Chat", classes: "bg-cyan-600 text-white", href: "/analysis" },
@@ -1161,7 +1213,7 @@ export default function DashboardPage() {
             { label: "Go to Analysis", classes: "bg-slate-800 text-white", href: "/analysis" },
           ].map((b, i) => (
             <a key={i} href={b.href} className="block">
-              <motion.button className={`w-full h-12 rounded-xl font-medium shadow px-4 ${b.classes}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <motion.button className={`w-full h-14 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 ${b.classes}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 {b.label}
               </motion.button>
             </a>
@@ -1170,7 +1222,7 @@ export default function DashboardPage() {
 
         {/* Medical Reminders */}
         <div className="mb-8">
-          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-200 dark:border-gray-800 shadow">
+          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-sm font-medium text-black dark:text-white">Medical Reminders</div>
@@ -1181,7 +1233,7 @@ export default function DashboardPage() {
                   value={newReminder}
                   onChange={e => setNewReminder(e.target.value)}
                   placeholder="e.g., Take Zoclar 500"
-                  className="md:col-span-3 h-11 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 px-3 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="md:col-span-3 h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-3 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                 />
                 <input
                   type="time"
@@ -1189,7 +1241,7 @@ export default function DashboardPage() {
                   onChange={e => setNewTime(e.target.value)}
                   placeholder="Time"
                   title="Add time to sync with Google Calendar"
-                  className="md:col-span-1 h-11 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 px-3 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="md:col-span-1 h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-3 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                 />
                 <button onClick={addReminder} className="h-11 rounded-lg bg-cyan-600 text-white text-sm font-medium hover:opacity-90 transition">📅 Add</button>
               </div>
@@ -1199,7 +1251,7 @@ export default function DashboardPage() {
                   <div className="text-sm text-gray-500">No reminders yet. Add your first one above.</div>
                 )}
                 {reminders.map(r => (
-                  <div key={r.id} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-800 p-3">
+                  <div key={r.id} className="flex items-center justify-between rounded-lg border border-gray-300 dark:border-gray-700 p-3">
                     <div className="flex items-center gap-3">
                       <input type="checkbox" checked={r.done} onChange={() => toggleReminder(r.id)} className="h-4 w-4" />
                       <div className={`text-sm ${r.done ? 'line-through text-gray-400' : 'text-black dark:text-white'}`}>{r.text}</div>
@@ -1216,12 +1268,16 @@ export default function DashboardPage() {
 
         {/* Appointments */}
         <div className="mb-8">
-          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-200 dark:border-gray-800 shadow">
+          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-sm font-medium text-black dark:text-white">Appointments</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  📅 Syncs with Google Calendar
+                  {session?.user ? (
+                    <span className="text-green-600 dark:text-green-400">✅ Connected to Google Calendar</span>
+                  ) : (
+                    <span className="text-orange-600 dark:text-orange-400">⚠️ Sign in to sync with Google Calendar</span>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col md:flex-row items-start gap-6">
@@ -1232,19 +1288,19 @@ export default function DashboardPage() {
                       value={apptTitle}
                       onChange={e => setApptTitle(e.target.value)}
                       placeholder="Title (e.g., Doctor Visit)"
-                      className="md:col-span-2 h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 px-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                      className="md:col-span-2 h-10 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                     />
                     <input
                       type="date"
                       value={apptDate}
                       onChange={e => setApptDate(e.target.value)}
-                      className="h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 px-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                      className="h-10 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                     />
                     <input
                       type="time"
                       value={apptTime}
                       onChange={e => setApptTime(e.target.value)}
-                      className="h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 px-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                      className="h-10 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                     />
                     <button
                       onClick={addAppointment}
@@ -1268,7 +1324,7 @@ export default function DashboardPage() {
                       <div className="text-xs text-gray-500 dark:text-gray-400 italic">No appointments scheduled</div>
                     ) : (
                       appointments.map((appointment) => (
-                        <div key={appointment.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div key={appointment.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
                           <div className="flex-1">
                             <div className="text-sm font-medium text-black dark:text-white">{appointment.title}</div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -1291,7 +1347,7 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
           <MetricCard 
             label="Heart Rate" 
             value={vitals.length > 0 ? vitals[vitals.length - 1].hr.toString() : "86"} 
@@ -1315,11 +1371,35 @@ export default function DashboardPage() {
             unit="%" 
             accent={getHeartScore() >= 90 ? "Excellent" : getHeartScore() >= 80 ? "Good" : getHeartScore() >= 70 ? "Fair" : "Needs Attention"} 
           />
+          <MetricCard 
+            label="Weight" 
+            value={(() => {
+              const latestVital = vitals[vitals.length - 1];
+              return latestVital?.weight ? latestVital.weight.toString() : "70";
+            })()} 
+            unit="kg" 
+            accent="Normal" 
+          />
+          <MetricCard 
+            label="Temperature" 
+            value={(() => {
+              const latestVital = vitals[vitals.length - 1];
+              return latestVital?.temperature ? latestVital.temperature.toString() : "36.5";
+            })()} 
+            unit="°C" 
+            accent={(() => {
+              const latestVital = vitals[vitals.length - 1];
+              if (!latestVital?.temperature) return "Normal";
+              if (latestVital.temperature > 37.5) return "Fever";
+              if (latestVital.temperature < 36) return "Low";
+              return "Normal";
+            })()} 
+          />
         </div>
 
         {/* Vitals Input Form */}
         <div className="mb-8">
-          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-200 dark:border-gray-800 shadow">
+          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-lg font-semibold text-black dark:text-white">Record Vitals</div>
@@ -1367,7 +1447,7 @@ export default function DashboardPage() {
                           yesterday.setDate(yesterday.getDate() - 1);
                           setNewHrDate(yesterday.toISOString().split('T')[0]);
                         }}
-                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-2 py-1 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         Yesterday
                       </button>
@@ -1487,33 +1567,33 @@ export default function DashboardPage() {
 
         {/* Lipid Profile Snapshot */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-gray-800">
+          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                     <Heart className="w-5 h-5 text-white" />
-                  </div>
+                </div>
                   <div>
                     <h3 className="text-lg font-semibold text-black dark:text-white">Lipid Profile Snapshot</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Latest cholesterol and triglyceride levels</p>
-                  </div>
+              </div>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Last updated: {labData.length > 0 ? new Date(labData[0].date).toLocaleDateString() : 'No data'}
-                </div>
               </div>
-              
+                  </div>
+                  
               {/* Lipid Profile Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {['HDL', 'LDL', 'Triglycerides', 'Total Cholesterol'].map((lipidType) => {
                   const lipidData = labData.find(lab => lab.name === lipidType);
                   if (!lipidData) {
                     return (
-                      <div key={lipidType} className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800">
+                      <div key={lipidType} className="p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800">
                         <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{lipidType}</div>
                         <div className="text-xs text-gray-400">No data</div>
-                      </div>
+                    </div>
                     );
                   }
                   
@@ -1523,15 +1603,15 @@ export default function DashboardPage() {
                   return (
                     <div key={lipidType} className={`p-4 rounded-lg border-2 transition-all hover:shadow-md ${
                       isNormal 
-                        ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' 
-                        : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
+                        ? 'border-gray-300 dark:border-gray-700 bg-green-50 dark:bg-green-900/20' 
+                        : 'border-gray-300 dark:border-gray-700 bg-red-50 dark:bg-red-900/20'
                     }`}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="text-sm font-semibold text-black dark:text-white">{lipidType}</div>
                         <div className={`w-3 h-3 rounded-full ${
                           isNormal ? 'bg-green-500' : 'bg-red-500'
                         }`}></div>
-                      </div>
+                        </div>
                       <div className="text-2xl font-bold text-black dark:text-white mb-1">
                         {lipidData.value} <span className="text-sm text-gray-500">{lipidData.unit}</span>
                       </div>
@@ -1550,8 +1630,8 @@ export default function DashboardPage() {
               
               {/* Add Data Button */}
               <div className="flex justify-center mt-6">
-                <button
-                  onClick={() => {
+                          <button
+                            onClick={() => {
                     setShowLabForm(!showLabForm);
                     if (!showLabForm) {
                       setNewLabDate(new Date().toISOString().split('T')[0]);
@@ -1560,64 +1640,72 @@ export default function DashboardPage() {
                   className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   + Add Data
-                </button>
-              </div>
+                          </button>
+                        </div>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-gray-800 lg:col-span-2">
+                    </div>
+                    
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700 xl:col-span-3">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-sm font-medium text-black dark:text-white">Heart Rate & SpO2</div>
                 <div className="flex items-center gap-2">
                   <a href="/dashboard/vitals" className="text-xs text-cyan-600">View details →</a>
-                </div>
-              </div>
-              
+                    </div>
+                  </div>
+                  
               {/* Advanced Health Metrics Chart */}
               <HealthMetricsChart />
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-gray-800">
+          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <div className="text-sm font-medium text-black dark:text-white">All Lab Results</div>
+                <div className="text-sm font-medium text-black dark:text-white">Lab Results</div>
                 <div className="flex items-center gap-2">
+                  {labData.length > 3 && (
+                      <button
+                      onClick={() => setShowAllLabs(!showAllLabs)}
+                      className="text-xs text-cyan-600 hover:text-cyan-700 font-medium"
+                    >
+                      {showAllLabs ? 'Show Less' : `View All (${labData.length})`}
+                      </button>
+                  )}
                   <a href="/dashboard/labs" className="text-xs text-cyan-600">View details →</a>
-                </div>
-              </div>
+                    </div>
+                  </div>
               
               
-              {/* Lab Values with Enhanced Status Indicators */}
-              <div className="space-y-3 mb-6">
-                {labData.slice(0, 6).map((lab) => {
+              {/* Lab Values with Enhanced Status Indicators - Show only 3 by default */}
+              <div className="space-y-2 mb-4">
+                {labData.slice(0, showAllLabs ? labData.length : 3).map((lab) => {
                   const status = getLabStatus(lab);
                   const isNormal = status === "normal";
                   const isLipid = ['HDL', 'LDL', 'Triglycerides', 'Total Cholesterol'].includes(lab.name);
                   
                   return (
-                    <div key={lab.id} className={`group flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
+                    <div key={lab.id} className={`group flex items-center justify-between p-3 rounded-lg border transition-all duration-200 hover:shadow-sm ${
                       isNormal 
-                        ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30' 
-                        : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30'
-                    } ${isLipid ? 'ring-2 ring-blue-100 dark:ring-blue-900/30' : ''}`}>
+                        ? 'border-gray-300 dark:border-gray-700 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30' 
+                        : 'border-gray-300 dark:border-gray-700 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30'
+                    } ${isLipid ? 'ring-1 ring-blue-100 dark:ring-blue-900/30' : ''}`}>
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-1.5">
+                            <div className={`w-2 h-2 rounded-full ${
                               isNormal ? 'bg-green-500' : 'bg-red-500'
                             }`}></div>
-                            <div className="text-sm font-semibold text-black dark:text-white">{lab.name}</div>
+                            <div className="text-xs font-semibold text-black dark:text-white">{lab.name}</div>
                             {isLipid && (
-                              <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                              <div className="px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                                 Lipid
                               </div>
                             )}
                           </div>
-                          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                             isNormal 
                               ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
                               : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
@@ -1628,16 +1716,15 @@ export default function DashboardPage() {
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {new Date(lab.date).toLocaleDateString('en-US', {
                             weekday: 'short',
-                            year: 'numeric',
                             month: 'short',
                             day: 'numeric'
                           })} • {lab.category}
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <div className="text-lg font-bold text-black dark:text-white mb-1">
-                            {lab.value} <span className="text-sm text-gray-500 font-normal">{lab.unit}</span>
+                          <div className="text-sm font-bold text-black dark:text-white">
+                            {lab.value} <span className="text-xs text-gray-500 font-normal">{lab.unit}</span>
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             Range: {lab.normalRange.min}-{lab.normalRange.max}
@@ -1645,10 +1732,10 @@ export default function DashboardPage() {
                         </div>
                         <button
                           onClick={() => removeLabEntry(lab.id)}
-                          className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-lg font-bold p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
+                          className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all duration-200"
                           title="Remove this lab result"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
@@ -1656,6 +1743,20 @@ export default function DashboardPage() {
                     </div>
                   );
                 })}
+                
+                {/* More results indicator */}
+                {labData.length > 3 && !showAllLabs && (
+                  <div className="text-center py-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors cursor-pointer"
+                       onClick={() => setShowAllLabs(true)}>
+                    <div className="text-gray-500 dark:text-gray-400 text-xs">
+                      +{labData.length - 3} more results
+                    </div>
+                    <div className="text-cyan-600 hover:text-cyan-700 text-xs font-medium mt-0.5">
+                      Click to view all
+                    </div>
+                  </div>
+                )}
+                
                 {labData.length === 0 && (
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
@@ -1672,57 +1773,123 @@ export default function DashboardPage() {
               {/* Enhanced Lab Results Chart */}
               <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-sm font-semibold text-black dark:text-white">Lab Results Overview</h4>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {labData.length} results
+                  <h4 className="text-sm font-semibold text-black dark:text-white">Lab Trends</h4>
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {labData.length} results
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setSelectedLabType('all')}
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          selectedLabType === 'all'
+                            ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300'
+                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                        }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => setSelectedLabType('HDL')}
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          selectedLabType === 'HDL'
+                            ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300'
+                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                        }`}
+                      >
+                        HDL
+                      </button>
+                      <button
+                        onClick={() => setSelectedLabType('LDL')}
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          selectedLabType === 'LDL'
+                            ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300'
+                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                        }`}
+                      >
+                        LDL
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={labData.slice(0, 6)} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-zinc-700" />
-                      <XAxis 
-                        dataKey="name" 
-                        stroke="#9ca3af" 
-                        tick={{ fontSize: 10 }}
-                        axisLine={false}
-                        tickLine={false}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis 
-                        stroke="#9ca3af" 
-                        tick={{ fontSize: 10 }}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'rgba(0,0,0,0.9)', 
-                          border: 'none', 
-                          borderRadius: '12px',
-                          color: 'white',
+                    <XAxis 
+                        dataKey="date" 
+                      stroke="#9ca3af" 
+                      tick={{ fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    />
+                    <YAxis 
+                      stroke="#9ca3af" 
+                      tick={{ fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                          backgroundColor: 'white', 
+                          border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                           fontSize: '12px',
-                          padding: '12px'
+                          padding: '8px'
                         }}
-                        formatter={(value, name) => [
-                          `${value} ${labData.find(lab => lab.name === name)?.unit || ''}`,
-                          name
-                        ]}
-                        labelFormatter={(label) => `Lab: ${label}`}
+                        labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
                       />
-                      <Bar 
-                        dataKey="value" 
-                        fill="#3b82f6" 
-                        radius={[6, 6, 0, 0]}
-                        className="hover:opacity-80 transition-opacity"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                      {selectedLabType === 'all' || selectedLabType === 'HDL' ? (
+                        <Line 
+                          type="monotone" 
+                          dataKey="HDL" 
+                          stroke="#3b82f6" 
+                          strokeWidth={2}
+                          dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                        />
+                      ) : null}
+                      {selectedLabType === 'all' || selectedLabType === 'LDL' ? (
+                        <Line 
+                          type="monotone" 
+                          dataKey="LDL" 
+                          stroke="#ef4444" 
+                          strokeWidth={2}
+                          dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: '#ef4444', strokeWidth: 2 }}
+                        />
+                      ) : null}
+                      {selectedLabType === 'all' || selectedLabType === 'Triglycerides' ? (
+                        <Line 
+                          type="monotone" 
+                          dataKey="Triglycerides" 
+                          stroke="#10b981" 
+                          strokeWidth={2}
+                          dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
+                        />
+                      ) : null}
+                      {selectedLabType === 'all' || selectedLabType === 'Total Cholesterol' ? (
+                        <Line 
+                          type="monotone" 
+                          dataKey="Total Cholesterol" 
+                          stroke="#8b5cf6" 
+                          strokeWidth={2}
+                          dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: '#8b5cf6', strokeWidth: 2 }}
+                        />
+                      ) : null}
+                    </LineChart>
+                </ResponsiveContainer>
                 </div>
                 <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-                  Hover over bars to see detailed values
+                  Hover over lines to see detailed values • Click filter buttons to view specific lab types
                 </div>
               </div>
             </CardContent>
@@ -1731,7 +1898,7 @@ export default function DashboardPage() {
 
         {/* Medicine Categories Section */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-gray-800">
+          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="text-lg font-semibold text-black dark:text-white">Medicine Categories</div>
@@ -1751,7 +1918,7 @@ export default function DashboardPage() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                   <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
                     {/* Modal Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
+                    <div className="flex items-center justify-between p-6 border-b border-gray-300 dark:border-gray-700">
                       <h2 className="text-xl font-semibold text-black dark:text-white">Selected Medicines</h2>
                       <button 
                         onClick={() => setShowCart(false)}
@@ -1773,7 +1940,7 @@ export default function DashboardPage() {
                       ) : (
                         <div className="space-y-4">
                           {cartItems.map((item, index) => (
-                            <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-zinc-800">
+                            <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                   <div className="text-sm font-semibold text-black dark:text-white">{item.name}</div>
@@ -1811,7 +1978,7 @@ export default function DashboardPage() {
 
                     {/* Price Summary */}
                     {cartItems.length > 0 && (
-                      <div className="border-t border-gray-200 dark:border-gray-800 p-6">
+                      <div className="border-t border-gray-300 dark:border-gray-700 p-6">
                         <div className="space-y-3">
                           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                             <span>Total ({cartItems.length} items)</span>
@@ -1846,7 +2013,7 @@ export default function DashboardPage() {
               {/* Medicine Categories Dropdown */}
               <div className="space-y-4">
                 {medicineCategories.map((category, categoryIndex) => (
-                  <div key={categoryIndex} className="border border-gray-200 dark:border-gray-800 rounded-lg">
+                  <div key={categoryIndex} className="border border-gray-300 dark:border-gray-700 rounded-lg">
                     <button
                       onClick={() => {
                         const newExpanded = [...expandedCategories];
@@ -1867,10 +2034,10 @@ export default function DashboardPage() {
                     </button>
                     
                     {expandedCategories[categoryIndex] && (
-                      <div className="border-t border-gray-200 dark:border-gray-800 p-4 bg-gray-50 dark:bg-zinc-800">
+                      <div className="border-t border-gray-300 dark:border-gray-700 p-4 bg-gray-50 dark:bg-zinc-800">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                           {category.medicines.map((medicine, medicineIndex) => (
-                            <div key={medicineIndex} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900">
+                            <div key={medicineIndex} className="flex items-center justify-between p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900">
                               <div className="flex-1">
                                 <div className="text-sm font-medium text-black dark:text-white">{medicine.name}</div>
                                 <div className="text-xs text-gray-500">{medicine.dose} • {medicine.frequency}</div>
@@ -1896,7 +2063,7 @@ export default function DashboardPage() {
 
 
         {/* Additional functional placeholders (UI only, no handlers) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
          
 
           
@@ -1908,7 +2075,7 @@ export default function DashboardPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-between p-6 border-b border-gray-300 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1945,7 +2112,7 @@ export default function DashboardPage() {
                     id="modal-lab-name"
                     value={newLabName}
                     onChange={(e) => setNewLabName(e.target.value)}
-                    className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-black dark:text-white px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   >
                     <option value="">Select lab type</option>
                     <option value="HDL">HDL Cholesterol</option>
@@ -2010,7 +2177,7 @@ export default function DashboardPage() {
                           yesterday.setDate(yesterday.getDate() - 1);
                           setNewLabDate(yesterday.toISOString().split('T')[0]);
                         }}
-                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         Yesterday
                       </button>
@@ -2021,7 +2188,7 @@ export default function DashboardPage() {
                           lastWeek.setDate(lastWeek.getDate() - 7);
                           setNewLabDate(lastWeek.toISOString().split('T')[0]);
                         }}
-                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         Last Week
                       </button>
@@ -2035,7 +2202,7 @@ export default function DashboardPage() {
                     id="modal-lab-unit"
                     value={newLabUnit}
                     onChange={(e) => setNewLabUnit(e.target.value)}
-                    className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-black dark:text-white px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   >
                     <option value="mg/dL">mg/dL</option>
                     <option value="mmol/L">mmol/L</option>
@@ -2047,7 +2214,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-300 dark:border-gray-700">
               <button
                 onClick={() => {
                   setShowLabForm(false);

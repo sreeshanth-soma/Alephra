@@ -35,7 +35,7 @@ export default function TestAuth() {
                   </h3>
                   <div className="space-y-2 text-sm">
                     <div><strong>Name:</strong> {session.user?.name}</div>
-                    <div><strong>Email:</strong> {session.user?.email}</div>
+w                    <div><strong>Email:</strong> {session.user?.email}</div>
                     <div><strong>Image:</strong> {session.user?.image}</div>
                     {/* <div><strong>ID:</strong> {session.user?.id}</div> */}
                   </div>

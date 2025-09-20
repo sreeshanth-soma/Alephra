@@ -20,12 +20,12 @@ export function LampDemo() {
           initial={{ color: "#94a3b8" }}
           whileInView={{ color: "#f1f5f9", textShadow: "0 0 8px rgba(255,255,255,0.12)" }}
           transition={{ delay: 0.5, duration: 0.8, ease: "easeInOut" }}
-          className="block"
+          className="block tracking-tight"
         >
-          Med Scan
+          MedScan
         </motion.span>
         <br />
-        <span className="block text-base md:text-2xl mt-2 text-slate-300">
+        <span className="block text-lg md:text-3xl mt-4 text-slate-200 font-medium tracking-wide">
           Where care meets technology
         </span>
         <motion.span 
@@ -36,7 +36,7 @@ export function LampDemo() {
             duration: 0.6,
             ease: "easeInOut",
           }}
-          className="block text-lg md:text-3xl lg:text-4xl mt-6 text-slate-300 font-medium tracking-wide"
+          className="block text-lg md:text-3xl lg:text-4xl mt-8 text-slate-300 font-medium tracking-wide leading-relaxed"
         >
           RAG-driven healthcare intelligence with a conversational voice interface
         </motion.span>
