@@ -104,7 +104,7 @@ const Navbar = () => {
               );
             })}
             <div className="ml-4 pl-4 border-l border-gray-200 dark:border-gray-700 flex items-center space-x-3">
-              <ThemeToggle />
+              <ThemeToggle className="relative" />
               {session ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
@@ -140,8 +140,8 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-3">
-            <ThemeToggle />
+          <div className="md:hidden flex items-center gap-4">
+            <ThemeToggle className="relative" />
             <button
               onClick={toggleMenu}
               className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-300 shadow-lg"
@@ -183,7 +183,7 @@ const Navbar = () => {
                       as={Link}
                       href={item.href}
                       onClick={closeMenu}
-                      className={`dark:bg-black bg-white text-black dark:text-white flex items-center space-x-4 p-4 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-lg ${
+                      className={`dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-3 py-2 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-lg ${
                         isActive 
                           ? 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700' 
                           : 'hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-700'

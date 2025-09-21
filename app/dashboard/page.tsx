@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, Activity, Calendar, Filter, CalendarDays } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Noise } from "@/components/ui/noise";
 import { useSession } from "next-auth/react";
 // Removed dropdown menu in Appointments to keep a single add button
@@ -1173,7 +1172,6 @@ export default function DashboardPage() {
                   Voice Assistant
                 </Button>
               </Link>
-              <ThemeToggle />
               <button
                 onClick={() => {
                   localStorage.removeItem("medscan.vitals");

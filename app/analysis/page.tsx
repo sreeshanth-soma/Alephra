@@ -7,7 +7,6 @@ import { useToast } from "@/components/ui/use-toast"
 import ReportComponent from "@/components/ReportComponent";
 import ChatComponent from "@/components/chat/chatcomponent";
 import PrescriptionHistory from "@/components/PrescriptionHistory";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { PrescriptionRecord } from "@/lib/prescription-storage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -53,10 +52,8 @@ const AnalysisPage = () => {
       {/* Overlay for better contrast */}
       <div className="absolute inset-0 z-5 bg-black/10" />
       
-      <ThemeToggle />
-      
       {/* Note Card - Top Right */}
-      <div className="absolute top-16 right-4 z-20 max-w-sm">
+      <div className="absolute top-24 right-4 z-20 max-w-sm md:top-20">
         <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
@@ -69,7 +66,7 @@ const AnalysisPage = () => {
         </Card>
       </div>
       
-      <div className="container mx-auto px-4 py-12 relative z-10">
+      <div className="container mx-auto px-4 pt-32 pb-12 relative z-10">
         <div className="text-center mb-12">
           <h1 className="text-6xl font-bold text-black dark:text-white mb-6 font-playfair">
             MedScan
