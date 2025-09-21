@@ -16,7 +16,7 @@ export default function SignInPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -72,7 +72,6 @@ export default function SignInPageContent() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Google Sign-In Button */}
-            {/*
             <Button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
@@ -91,7 +90,6 @@ export default function SignInPageContent() {
                 </span>
               </div>
             </div>
-            */}
 
             <Button
               onClick={() => router.push(callbackUrl)}

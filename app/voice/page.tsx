@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw, BarChart3, LayoutDashboard } from 'lucide-react';
 import { VoiceChatInteractive } from '@/components/VoiceChatInteractive';
 import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ui/conversation';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -698,7 +697,6 @@ export default function VoiceAgentPage() {
 
   return (
     <div className="h-screen bg-gray-50 dark:bg-black p-2 overflow-hidden relative pt-20">
-      <ThemeToggle />
       <div className="w-full h-full flex flex-col">
         {/* Header - Compact */}
         <div className="mb-2 flex justify-between items-start">

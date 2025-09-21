@@ -15,6 +15,8 @@ export async function POST(request: NextRequest) {
   try {
     const { message, language = 'en-IN', reportData = '' } = await request.json();
     
+    console.log('Voice API received:', { message, language, reportDataLength: reportData.length });
+    
     if (!message) {
       return NextResponse.json({ error: 'No message provided' }, { status: 400 });
     }
@@ -47,7 +49,7 @@ export async function POST(request: NextRequest) {
     const finalPrompt = `You are a helpful medical voice assistant for MedScan. The user is speaking in ${languageName}.
 
 Here is a summary of a patient's clinical report, and a user query. Some generic clinical findings are also provided that may or may not be relevant for the report.
-Go through the clinical report and answer the user query.
+Go through the clinical report and answer the user query SPECIFICALLY and DIRECTLY.
 Ensure the response is factually accurate, and demonstrates a thorough understanding of the query topic and the clinical report.
 Before answering you may enrich your knowledge by going through the provided clinical findings. 
 The clinical findings are generic insights and not part of the patient's medical report. Do not include any clinical finding if it is not relevant for the patient's case.
@@ -63,14 +65,15 @@ The clinical findings are generic insights and not part of the patient's medical
 **end of generic clinical findings** 
 
 Provide a helpful, conversational response that:
-1. Is relevant to medical/healthcare topics
-2. Is concise and suitable for voice output (under 100 words)
-3. If the user asks about appointments, guide them to the dashboard
-4. If they ask about medicines, mention the medicine categories section
-5. If they ask about health metrics, refer to the dashboard vitals
-6. If they ask about symptoms or health concerns, provide general guidance but recommend consulting a doctor
-7. Be friendly and professional
-8. If the message is not medical-related, politely redirect to medical topics
+1. ANSWER ONLY what the user specifically asked - don't provide extra information unless requested
+2. Is relevant to medical/healthcare topics
+3. Is concise and suitable for voice output (under 100 words)
+4. If the user asks about appointments, guide them to the dashboard
+5. If they ask about medicines, provide information from the report if available, but always recommend consulting the doctor for dosage and timing
+6. If they ask about health metrics, refer to the dashboard vitals
+7. If they ask about symptoms or health concerns, provide general guidance but recommend consulting a doctor
+8. Be friendly and professional
+9. If the message is not medical-related, politely redirect to medical topics
 
 Respond in a natural, conversational tone that works well for voice output.
 
@@ -79,6 +82,8 @@ Respond in a natural, conversational tone that works well for voice output.
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
     const text = response.text();
+
+    console.log('Voice API generated response:', text.substring(0, 100) + '...');
 
     return NextResponse.json({ 
       success: true, 
