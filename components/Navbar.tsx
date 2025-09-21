@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Home, BarChart3, LayoutDashboard, Mic, User, LogOut, LogIn } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
 import { Button } from './ui/button';
+import { HoverBorderGradient } from "./ui/hover-border-gradient";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,28 +32,24 @@ const Navbar = () => {
     {
       name: 'Home',
       href: '/',
-      icon: Home,
       description: 'Landing page',
       gradient: 'from-blue-800 to-black'
     },
     {
       name: 'Analysis',
       href: '/analysis',
-      icon: BarChart3,
       description: 'AI report analysis',
       gradient: 'from-blue-800 to-black'
     },
     {
       name: 'Dashboard',
       href: '/dashboard',
-      icon: LayoutDashboard,
       description: 'Health overview',
       gradient: 'from-blue-800 to-black'
     },
     {
       name: 'Voice Agent',
       href: '/voice',
-      icon: Mic,
       description: 'AI voice assistant',
       gradient: 'from-blue-800 to-black'
     }
@@ -65,10 +62,10 @@ const Navbar = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group" onClick={closeMenu}>
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-black rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 transition-all duration-300 group-hover:scale-105">
+              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg shadow-black/25 group-hover:shadow-black/40 transition-all duration-300 group-hover:scale-105">
                 <span className="text-white font-bold text-lg">M</span>
               </div>
-              <div className="absolute -inset-1 bg-gradient-to-br from-blue-600 to-black rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+              {/* <div className="absolute -inset-1 bg-gradient-to-br from-blue-600 to-black rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div> */}
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
@@ -83,15 +80,18 @@ const Navbar = () => {
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link
+                <HoverBorderGradient
                   key={item.name}
+                  containerClassName="rounded-full"
+                  as={Link}
                   href={item.href}
-                  className="group relative px-4 py-2 rounded-xl transition-all duration-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/80"
+                  className={`dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 ${
+                    isActive ? 'bg-gray-100 dark:bg-gray-800' : ''
+                  }`}
+                  duration={0.5}
+                  clockwise={false}
                 >
                   <div className="flex items-center space-x-2">
-                    <div className={`w-8 h-8 bg-gradient-to-br ${item.gradient} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                      <item.icon className="w-4 h-4 text-white" />
-                    </div>
                     <span className={`font-semibold transition-colors duration-300 ${
                       isActive 
                         ? 'text-blue-600 dark:text-blue-400' 
@@ -100,10 +100,7 @@ const Navbar = () => {
                       {item.name}
                     </span>
                   </div>
-                  <div className={`absolute -bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-blue-600 to-black transition-all duration-300 rounded-full ${
-                    isActive ? 'w-3/4' : 'w-0 group-hover:w-3/4'
-                  }`}></div>
-                </Link>
+                </HoverBorderGradient>
               );
             })}
             <div className="ml-4 pl-4 border-l border-gray-200 dark:border-gray-700 flex items-center space-x-3">
@@ -181,19 +178,19 @@ const Navbar = () => {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     transition={{ delay: index * 0.1, duration: 0.4, ease: 'easeOut' }}
                   >
-                    <Link
+                    <HoverBorderGradient
+                      containerClassName="rounded-2xl"
+                      as={Link}
                       href={item.href}
                       onClick={closeMenu}
-                      className={`group relative flex items-center space-x-4 p-4 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-lg ${
+                      className={`dark:bg-black bg-white text-black dark:text-white flex items-center space-x-4 p-4 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-lg ${
                         isActive 
                           ? 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700' 
                           : 'hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-700'
                       }`}
+                      duration={0.5}
+                      clockwise={false}
                     >
-                      <div className={`relative w-12 h-12 bg-gradient-to-br ${item.gradient} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg`}>
-                        <item.icon className="w-6 h-6 text-white" />
-                        <div className={`absolute -inset-1 bg-gradient-to-br ${item.gradient} rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300`}></div>
-                      </div>
                       <div className="flex-1">
                         <div className={`font-bold text-lg transition-colors duration-300 ${
                           isActive 
@@ -210,10 +207,7 @@ const Navbar = () => {
                           {item.description}
                         </div>
                       </div>
-                      <div className={`w-2 h-2 bg-gradient-to-r from-blue-600 to-black rounded-full transition-opacity duration-300 ${
-                        isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                      }`}></div>
-                    </Link>
+                    </HoverBorderGradient>
                   </motion.div>
                 );
               })}
