@@ -11,7 +11,7 @@ function FloatingPaths({ position }: { position: number }) {
 
   return (
     <div className="absolute inset-0 pointer-events-none">
-      <svg className="w-full h-full text-slate-950 dark:text-white" viewBox="0 0 696 316" fill="none" aria-hidden>
+      <svg className="w-full h-full text-slate-300 dark:text-white" viewBox="0 0 696 316" fill="none" aria-hidden>
         {paths.map((path) => (
           <motion.path
             key={path.id}

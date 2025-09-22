@@ -34,8 +34,14 @@ export function Squares({
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // Set canvas background
-    canvas.style.background = "#060606"
+    // Set canvas background based on theme
+    const applyBackground = () => {
+      const isDark = document.documentElement.classList.contains("dark")
+      canvas.style.background = isDark ? "#060606" : "#fafafa"
+    }
+    applyBackground()
+    const observer = new MutationObserver(() => applyBackground())
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
 
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth
@@ -160,6 +166,7 @@ export function Squares({
       if (requestRef.current) {
         cancelAnimationFrame(requestRef.current)
       }
+      observer.disconnect()
     }
   }, [direction, speed, borderColor, hoverFillColor, hoveredSquare, squareSize])
 

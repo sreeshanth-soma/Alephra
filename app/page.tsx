@@ -15,11 +15,11 @@ export default function Home() {
   return (
     <>
       <LampDemo />
-      <div className="flex flex-col overflow-hidden pb-24 pt-2 bg-black">
+      <div className="flex flex-col overflow-hidden pb-24 pt-2 bg-white dark:bg-black">
         <ContainerScroll
           titleComponent={
             <>
-              <h1 className="text-4xl font-semibold text-white">
+              <h1 className="text-4xl font-semibold text-black dark:text-white">
                 Unleash the power of <br />
                 <span className="text-4xl md:text-[6rem] font-bold mt-1 leading-none">
                   Data Driven Diagnosis
@@ -53,7 +53,7 @@ export default function Home() {
       </div>
 
       {/* Interactive Features Timeline */}
-      <div className="py-24 px-4 bg-black">
+      <div className="py-24 px-4 bg-white dark:bg-black">
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-6">
@@ -61,10 +61,10 @@ export default function Home() {
               <Brain className="w-4 h-4 mr-2" />
               Interactive Feature Timeline
             </Badge>
-            <h2 className="text-4xl font-bold text-white mb-2">
+            <h2 className="text-4xl font-bold text-black dark:text-white mb-2">
               Explore MedScan's Capabilities
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
               Click on any feature to discover how MedScan's AI-powered healthcare technology works together to provide comprehensive medical assistance.
             </p>
           </div>

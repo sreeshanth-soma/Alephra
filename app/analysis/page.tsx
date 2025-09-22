@@ -50,7 +50,7 @@ const AnalysisPage = () => {
       </div>
       
       {/* Overlay for better contrast */}
-      <div className="absolute inset-0 z-5 bg-black/10" />
+      <div className="absolute inset-0 z-5 bg-white/40 dark:bg-black/10" />
       
       {/* Note Card - Top Right */}
       <div className="absolute top-24 right-4 z-20 max-w-sm md:top-20">

@@ -185,7 +185,7 @@ export default function RadialOrbitalTimeline({
   // Show loading state during hydration
   if (!isClient) {
     return (
-      <div className="w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden -mt-6">
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-white dark:bg-black overflow-hidden -mt-6">
         <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-teal-500 animate-pulse flex items-center justify-center z-10">
             <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md"></div>
@@ -197,7 +197,7 @@ export default function RadialOrbitalTimeline({
 
   return (
     <div
-      className="w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden -mt-6"
+      className="w-full h-screen flex flex-col items-center justify-center bg-white dark:bg-black overflow-hidden -mt-6"
       ref={containerRef}
       onClick={handleContainerClick}
     >
@@ -219,7 +219,7 @@ export default function RadialOrbitalTimeline({
             <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md"></div>
           </div>
 
-          <div className="absolute w-96 h-96 rounded-full border border-white/10"></div>
+          <div className="absolute w-96 h-96 rounded-full border border-black/20 dark:border-white/10"></div>
 
           {timelineData.map((item, index) => {
             const position = calculateNodePosition(index, timelineData.length);
@@ -273,10 +273,10 @@ export default function RadialOrbitalTimeline({
                   border-2 
                   ${
                     isExpanded
-                      ? "border-white shadow-lg shadow-white/30"
+                      ? "border-black dark:border-white shadow-lg shadow-white/30"
                       : isRelated
-                      ? "border-white animate-pulse"
-                      : "border-white/40"
+                      ? "border-black dark:border-white animate-pulse"
+                      : "border-black/30 dark:border-white/40"
                   }
                   transition-all duration-300 transform
                   ${isExpanded ? "scale-150" : ""}
