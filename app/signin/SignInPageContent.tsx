@@ -72,7 +72,7 @@ export default function SignInPageContent() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Google Sign-In Button */}
-            <Button
+            {/* <Button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
               className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold transition-all duration-200 shadow-lg"
@@ -89,7 +89,7 @@ export default function SignInPageContent() {
                   Continue as Guest
                 </span>
               </div>
-            </div>
+            </div> */}
 
             <Button
               onClick={() => router.push(callbackUrl)}
