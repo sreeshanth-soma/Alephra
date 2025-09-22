@@ -16,7 +16,7 @@ export async function queryPineconeVectorStore(
       return "<nomatches>";
     }
 
-    const timeoutMs = 10000;
+    const timeoutMs = 8000;
     const apiOutput = await Promise.race([
       hf.featureExtraction({
         model: "mixedbread-ai/mxbai-embed-large-v1",
@@ -70,7 +70,7 @@ export async function createAndStoreVectorEmbeddings(
     }
 
     // Generate embeddings using Hugging Face with timeout
-    const timeoutMs = 10000;
+    const timeoutMs = 8000;
     const apiOutput = await Promise.race([
       hf.featureExtraction({
         model: "mixedbread-ai/mxbai-embed-large-v1",

@@ -102,6 +102,10 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
             return;
         }
         setIsLoading(true);
+        // Safety cap: ensure analyzing UI doesn't exceed 8 seconds
+        const loadingSafetyTimer = setTimeout(() => {
+            setIsLoading(false);
+        }, 8000);
 
         try {
             const response = await fetch("api/extractreportgemini", {
@@ -124,17 +128,7 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
                 
                 setReportData(reportText);
                 
-                // Show success message with vector embedding status
-                if (vectorStored) {
-                    toast({
-                        description: "Report analyzed and vector embeddings created successfully!",
-                    });
-                } else {
-                    toast({
-                        variant: "destructive",
-                        description: "Report analyzed but vector embeddings failed. Chat may have limited functionality.",
-                    });
-                }
+                // Removed embedding status toast per request
                 
                 // Save prescription immediately after successful analysis
                 if (uploadedFileName) {
@@ -154,6 +148,7 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
                 description: "Network error. Please check your connection and try again.",
             });
         } finally {
+            clearTimeout(loadingSafetyTimer);
             setIsLoading(false);
         }
     }
