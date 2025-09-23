@@ -1,3 +1,39 @@
+/* Rotating gradient button styles */
+.rotatingGradient {
+  --r: 0deg;
+  --color-text: #eeeeee; /* consistent light text for both themes */
+  --color-background: rgba(17,17,17,0.85); /* dark inner fill even in light mode */
+  /* High-contrast wedges so rotation is clearly visible */
+  background: conic-gradient(from var(--r),
+    #000 0deg,
+    #0a0a0a 30deg,
+    #0b132b 60deg,
+    #0a0a0a 90deg,
+    #111 120deg,
+    #0f172a 150deg,
+    #0a0a0a 180deg,
+    #001d3d 210deg,
+    #0a0a0a 240deg,
+    #003566 270deg,
+    #0a0a0a 300deg,
+    #111 330deg,
+    #000 360deg);
+  animation: rotateGrad 6s linear infinite;
+}
+
+.dark .rotatingGradient {
+  --color-text: #eeeeee;
+  --color-background: rgba(0,0,0,0.55);
+}
+
+@keyframes rotateGrad {
+  0% { --r: 0deg; }
+  100% { --r: 360deg; }
+}
+
+.rotatingGradient:hover::after {
+  opacity: 0.95;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

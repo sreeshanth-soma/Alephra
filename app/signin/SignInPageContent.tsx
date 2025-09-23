@@ -8,6 +8,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import GradientButton from "@/components/ui/gradient-button";
 import { Separator } from "@/components/ui/separator";
 import { Calendar, Brain, Shield, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -85,14 +86,16 @@ export default function SignInPageContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Google Sign-In Button */}
-                {/* <Button
+                {/* Google Sign-In Button - Gradient style - TEMPORARILY COMMENTED OUT */}
+                {/* <GradientButton
+                  width="100%"
+                  height="48px"
                   onClick={handleGoogleSignIn}
-                  disabled={isLoading}
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold transition-all duration-200 shadow-lg"
+                  className="select-none"
+                  aria-label="Continue with Google"
                 >
                   {isLoading ? "Signing in..." : "Continue with Google"}
-                </Button>
+                </GradientButton>
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
