@@ -158,16 +158,25 @@ graph TB
 
 ### 📱 Responsive Design
 <div align="center">
-  <!-- Replace the src URLs with your mobile portrait screenshots -->
-  <div style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; justify-items: center;">
-    <img src="screenshots/homePage.jpg" alt="MedScan Mobile 1" style="width:100%; max-width:260px; height:auto; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.12);" />
-    <img src="screenshots/analysis.jpg" alt="MedScan Mobile 2" style="width:100%; max-width:260px; height:auto; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.12);" />
-    <img src="screenshots/dashboard.jpg" alt="MedScan Mobile 3" style="width:100%; max-width:260px; height:auto; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.12);" />
-    <img src="screenshots/voiceAgent.jpg" alt="MedScan Mobile 4" style="width:100%; max-width:260px; height:auto; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.12);" />
-  </div>
-
-  <!-- Optional caption -->
-  <p><em>Four portrait screenshots — displayed as 2 per row on larger screens and wrapping gracefully on small screens.</em></p>
+  <!-- GitHub-safe 2x2 grid using HTML table so sizing/alignment are reliable -->
+  <table>
+    <tr>
+      <td align="center" valign="top">
+        <img src="screenshots/homePage.jpg" alt="MedScan Mobile 1" width="220" height="440" />
+      </td>
+      <td align="center" valign="top">
+        <img src="screenshots/analysis.jpg" alt="MedScan Mobile 2" width="220" height="440" />
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="top">
+        <img src="screenshots/dashboard.jpg" alt="MedScan Mobile 3" width="220" height="440" />
+      </td>
+      <td align="center" valign="top">
+        <img src="screenshots/voiceAgent.jpg" alt="MedScan Mobile 4" width="220" height="440" />
+      </td>
+    </tr>
+  </table>
 </div>
 
 ### 🎨 Key Features
