@@ -158,7 +158,16 @@ graph TB
 
 ### 📱 Responsive Design
 <div align="center">
-<img src="https://via.placeholder.com/800x400/4285F4/FFFFFF?text=Beautiful+Responsive+Interface" alt="MedScan Interface" width="100%">
+  <!-- Replace the src URLs with your mobile portrait screenshots -->
+  <div style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; justify-items: center;">
+    <img src="screenshots/homePage.jpg" alt="MedScan Mobile 1" style="width:100%; max-width:260px; height:auto; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.12);" />
+    <img src="screenshots/analysis.jpg" alt="MedScan Mobile 2" style="width:100%; max-width:260px; height:auto; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.12);" />
+    <img src="screenshots/dashboard.jpg" alt="MedScan Mobile 3" style="width:100%; max-width:260px; height:auto; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.12);" />
+    <img src="screenshots/voiceAgent.jpg" alt="MedScan Mobile 4" style="width:100%; max-width:260px; height:auto; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.12);" />
+  </div>
+
+  <!-- Optional caption -->
+  <p><em>Four portrait screenshots — displayed as 2 per row on larger screens and wrapping gracefully on small screens.</em></p>
 </div>
 
 ### 🎨 Key Features

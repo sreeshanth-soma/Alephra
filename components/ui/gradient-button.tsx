@@ -1,6 +1,7 @@
 "use client";
 
 import type { HTMLAttributes } from "react";
+import type { CSSProperties } from "react";
 
 interface GradientButtonProps extends HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
@@ -42,12 +43,13 @@ const GradientButton = ({
         role="button"
         tabIndex={disabled ? -1 : 0}
         className={`${commonGradientStyles} rotatingGradient ${className}`}
-        style={{
-          // @ts-expect-error CSS var assignment at runtime
-          "--r": "0deg",
-          minWidth: width,
-          height: height,
-        } as React.CSSProperties}
+        style={
+          {
+            "--r": "0deg", // ✅ Type-safe now
+            minWidth: width,
+            height: height,
+          } as CSSProperties
+        }
         onClick={disabled ? undefined : onClick}
         onKeyDown={handleKeyDown}
         aria-disabled={disabled}
@@ -62,5 +64,3 @@ const GradientButton = ({
 };
 
 export default GradientButton;
-
-
