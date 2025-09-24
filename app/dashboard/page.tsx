@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Heart, Activity, Calendar, Filter, CalendarDays } from "lucide-react";
 import { Noise } from "@/components/ui/noise";
 import { useSession } from "next-auth/react";
+import { safeGetItem, safeSetItem, safeRemoveItem, clearAllMedScanData, isLocalStorageAvailable } from "@/lib/localStorage";
+import { toast } from "@/components/ui/use-toast";
 // Removed dropdown menu in Appointments to keep a single add button
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string; bp?: { systolic: number; diastolic: number }; weight?: number; temperature?: number };
@@ -555,73 +557,33 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Clear any existing default/seeded data first
-    try {
+    if (isLocalStorageAvailable()) {
       // Clear old seeded vitals data
-      const rawVitals = localStorage.getItem("medscan.vitals");
-      if (rawVitals) {
-        const parsedVitals = JSON.parse(rawVitals);
-        if (parsedVitals.length === 60) {
-          localStorage.removeItem("medscan.vitals");
-        }
+      const rawVitals = safeGetItem("medscan.vitals", []);
+      if (Array.isArray(rawVitals) && rawVitals.length === 60) {
+        safeRemoveItem("medscan.vitals");
       }
       
       // Clear old default lab data
-      const rawLabs = localStorage.getItem("medscan.labs");
-      if (rawLabs) {
-        const parsedLabs = JSON.parse(rawLabs);
-        if (parsedLabs.length === 4 && parsedLabs[0]?.id === "1") {
-          localStorage.removeItem("medscan.labs");
-        }
+      const rawLabs = safeGetItem<LabData[]>("medscan.labs", []);
+      if (Array.isArray(rawLabs) && rawLabs.length === 4 && rawLabs[0]?.id === "1") {
+        safeRemoveItem("medscan.labs");
       }
-    } catch (error) {
-      console.log("Error clearing default data:", error);
     }
 
     // Now load data (will be empty if no real data exists)
-    try {
-      const raw = localStorage.getItem("medscan.reminders");
-      if (raw) setReminders(JSON.parse(raw));
-    } catch {}
-    
-    // Vitals - always start empty now
-    try {
-      const rawVitals = localStorage.getItem("medscan.vitals");
-      if (rawVitals) {
-        setVitals(JSON.parse(rawVitals));
-      } else {
-        setVitals([]);
-      }
-    } catch { 
+    if (isLocalStorageAvailable()) {
+      setReminders(safeGetItem<Reminder[]>("medscan.reminders", []));
+      setVitals(safeGetItem<VitalsPoint[]>("medscan.vitals", []));
+      setCartItems(safeGetItem<any[]>("medscan.cart", []));
+      setLabData(safeGetItem<LabData[]>("medscan.labs", []));
+      setAppointments(safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("medscan.appointments", []));
+    } else {
+      // Fallback when localStorage is not available
+      setReminders([]);
       setVitals([]);
-    }
-    
-    // Cart
-    try {
-      const rawCart = localStorage.getItem("medscan.cart");
-      if (rawCart) setCartItems(JSON.parse(rawCart));
-    } catch {}
-    
-    // Lab data - always start empty now
-    try {
-      const rawLabs = localStorage.getItem("medscan.labs");
-      if (rawLabs) {
-        setLabData(JSON.parse(rawLabs));
-      } else {
-        setLabData([]);
-      }
-    } catch { 
+      setCartItems([]);
       setLabData([]);
-    }
-    
-    // Appointments
-    try {
-      const rawAppointments = localStorage.getItem("medscan.appointments");
-      if (rawAppointments) {
-        setAppointments(JSON.parse(rawAppointments));
-      } else {
-        setAppointments([]);
-      }
-    } catch { 
       setAppointments([]);
     }
     
@@ -630,42 +592,67 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (isInitialized) {
-    try {
-      localStorage.setItem("medscan.reminders", JSON.stringify(reminders));
-    } catch {}
+    if (isInitialized && isLocalStorageAvailable()) {
+      const success = safeSetItem("medscan.reminders", reminders);
+      if (!success) {
+        toast({
+          title: "Storage Warning",
+          description: "Failed to save reminders. Your data may not persist.",
+          variant: "destructive",
+        });
+      }
     }
   }, [reminders, isInitialized]);
 
   useEffect(() => {
-    if (isInitialized) {
-    try {
-      localStorage.setItem("medscan.vitals", JSON.stringify(vitals));
-    } catch {}
+    if (isInitialized && isLocalStorageAvailable()) {
+      const success = safeSetItem("medscan.vitals", vitals);
+      if (!success) {
+        toast({
+          title: "Storage Warning", 
+          description: "Failed to save vitals. Your data may not persist.",
+          variant: "destructive",
+        });
+      }
     }
   }, [vitals, isInitialized]);
 
   useEffect(() => {
-    if (isInitialized) {
-    try {
-      localStorage.setItem("medscan.cart", JSON.stringify(cartItems));
-    } catch {}
+    if (isInitialized && isLocalStorageAvailable()) {
+      const success = safeSetItem("medscan.cart", cartItems);
+      if (!success) {
+        toast({
+          title: "Storage Warning",
+          description: "Failed to save cart items. Your data may not persist.",
+          variant: "destructive",
+        });
+      }
     }
   }, [cartItems, isInitialized]);
 
   useEffect(() => {
-    if (isInitialized) {
-    try {
-      localStorage.setItem("medscan.labs", JSON.stringify(labData));
-    } catch {}
+    if (isInitialized && isLocalStorageAvailable()) {
+      const success = safeSetItem("medscan.labs", labData);
+      if (!success) {
+        toast({
+          title: "Storage Warning",
+          description: "Failed to save lab data. Your data may not persist.",
+          variant: "destructive",
+        });
+      }
     }
   }, [labData, isInitialized]);
 
   useEffect(() => {
-    if (isInitialized) {
-      try {
-        localStorage.setItem("medscan.appointments", JSON.stringify(appointments));
-      } catch {}
+    if (isInitialized && isLocalStorageAvailable()) {
+      const success = safeSetItem("medscan.appointments", appointments);
+      if (!success) {
+        toast({
+          title: "Storage Warning",
+          description: "Failed to save appointments. Your data may not persist.",
+          variant: "destructive",
+        });
+      }
     }
   }, [appointments, isInitialized]);
 
@@ -682,36 +669,26 @@ export default function DashboardPage() {
     // Try to sync with Google Calendar if user is signed in and time is provided
     if (newTime) {
       try {
-        // Create a datetime for today with the specified time in user's local timezone
-        const today = new Date();
-        const [hours, minutes] = newTime.split(':');
-        
-        // Create the reminder datetime in local timezone
-        const reminderDateTime = new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          today.getDate(),
-          parseInt(hours),
-          parseInt(minutes),
-          0,
-          0
-        );
-        
-        // If the time has already passed today, schedule for tomorrow
-        if (reminderDateTime <= new Date()) {
-          reminderDateTime.setDate(reminderDateTime.getDate() + 1);
+        // Build a timezone-agnostic local datetime string (YYYY-MM-DDTHH:mm:SS) and send the IANA timeZone separately.
+        const now = new Date();
+        const [hoursStr, minutesStr] = newTime.split(":");
+        const hours = parseInt(hoursStr, 10);
+        const minutes = parseInt(minutesStr, 10);
+
+        // Determine target date (today or tomorrow) based on local wall-clock
+        const candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+        let target = candidate;
+        if (candidate.getTime() <= now.getTime()) {
+          target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, hours, minutes, 0, 0);
         }
-        
-        // Debug logging
-        console.log('Frontend reminder creation:', {
-          inputTime: newTime,
-          parsedHours: hours,
-          parsedMinutes: minutes,
-          reminderDateTime: reminderDateTime.toISOString(),
-          localString: reminderDateTime.toLocaleString(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          currentTime: new Date().toLocaleString()
-        });
+
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const localDateStr = `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}`;
+        const localTimeStr = `${pad(hours)}:${pad(minutes)}:00`;
+        const localDateTime = `${localDateStr}T${localTimeStr}`; // No Z, no offset
+
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        console.log("Frontend reminder creation:", { localDateTime, tz });
         
         const response = await fetch('/api/reminders/calendar-sync', {
           method: 'POST',
@@ -721,8 +698,8 @@ export default function DashboardPage() {
           body: JSON.stringify({
             title: newReminder.trim(),
             description: `Medical reminder created via MedScan`,
-            reminderTime: reminderDateTime.toISOString(),
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            reminderLocal: localDateTime,
+            timeZone: tz,
           }),
         });
         
@@ -1174,14 +1151,24 @@ export default function DashboardPage() {
               </Link>
               <button
                 onClick={() => {
-                  localStorage.removeItem("medscan.vitals");
-                  localStorage.removeItem("medscan.labs");
-                  localStorage.removeItem("medscan.reminders");
-                  localStorage.removeItem("medscan.cart");
+                  const success = clearAllMedScanData();
+                  if (success) {
+                    toast({
+                      title: "Data Cleared",
+                      description: "All your data has been successfully cleared.",
+                    });
+                  } else {
+                    toast({
+                      title: "Clear Warning",
+                      description: "Some data may not have been cleared properly.",
+                      variant: "destructive",
+                    });
+                  }
                   setVitals([]);
                   setLabData([]);
                   setReminders([]);
                   setCartItems([]);
+                  setAppointments([]);
                   window.location.reload();
                 }}
                 className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"

@@ -15,9 +15,20 @@ const prompt = `Attached is an image of a clinical report.
 Go over the the clinical report and identify biomarkers that show slight or large abnormalities. Then summarize in 100 words. You may increase the word limit if the report has multiple pages. Do not output patient name, date etc. Make sure to include numerical values and key details from the report, including report title.
 ## Summary: `;
 
+// Simple concurrency limiter to avoid thundering herd
+let inFlight = 0;
+const MAX_CONCURRENT = 2;
+const waitForSlot = async () => {
+    while (inFlight >= MAX_CONCURRENT) {
+        await new Promise(r => setTimeout(r, 50));
+    }
+};
+
 async function generateContentWithRetry(filePart: any, maxRetries = 3) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+            await waitForSlot();
+            inFlight++;
             const generatedContent = await model.generateContent([prompt, filePart]);
             return generatedContent.response.candidates![0].content.parts[0].text;
         } catch (error: any) {
@@ -28,14 +39,18 @@ async function generateContentWithRetry(filePart: any, maxRetries = 3) {
                 if (attempt === maxRetries) {
                     throw new Error("API rate limit exceeded. Please try again later or upgrade your API plan.");
                 }
-                // Wait before retrying (exponential backoff)
-                const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+                // Jittered exponential backoff to avoid synchronized retries
+                const base = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+                const jitter = Math.floor(Math.random() * 400);
+                const delay = base + jitter;
                 await new Promise(resolve => setTimeout(resolve, delay));
                 continue;
             }
             
             // For other errors, throw immediately
             throw error;
+        } finally {
+            inFlight = Math.max(0, inFlight - 1);
         }
     }
 }

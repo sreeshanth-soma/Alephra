@@ -78,7 +78,11 @@ export async function POST(req: Request, res: Response) {
         }
 
         console.log("Final Prompt:", finalPrompt);
-        const result = await model.generateContent(finalPrompt);
+        // Add a 15s timeout to avoid hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const result = await model.generateContent(finalPrompt, { signal: controller.signal } as any);
+        clearTimeout(timeoutId);
         console.log("Gemini Response Result:", result);
         const text = result.response.text();
         console.log("Extracted Text:", text);
@@ -87,13 +91,21 @@ export async function POST(req: Request, res: Response) {
         
     } catch (error: any) {
         console.error("Error in POST handler:", error);
-        
-        return new Response(JSON.stringify({ 
-            error: error.message?.includes('quota') 
-                ? "API quota exceeded. Please try again tomorrow or upgrade your plan." 
-                : "An error occurred while processing your request."
-        }), {
-            status: 500,
+        const message = String(error?.message || "Unknown error").toLowerCase();
+        const status = Number(error?.status) || (message.includes("abort") || message.includes("timeout") ? 504
+            : message.includes("quota") || message.includes("rate") || message.includes("429") ? 429
+            : message.includes("api key") || message.includes("unauthorized") || message.includes("401") ? 401
+            : message.includes("network") || message.includes("fetch") ? 503
+            : 500);
+
+        const friendly = status === 504 ? "The request timed out. Please retry."
+            : status === 429 ? "Rate limit or quota exceeded. Please wait and try again."
+            : status === 401 ? "Invalid or missing API key. Please check configuration."
+            : status === 503 ? "Network or service unavailable. Please try again shortly."
+            : "An unexpected error occurred.";
+
+        return new Response(JSON.stringify({ error: friendly }), {
+            status,
             headers: { "Content-Type": "application/json" }
         });
     }

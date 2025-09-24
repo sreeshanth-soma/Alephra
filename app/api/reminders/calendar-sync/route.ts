@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const { title, description, reminderTime, timeZone } = await request.json();
+    const { title, description, reminderTime, reminderLocal, timeZone } = await request.json();
 
     // Set up Google Calendar API
     const oauth2Client = new google.auth.OAuth2(
@@ -39,28 +39,52 @@ export async function POST(request: NextRequest) {
 
     const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
-    const reminderDate = new Date(reminderTime);
-    const endTime = new Date(reminderDate.getTime() + 15 * 60000); // 15 minutes duration
-
     // Use the timezone sent from the client, or fallback to a default
-    const userTimeZone = timeZone || "America/New_York";
+    const userTimeZone = timeZone || "UTC";
+
+    // Convert the provided local wall-clock time (reminderLocal) to an RFC3339 in user's timezone
+    // If reminderLocal provided: treat as local clock time in userTimeZone for the intended date/time.
+    // Else fallback to reminderTime (legacy ISO input from client).
+    let startDateTime: string;
+    let endDateTime: string;
+
+    if (reminderLocal && typeof reminderLocal === 'string') {
+      // Build RFC3339 with timezone by formatting in the user's IANA zone.
+      // We rely on Calendar API to interpret dateTime with explicit timeZone.
+      startDateTime = reminderLocal; // e.g., "2025-09-24T09:30:00" (no Z, no offset)
+      // End time: +15 minutes (duration)
+      const [datePart, timePart] = reminderLocal.split('T');
+      const [y, m, d] = datePart.split('-').map(Number);
+      const [hh, mm, ss] = timePart.split(':').map(Number);
+      const end = new Date(Date.UTC(y, (m - 1), d, hh, mm + 15, ss || 0));
+      // Format back to local naive string HH:mm:ss
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const endLocal = `${datePart}T${pad(end.getUTCHours())}:${pad(end.getUTCMinutes())}:${pad(end.getUTCSeconds())}`;
+      endDateTime = endLocal;
+    } else {
+      // Legacy path: reminderTime is an ISO string (UTC). Keep behavior but still pass timeZone
+      const reminderDate = new Date(reminderTime);
+      const endTime = new Date(reminderDate.getTime() + 15 * 60000);
+      startDateTime = reminderDate.toISOString();
+      endDateTime = endTime.toISOString();
+    }
     
     console.log("Reminder creation debug:", {
       reminderTime,
       userTimeZone,
-      reminderDate: reminderDate.toISOString(),
-      localTime: reminderDate.toLocaleString(),
+      startDateTime,
+      endDateTime,
     });
     
     const event = {
       summary: `💊 ${title}`,
       description: `Medical Reminder: ${description || title}\n\nCreated by MedScan AI Healthcare Assistant`,
       start: {
-        dateTime: reminderDate.toISOString(),
+        dateTime: startDateTime,
         timeZone: userTimeZone,
       },
       end: {
-        dateTime: endTime.toISOString(),
+        dateTime: endDateTime,
         timeZone: userTimeZone,
       },
       reminders: {
