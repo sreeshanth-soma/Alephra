@@ -71,26 +71,59 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
+            let objectUrl: string | null = null;
             img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx!.drawImage(img, 0, 0);
-                const quality = 0.1;
-                const dataURL = canvas.toDataURL('image/jpeg', quality);
-                const byteString = atob(dataURL.split(',')[1]);
-                const ab = new ArrayBuffer(byteString.length);
-                const ia = new Uint8Array(ab);
-                for (let i = 0; i < byteString.length; i++) {
-                    ia[i] = byteString.charCodeAt(i);
+                try {
+                    const maxDimension = 2000; // cap very large images to control memory
+                    const { width: origW, height: origH } = img;
+                    let targetW = origW;
+                    let targetH = origH;
+                    if (origW > maxDimension || origH > maxDimension) {
+                        const scale = Math.min(maxDimension / origW, maxDimension / origH);
+                        targetW = Math.round(origW * scale);
+                        targetH = Math.round(origH * scale);
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = targetW;
+                    canvas.height = targetH;
+                    ctx!.drawImage(img, 0, 0, targetW, targetH);
+
+                    // Adaptive quality: keep medical text readable
+                    const sizeMB = file.size / (1024 * 1024);
+                    const quality = sizeMB > 8 ? 0.4 : sizeMB > 3 ? 0.55 : 0.7;
+
+                    canvas.toBlob((blob) => {
+                        try {
+                            if (!blob) {
+                                // Fallback: if toBlob failed, use original file
+                                callback(file);
+                                return;
+                            }
+                            const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+                            callback(compressedFile);
+                        } finally {
+                            // Cleanup canvas resources
+                            canvas.width = 0;
+                            canvas.height = 0;
+                        }
+                    }, 'image/jpeg', quality);
+                } finally {
+                    // Cleanup image and revoke object URL if used
+                    img.onload = null as any;
+                    if (objectUrl) URL.revokeObjectURL(objectUrl);
                 }
-                const compressedFile = new File([ab], file.name, { type: 'image/jpeg' });
-                callback(compressedFile);
             };
-            img.src = e.target!.result as string;
+            // Prefer object URL to reduce base64 memory footprint when possible
+            if (file && 'createObjectURL' in URL) {
+                objectUrl = URL.createObjectURL(file);
+                img.src = objectUrl;
+            } else {
+                img.src = e.target!.result as string;
+            }
         };
-        reader.readAsDataURL(file);
+        reader.readAsArrayBuffer(file);
     }
 
     async function extractDetails(): Promise<void> {

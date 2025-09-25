@@ -379,8 +379,10 @@ export default function VoiceAgentPage() {
       if (result.success && result.response) {
         responseText = result.response;
       } else {
-        // Fallback response if Gemini fails
-        responseText = 'I understand you said: "' + userText + '". I am your medical voice assistant. How can I help you with your health concerns today?';
+        // Context-preserving fallback if Gemini fails
+        const safeUser = userText?.trim().slice(0, 300) || '';
+        const hasReport = Boolean(reportData && reportData.trim());
+        responseText = `You said: "${safeUser}". I’m having trouble reaching the medical AI right now. ${hasReport ? 'I do have your latest report context saved, and we can still discuss general guidance.' : 'We can still talk through general guidance.'} If you want, re-ask your question or specify symptoms, medicines, or lab values, and I’ll help.`;
       }
 
       const assistantMessage: VoiceMessage = {
@@ -399,8 +401,10 @@ export default function VoiceAgentPage() {
       // Remove processing message if it exists
       setMessages(prev => prev.filter(msg => msg.text !== 'Thinking...'));
       
-      // Fallback response
-      const fallbackText = 'I apologize, but I encountered an issue processing your request. Please try again or visit the dashboard for more options.';
+      // Context-preserving fallback response
+      const safeUser = (currentText || '').trim().slice(0, 300);
+      const hasReport = false; // unknown here; avoid extra reads in catch
+      const fallbackText = `You said: "${safeUser}". I’m having trouble reaching the medical AI right now. ${hasReport ? 'I still have your report context, and we can continue.' : 'We can still continue.'} Try again in a moment or share more details (symptoms, meds, labs), and I’ll assist.`;
       const assistantMessage: VoiceMessage = {
         id: (Date.now() + 1).toString(),
         text: fallbackText,
