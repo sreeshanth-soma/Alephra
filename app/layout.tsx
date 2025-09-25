@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/Navbar";
 import SessionWrapper from "@/components/SessionWrapper";
+import { Analytics } from "@vercel/analytics/next";
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default function RootLayout({
             <Navbar />
             <TooltipProvider>{children}</TooltipProvider>
             <Toaster />
+            <Analytics />
           </ThemeProvider>
         </SessionWrapper>
       </body>
