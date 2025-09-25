@@ -1,9 +1,131 @@
 import { Pinecone } from "@pinecone-database/pinecone";
-import { FeatureExtractionPipeline, pipeline } from "@xenova/transformers";
 import { modelname, namespace, topK } from "./app/config";
 import { HfInference } from '@huggingface/inference'
 
-const hf = new HfInference(process.env.HF_TOKEN)
+const HF_TOKEN: string = process.env.HF_TOKEN ?? ""
+const hf = new HfInference(HF_TOKEN)
+
+// Local MCP embedding server client
+const MCP_EMBED_HOST = process.env.MCP_EMBED_HOST || '127.0.0.1'
+const MCP_EMBED_PORT = Number(process.env.MCP_EMBED_PORT || 8787)
+const MCP_EMBED_URL = process.env.MCP_EMBED_URL || `http://${MCP_EMBED_HOST}:${MCP_EMBED_PORT}/embed`
+
+// In-process memo cache (LRU-like with simple size cap)
+const localEmbedCache = new Map<string, number[]>()
+const LOCAL_CACHE_MAX = 1000
+
+function cacheGet(key: string): number[] | undefined {
+  const hit = localEmbedCache.get(key)
+  if (!hit) return undefined
+  // refresh order
+  localEmbedCache.delete(key)
+  localEmbedCache.set(key, hit)
+  return hit
+}
+
+function cacheSet(key: string, vec: number[]) {
+  if (localEmbedCache.has(key)) localEmbedCache.delete(key)
+  // defend against non-number entries
+  const clean = vec.map((x: any) => Number(x)).filter((x: number) => Number.isFinite(x))
+  localEmbedCache.set(key, clean)
+  if (localEmbedCache.size > LOCAL_CACHE_MAX) {
+    const firstKey = localEmbedCache.keys().next().value
+    if (typeof firstKey !== 'undefined') {
+      localEmbedCache.delete(firstKey)
+    }
+  }
+}
+
+async function embedViaMCP(texts: string[], model: string): Promise<number[][]> {
+  const body = JSON.stringify({ texts })
+  const res = await fetch(MCP_EMBED_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body
+  })
+  if (!res.ok) throw new Error(`MCP server error ${res.status}`)
+  const json = await res.json() as any
+  if (!json.success) throw new Error(`MCP server failure: ${json.error || 'unknown'}`)
+  const out = (json.embeddings as any[]).map((v: any) => Array.from(v).map((x: any) => Number(x)))
+  return out
+}
+
+async function embedViaLocalTransformers(texts: string[], model: string): Promise<number[][]> {
+  const mod = await import('@xenova/transformers')
+  const pipe = await mod.pipeline('feature-extraction', model)
+  const outputs: any = await pipe(texts, { pooling: 'mean', normalize: true })
+  let arr = Array.isArray(outputs) ? outputs : [outputs]
+  arr = arr.map((v: any) => (Array.isArray(v) && Array.isArray(v[0]) ? v[0] : v))
+  return arr.map((v: any) => Array.from(v).map((x: any) => Number(x)))
+}
+
+async function embedWithFallback(texts: string[], model: string): Promise<number[][]> {
+  // serve from in-process cache if available
+  const keys = texts.map(t => `${model}|${t}`)
+  const results: (number[]|undefined)[] = keys.map(k => cacheGet(k))
+  const missingIdx: number[] = []
+  for (let i = 0; i < results.length; i++) if (!results[i]) missingIdx.push(i)
+  let computed: number[][] = []
+  if (missingIdx.length > 0) {
+    // Try MCP server first
+    try {
+      const payload = missingIdx.map(i => texts[i])
+      const mcpVecs = await embedViaMCP(payload, model)
+      computed = mcpVecs
+    } catch (e) {
+      // Fallback to local transformers
+      try {
+        const payload = missingIdx.map(i => texts[i])
+        const localVecs = await embedViaLocalTransformers(payload, model)
+        computed = localVecs
+      } catch (e2) {
+        // Final fallback: HuggingFace inference if configured
+        if (!process.env.HF_TOKEN) throw e2
+        const mxbOutputs = [] as number[][]
+        for (const i of missingIdx) {
+          const apiOutput: any = await hf.featureExtraction({ model, inputs: texts[i] })
+          const vec = Array.from(apiOutput).map((x: any) => Number(x))
+          mxbOutputs.push(vec)
+        }
+        computed = mxbOutputs
+      }
+    }
+
+    // write back to cache
+    for (let j = 0; j < missingIdx.length; j++) {
+      const idx = missingIdx[j]
+      const vec = computed[j]
+      cacheSet(keys[idx], vec)
+      results[idx] = vec
+    }
+  }
+  return results as number[][]
+}
+
+function isValidVector(vec: number[] | undefined): boolean {
+  if (!vec || !Array.isArray(vec)) return false
+  if (vec.length < 2) return false
+  for (let i = 0; i < Math.min(vec.length, 8); i++) {
+    if (!Number.isFinite(vec[i])) return false
+  }
+  return true
+}
+
+async function sanitizeEmbeddings(texts: string[], model: string, vectors: number[][]): Promise<number[][]> {
+  const invalidIdx: number[] = []
+  for (let i = 0; i < vectors.length; i++) {
+    if (!isValidVector(vectors[i])) invalidIdx.push(i)
+  }
+  if (invalidIdx.length === 0) return vectors
+  // Recompute invalid indices using local transformers as authoritative fallback
+  const payload = invalidIdx.map(i => texts[i])
+  const recomputed = await embedViaLocalTransformers(payload, model)
+  for (let j = 0; j < invalidIdx.length; j++) {
+    const idx = invalidIdx[j]
+    vectors[idx] = recomputed[j]
+  }
+  return vectors
+}
 
 export async function queryPineconeVectorStore(
   client: Pinecone,
@@ -12,25 +134,14 @@ export async function queryPineconeVectorStore(
   query: string
 ): Promise<string> {
   try {
-    if (!process.env.HF_TOKEN) {
-      return "<nomatches>";
+    let [queryEmbedding] = await embedWithFallback([query], modelname)
+    if (!isValidVector(queryEmbedding)) {
+      [queryEmbedding] = await embedViaLocalTransformers([query], modelname)
     }
-
-    const timeoutMs = 8000;
-    const apiOutput = await Promise.race([
-      hf.featureExtraction({
-        model: "mixedbread-ai/mxbai-embed-large-v1",
-        inputs: query,
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("embed-timeout")), timeoutMs))
-    ]) as any;
-    console.log(apiOutput);
-    
-    const queryEmbedding = Array.from(apiOutput);
     // console.log("Querying database vector store...");
     const index = client.Index(indexName);
     const queryResponse = await index.namespace(namespace).query({
-      topK: 5,
+      topK: topK,
       vector: queryEmbedding as any,
       includeMetadata: true,
       // includeValues: true,
@@ -64,30 +175,18 @@ export async function createAndStoreVectorEmbeddings(
   try {
     console.log("Creating vector embeddings for report:", reportId);
     
-    if (!process.env.HF_TOKEN) {
-      console.warn("HF_TOKEN missing; skipping embedding generation");
-      return false;
-    }
-
-    // Generate embeddings using Hugging Face with timeout
-    const timeoutMs = 8000;
-    const apiOutput = await Promise.race([
-      hf.featureExtraction({
-        model: "mixedbread-ai/mxbai-embed-large-v1",
-        inputs: reportData,
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("embed-timeout")), timeoutMs))
-    ]) as any;
-    
-    const embedding = Array.from(apiOutput);
-    console.log("Generated embedding with dimensions:", embedding.length);
-    
     // Split report into chunks for better retrieval
     const chunks = splitTextIntoChunks(reportData, 1000); // 1000 characters per chunk
+
+    // Generate chunk-specific embeddings in batch via MCP server (with fallbacks)
+    let embeddings = await embedWithFallback(chunks, modelname)
+    embeddings = await sanitizeEmbeddings(chunks, modelname, embeddings)
+    const dims = embeddings[0]?.length || 0
+    console.log("Generated per-chunk embeddings:", { chunks: chunks.length, dims })
     
     const vectors = chunks.map((chunk, index) => ({
       id: `${reportId}_chunk_${index}`,
-      values: embedding as number[],
+      values: embeddings[index] as number[],
       metadata: {
         chunk: chunk,
         reportId: reportId,
