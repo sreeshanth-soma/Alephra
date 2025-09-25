@@ -709,29 +709,7 @@ export default function VoiceAgentPage() {
             <p className="text-sm text-gray-600 dark:text-gray-400">Speak naturally in any Indian language for medical assistance</p>
           </div>
           
-          {/* Navigation Links */}
-          <div className="flex items-center gap-2 mr-12">
-            <Link href="/analysis">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex items-center gap-2 text-xs px-3 py-2 h-8 border border-gray-400 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-                <BarChart3 className="h-3 w-3" />
-                Analysis
-              </Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex items-center gap-2 text-xs px-3 py-2 h-8 border border-gray-400 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-                <LayoutDashboard className="h-3 w-3" />
-                Dashboard
-              </Button>
-            </Link>
-          </div>
+          {/* Navigation Links removed as requested */}
         </div>
 
         {/* Language Selection - Compact */}

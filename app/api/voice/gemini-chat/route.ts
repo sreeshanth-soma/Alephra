@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const maxDuration = 60;
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { queryPineconeVectorStore } from '@/utils';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { indexName, namespace } from '@/app/config';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY ?? "",
@@ -13,7 +14,7 @@ const pinecone = new Pinecone({
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, language = 'en-IN', reportData = '' } = await request.json();
+    const { message, language = 'en-IN', reportData = '', reportId } = await request.json();
     
     console.log('Voice API received:', { message, language, reportDataLength: reportData.length });
     
@@ -41,9 +42,19 @@ export async function POST(request: NextRequest) {
 
     const languageName = languageNames[language] || 'English';
 
+    // Truncate long inputs to keep embedding fast and focused
+    const maxReportChars = 3000
+    const maxMessageChars = 500
+    const trimmedReport = (reportData || '').slice(0, maxReportChars)
+    const trimmedMessage = (message || '').slice(0, maxMessageChars)
+
     // Query vector database for relevant clinical findings
-    const query = `Represent this for searching relevant passages: patient medical report says: \n${reportData}. \n\n${message}`;
-    const retrievals = await queryPineconeVectorStore(pinecone, indexName, namespace, query);
+    const query = `Represent this for searching relevant passages: patient medical report says: \n${trimmedReport}. \n\n${trimmedMessage}`;
+    const retrievals = await queryPineconeVectorStore(pinecone, indexName, namespace, query, {
+      reportId,
+      topK: 3,
+      minScore: 0.8
+    });
 
     // Create a medical-focused prompt using vector database results
     const finalPrompt = `You are a helpful medical voice assistant for MedScan. The user is speaking in ${languageName}.

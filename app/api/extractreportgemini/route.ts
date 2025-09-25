@@ -1,10 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+export const maxDuration = 60;
 import { Pinecone } from "@pinecone-database/pinecone";
 import { createAndStoreVectorEmbeddings } from "@/utils";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: 'gemini-1.5-flash',
 });
 
 const pinecone = new Pinecone({
@@ -17,7 +18,7 @@ Go over the the clinical report and identify biomarkers that show slight or larg
 
 // Simple concurrency limiter to avoid thundering herd
 let inFlight = 0;
-const MAX_CONCURRENT = 2;
+const MAX_CONCURRENT = 1;
 const waitForSlot = async () => {
     while (inFlight >= MAX_CONCURRENT) {
         await new Promise(r => setTimeout(r, 50));

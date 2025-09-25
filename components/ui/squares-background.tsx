@@ -59,7 +59,7 @@ export function Squares({
       const startX = Math.floor(gridOffset.current.x / squareSize) * squareSize
       const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize
 
-      ctx.lineWidth = 0.5
+      ctx.lineWidth = 0.6
 
       for (let x = startX; x < canvas.width + squareSize; x += squareSize) {
         for (let y = startY; y < canvas.height + squareSize; y += squareSize) {
@@ -75,7 +75,9 @@ export function Squares({
             ctx.fillRect(squareX, squareY, squareSize, squareSize)
           }
 
-          ctx.strokeStyle = borderColor
+          // Boost contrast slightly in dark mode
+          const isDark = document.documentElement.classList.contains("dark")
+          ctx.strokeStyle = isDark ? "#777" : borderColor
           ctx.strokeRect(squareX, squareY, squareSize, squareSize)
         }
       }
@@ -89,7 +91,7 @@ export function Squares({
         Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2)) / 2,
       )
       gradient.addColorStop(0, "rgba(6, 6, 6, 0)")
-      gradient.addColorStop(1, "#060606")
+      gradient.addColorStop(1, "#050505")
 
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, canvas.width, canvas.height)

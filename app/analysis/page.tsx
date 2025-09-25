@@ -44,29 +44,17 @@ const AnalysisPage = () => {
           direction="diagonal"
           speed={0.5}
           squareSize={40}
-          borderColor="#333" 
-          hoverFillColor="#444"
+          borderColor="#666"
+          hoverFillColor="#2a2a2a"
         />
       </div>
       
       {/* Overlay for better contrast */}
-      <div className="absolute inset-0 z-5 bg-white/40 dark:bg-black/10" />
+      <div className="absolute inset-0 z-5 bg-white/40 dark:bg-black/0" />
       
-      {/* Note Card - Top Right */}
-      <div className="absolute top-24 right-4 z-20 max-w-sm md:top-20">
-        <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
-                You can even add additional information to the summary for better insights
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
       
-      <div className="container mx-auto px-4 pt-32 pb-12 relative z-10">
+      
+      <div className="container mx-auto px-4 pt-4 pb-12 relative z-10">
         <div className="text-center mb-12">
           <h1 className="text-6xl font-bold text-black dark:text-white mb-6 font-playfair">
             MedScan
@@ -75,14 +63,7 @@ const AnalysisPage = () => {
             AI-powered medical report analysis
           </p>
         </div>
-        <div className="flex justify-center gap-4 mb-12">
-          <Link href="/dashboard">
-            <Button variant="outline">Go to Dashboard</Button>
-          </Link>
-          <Link href="/voice">
-            <Button variant="outline">Go to Voice Agent</Button>
-          </Link>
-        </div>
+        
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-6">

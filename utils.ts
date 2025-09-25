@@ -1,5 +1,6 @@
 import { Pinecone } from "@pinecone-database/pinecone";
 import { modelname, namespace, topK } from "./app/config";
+import crypto from "crypto";
 import { HfInference } from '@huggingface/inference'
 
 const HF_TOKEN: string = process.env.HF_TOKEN ?? ""
@@ -55,13 +56,22 @@ async function embedViaLocalTransformers(texts: string[], model: string): Promis
   const pipe = await mod.pipeline('feature-extraction', model)
   const outputs: any = await pipe(texts, { pooling: 'mean', normalize: true })
   let arr = Array.isArray(outputs) ? outputs : [outputs]
-  arr = arr.map((v: any) => (Array.isArray(v) && Array.isArray(v[0]) ? v[0] : v))
+  arr = arr.map((v: any) => {
+    if (v && typeof v === 'object' && 'data' in v) return (v as any).data
+    if (Array.isArray(v) && Array.isArray(v[0])) return v[0]
+    return v
+  })
   return arr.map((v: any) => Array.from(v).map((x: any) => Number(x)))
+}
+
+function hashText(text: string): string {
+  // Stable SHA-256 hash for cache keys to avoid very large strings
+  return crypto.createHash('sha256').update(text).digest('hex')
 }
 
 async function embedWithFallback(texts: string[], model: string): Promise<number[][]> {
   // serve from in-process cache if available
-  const keys = texts.map(t => `${model}|${t}`)
+  const keys = texts.map(t => `${model}|${hashText(t)}`)
   const results: (number[]|undefined)[] = keys.map(k => cacheGet(k))
   const missingIdx: number[] = []
   for (let i = 0; i < results.length; i++) if (!results[i]) missingIdx.push(i)
@@ -104,7 +114,7 @@ async function embedWithFallback(texts: string[], model: string): Promise<number
 
 function isValidVector(vec: number[] | undefined): boolean {
   if (!vec || !Array.isArray(vec)) return false
-  if (vec.length < 2) return false
+  if (vec.length < 8) return false
   for (let i = 0; i < Math.min(vec.length, 8); i++) {
     if (!Number.isFinite(vec[i])) return false
   }
@@ -122,16 +132,27 @@ async function sanitizeEmbeddings(texts: string[], model: string, vectors: numbe
   const recomputed = await embedViaLocalTransformers(payload, model)
   for (let j = 0; j < invalidIdx.length; j++) {
     const idx = invalidIdx[j]
-    vectors[idx] = recomputed[j]
+    let v = recomputed[j]
+    if (!isValidVector(v)) {
+      throw new Error(`Embedding normalization failed for index ${idx}: invalid vector shape`)
+    }
+    vectors[idx] = v
   }
   return vectors
+}
+
+type QueryOptions = {
+  reportId?: string
+  topK?: number
+  minScore?: number
 }
 
 export async function queryPineconeVectorStore(
   client: Pinecone,
   indexName: string,
   namespace: string,
-  query: string
+  query: string,
+  options: QueryOptions = {}
 ): Promise<string> {
   try {
     let [queryEmbedding] = await embedWithFallback([query], modelname)
@@ -140,20 +161,27 @@ export async function queryPineconeVectorStore(
     }
     // console.log("Querying database vector store...");
     const index = client.Index(indexName);
-    const queryResponse = await index.namespace(namespace).query({
-      topK: topK,
+    const effectiveTopK = Math.max(1, Math.min(options.topK ?? 3, topK || 10))
+    const pineconeQuery: any = {
+      topK: effectiveTopK,
       vector: queryEmbedding as any,
       includeMetadata: true,
-      // includeValues: true,
       includeValues: false
-    });
-
-    console.log(queryResponse);
+    }
+    if (options.reportId) {
+      pineconeQuery.filter = { reportId: options.reportId }
+    }
+    const queryResponse = await index.namespace(namespace).query(pineconeQuery);
     
 
     if (queryResponse.matches.length > 0) {
-      const concatenatedRetrievals = queryResponse.matches
-        .map((match,index) =>`\nClinical Finding ${index+1}: \n ${match.metadata?.chunk}`)
+      const minScore = options.minScore ?? 0.8
+      const filtered = queryResponse.matches
+        .filter((m: any) => typeof m.score === 'number' ? m.score >= minScore : true)
+        .slice(0, effectiveTopK)
+      if (filtered.length === 0) return "<nomatches>"
+      const concatenatedRetrievals = filtered
+        .map((match: any, index: number) =>`\nClinical Finding ${index+1}: \n ${match.metadata?.chunk}`)
         .join(". \n\n");
       return concatenatedRetrievals;
     } else {

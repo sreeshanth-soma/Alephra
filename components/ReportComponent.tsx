@@ -136,18 +136,6 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
         }
         
         setIsLoading(true);
-        let isCompleted = false;
-        
-        // Safety cap: ensure analyzing UI doesn't exceed 8 seconds
-        const loadingSafetyTimer = setTimeout(() => {
-            if (!isCompleted) {
-                setIsLoading(false);
-                toast({
-                    variant: 'destructive',
-                    description: "Request timed out. Please try again.",
-                });
-            }
-        }, 8000);
 
         try {
             const response = await fetch("api/extractreportgemini", {
@@ -190,9 +178,6 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
                 description: "Network error. Please check your connection and try again.",
             });
         } finally {
-            // Mark as completed to prevent race condition
-            isCompleted = true;
-            clearTimeout(loadingSafetyTimer);
             setIsLoading(false);
         }
     }

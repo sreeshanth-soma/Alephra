@@ -522,6 +522,12 @@ export default function DashboardPage() {
   const [apptTime, setApptTime] = useState<string>("");
   const [appointments, setAppointments] = useState<Array<{id: string, title: string, date: string, time: string}>>([]);
   const [appointmentsStatus, setAppointmentsStatus] = useState<string>("");
+  const [showRemindersModal, setShowRemindersModal] = useState<boolean>(false);
+  const clearAllReminders = () => {
+    const ok = typeof window !== 'undefined' ? window.confirm('Remove all reminders? This cannot be undone.') : true;
+    if (!ok) return;
+    setReminders([]);
+  };
   // Appointment duration fixed to 30 minutes; input removed for a cleaner UI
   // Vitals interactive state
   const [vitals, setVitals] = useState<VitalsPoint[]>([]);
@@ -1133,22 +1139,6 @@ export default function DashboardPage() {
               <p className="text-gray-600 dark:text-gray-400">Overview of vitals, labs, meds, and care timeline</p>
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/analysis">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2"></path>
-                  </svg>
-                  Analysis
-                </Button>
-              </Link>
-              <Link href="/voice">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                  </svg>
-                  Voice Assistant
-                </Button>
-              </Link>
               <button
                 onClick={() => {
                   const success = clearAllMedScanData();
@@ -1194,9 +1184,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Upload Report", classes: "bg-black text-white dark:bg-white dark:text-black", href: "/report" },
-            { label: "Start AI Chat", classes: "bg-cyan-600 text-white", href: "/analysis" },
             { label: "View History", classes: "bg-emerald-600 text-white", href: "/dashboard/timeline" },
-            { label: "Go to Analysis", classes: "bg-slate-800 text-white", href: "/analysis" },
           ].map((b, i) => (
             <a key={i} href={b.href} className="block">
               <motion.button className={`w-full h-14 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 ${b.classes}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -1212,7 +1200,10 @@ export default function DashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-sm font-medium text-black dark:text-white">Medical Reminders</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">📅 Syncs with Google Calendar</div>
+                <div className="flex items-center gap-3">
+                  <button onClick={clearAllReminders} className="text-xs text-red-600 hover:underline">Remove all</button>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">📅 Syncs with Google Calendar</div>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
                 <input
@@ -1236,6 +1227,42 @@ export default function DashboardPage() {
                 {reminders.length === 0 && (
                   <div className="text-sm text-gray-500">No reminders yet. Add your first one above.</div>
                 )}
+                {reminders.slice(0, 3).map(r => (
+                  <div key={r.id} className="flex items-center justify-between rounded-lg border border-gray-300 dark:border-gray-700 p-3">
+                    <div className="flex items-center gap-3">
+                      <input type="checkbox" checked={r.done} onChange={() => toggleReminder(r.id)} className="h-4 w-4" />
+                      <div className={`text-sm ${r.done ? 'line-through text-gray-400' : 'text-black dark:text-white'}`}>{r.text}</div>
+                      {r.time && <Badge variant="secondary" className="text-xs">{r.time}</Badge>}
+                    </div>
+                    <button onClick={() => removeReminder(r.id)} className="text-xs text-red-600 hover:underline">Remove</button>
+                  </div>
+                ))}
+                {reminders.length > 3 && (
+                  <button
+                    onClick={() => setShowRemindersModal(true)}
+                    className="w-full text-center text-xs font-medium text-cyan-700 dark:text-cyan-400 hover:underline"
+                  >
+                    View {reminders.length - 3} more
+                  </button>
+                )}
+                {remindersStatus && <div className="text-xs text-gray-500">{remindersStatus}</div>}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {showRemindersModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setShowRemindersModal(false)}></div>
+            <div className="relative z-10 w-full max-w-lg bg-white dark:bg-zinc-900 rounded-xl border border-gray-300 dark:border-gray-700 shadow-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-sm font-medium text-black dark:text-white">All Medical Reminders</div>
+                <div className="flex items-center gap-3">
+                  <button onClick={clearAllReminders} className="text-xs text-red-600 hover:underline">Remove all</button>
+                  <button onClick={() => setShowRemindersModal(false)} className="text-xs text-gray-600 dark:text-gray-300 hover:underline">Close</button>
+                </div>
+              </div>
+              <div className="space-y-2 max-h-[60vh] overflow-y-auto">
                 {reminders.map(r => (
                   <div key={r.id} className="flex items-center justify-between rounded-lg border border-gray-300 dark:border-gray-700 p-3">
                     <div className="flex items-center gap-3">
@@ -1246,11 +1273,13 @@ export default function DashboardPage() {
                     <button onClick={() => removeReminder(r.id)} className="text-xs text-red-600 hover:underline">Remove</button>
                   </div>
                 ))}
-                {remindersStatus && <div className="text-xs text-gray-500">{remindersStatus}</div>}
+                {reminders.length === 0 && (
+                  <div className="text-sm text-gray-500">No reminders yet.</div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
+        )}
 
         {/* Appointments */}
         <div className="mb-8">
@@ -1638,7 +1667,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="text-sm font-medium text-black dark:text-white">Heart Rate & SpO2</div>
                 <div className="flex items-center gap-2">
-                  <a href="/dashboard/vitals" className="text-xs text-cyan-600">View details →</a>
+                  {/* <a href="/dashboard/vitals" className="text-xs text-cyan-600">View details →</a> */}
                     </div>
                   </div>
                   
@@ -1660,7 +1689,7 @@ export default function DashboardPage() {
                       {showAllLabs ? 'Show Less' : `View All (${labData.length})`}
                       </button>
                   )}
-                  <a href="/dashboard/labs" className="text-xs text-cyan-600">View details →</a>
+                  {/* <a href="/dashboard/labs" className="text-xs text-cyan-600">View details →</a> */}
                     </div>
                   </div>
               
@@ -1902,9 +1931,9 @@ export default function DashboardPage() {
               {/* Cart Popup Modal */}
               {showCart && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+                  <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-2xl w-full h-[80vh] flex flex-col">
                     {/* Modal Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-gray-300 dark:border-gray-700">
+                    <div className="flex items-center justify-between p-6 border-b border-gray-300 dark:border-gray-700 sticky top-0 bg-white dark:bg-zinc-900 z-10">
                       <h2 className="text-xl font-semibold text-black dark:text-white">Selected Medicines</h2>
                       <button 
                         onClick={() => setShowCart(false)}
@@ -1917,7 +1946,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Modal Content */}
-                    <div className="p-6 overflow-y-auto max-h-[60vh]">
+                    <div className="p-6 overflow-y-auto flex-1">
                       {cartItems.length === 0 ? (
                         <div className="text-center py-12">
                           <div className="text-gray-500 text-lg mb-2">No medicines selected</div>
@@ -1964,7 +1993,7 @@ export default function DashboardPage() {
 
                     {/* Price Summary */}
                     {cartItems.length > 0 && (
-                      <div className="border-t border-gray-300 dark:border-gray-700 p-6">
+                      <div className="border-t border-gray-300 dark:border-gray-700 p-6 sticky bottom-0 bg-white dark:bg-zinc-900 z-10">
                         <div className="space-y-3">
                           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                             <span>Total ({cartItems.length} items)</span>
