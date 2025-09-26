@@ -18,7 +18,8 @@ const google = createGoogleGenerativeAI({
 });
 
 // Using gemini-1.5-pro-latest for enhanced capabilities
-const model = google('models/gemini-1.5-flash');
+const model = google('models/gemini-1.5-flash-8b');
+console.log("Using Gemini model:", model.modelId);
 
 export async function POST(req: Request, res: Response) {
     try {

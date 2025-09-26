@@ -6,7 +6,7 @@ import { Pinecone } from '@pinecone-database/pinecone';
 import { indexName, namespace } from '@/app/config';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-8b' });
 
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY ?? "",
