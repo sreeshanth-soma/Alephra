@@ -130,18 +130,21 @@ Visit `http://localhost:3000` and start exploring! 🎉
 graph TB
     A[User Interface] --> B[Next.js 14 Frontend]
     B --> C[API Routes Layer]
+    
     C --> D[Google Gemini 1.5 Flash]
     C --> E[Pinecone Vector Database]
     C --> F[Sarvam AI TTS/STT]
     C --> G[Google Calendar API]
     C --> H[Vercel Analytics]
     C --> I[MCP Embedding Server]
+    
     B --> J[Prisma ORM]
     J --> K[SQLite Database]
     B --> L[Local Storage]
     B --> M[Vector Embeddings Cache]
     
-    subgraph "AI Processing Pipeline"
+    subgraph "🔄 AI Processing Pipeline"
+        direction TB
         N[Report Upload] --> O[Image Compression]
         O --> P[OCR Extraction]
         P --> Q[Text Chunking]
@@ -149,7 +152,8 @@ graph TB
         R --> S[Pinecone Storage]
     end
     
-    subgraph "Voice Interface"
+    subgraph "🎤 Voice Interface"
+        direction TB
         T[Speech Recognition] --> U[Language Detection]
         U --> V[Text Processing]
         V --> W[Vector Search]
@@ -157,11 +161,18 @@ graph TB
         X --> Y[Text-to-Speech]
     end
     
+    %% Connect subgraphs to main flow
+    N -.-> C
+    T -.-> C
+    W -.-> E
+    R -.-> E
+    
     style A fill:#e1f5fe
     style D fill:#f3e5f5
     style E fill:#e8f5e8
     style F fill:#fff3e0
     style H fill:#f0f4ff
+    style I fill:#e8f5e8
 ```
 
 </div>
