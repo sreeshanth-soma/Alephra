@@ -105,6 +105,11 @@ NEXTAUTH_URL=http://localhost:3000
 
 # Database
 DATABASE_URL=your_database_connection_string
+
+# MCP Embedding Server (Optional)
+MCP_EMBED_HOST=127.0.0.1
+MCP_EMBED_PORT=8787
+MCP_EMBED_URL=http://127.0.0.1:8787/embed
 ```
 
 ### 3️⃣ Launch
@@ -123,19 +128,40 @@ Visit `http://localhost:3000` and start exploring! 🎉
 
 ```mermaid
 graph TB
-    A[User Interface] --> B[Next.js Frontend]
-    B --> C[API Routes]
-    C --> D[Google Gemini AI]
-    C --> E[Pinecone Vector DB]
+    A[User Interface] --> B[Next.js 14 Frontend]
+    B --> C[API Routes Layer]
+    C --> D[Google Gemini 1.5 Flash]
+    C --> E[Pinecone Vector Database]
     C --> F[Sarvam AI TTS/STT]
     C --> G[Google Calendar API]
-    B --> H[Prisma ORM]
-    H --> I[Database]
+    C --> H[Vercel Analytics]
+    C --> I[MCP Embedding Server]
+    B --> J[Prisma ORM]
+    J --> K[SQLite Database]
+    B --> L[Local Storage]
+    B --> M[Vector Embeddings Cache]
+    
+    subgraph "AI Processing Pipeline"
+        N[Report Upload] --> O[Image Compression]
+        O --> P[OCR Extraction]
+        P --> Q[Text Chunking]
+        Q --> R[Vector Embeddings]
+        R --> S[Pinecone Storage]
+    end
+    
+    subgraph "Voice Interface"
+        T[Speech Recognition] --> U[Language Detection]
+        U --> V[Text Processing]
+        V --> W[Vector Search]
+        W --> X[AI Response Generation]
+        X --> Y[Text-to-Speech]
+    end
     
     style A fill:#e1f5fe
     style D fill:#f3e5f5
     style E fill:#e8f5e8
     style F fill:#fff3e0
+    style H fill:#f0f4ff
 ```
 
 </div>
@@ -144,13 +170,42 @@ graph TB
 
 | Category | Technologies |
 |----------|-------------|
-| **Frontend** | Next.js 14, TypeScript, Tailwind CSS, Framer Motion |
-| **Backend** | Next.js API Routes, Prisma ORM |
-| **AI/ML** | Google Gemini 1.5, Hugging Face Transformers, Vector Embeddings |
-| **Voice** | Sarvam AI (STT/TTS), Web Speech API |
-| **Database** | Pinecone Vector DB, PostgreSQL/SQLite |
-| **Auth** | NextAuth.js, Google OAuth 2.0 |
-| **Deployment** | Vercel, Docker |
+| **Frontend** | Next.js 14, TypeScript, Tailwind CSS, Framer Motion, Radix UI |
+| **Backend** | Next.js API Routes, Prisma ORM, Edge Runtime |
+| **AI/ML** | Google Gemini 1.5 Flash, Hugging Face Transformers, Vector Embeddings, MCP Server |
+| **Voice** | Sarvam AI (STT/TTS), Web Speech API, Multi-language Support |
+| **Database** | Pinecone Vector DB, SQLite (Development), Prisma ORM |
+| **Storage** | Local Storage, Vector Cache, Image Compression |
+| **Analytics** | Vercel Analytics, Performance Monitoring |
+| **Auth** | NextAuth.js, Google OAuth 2.0, Session Management |
+| **Deployment** | Vercel, Edge Functions, CDN |
+
+### 🚀 Key Architectural Features
+
+#### **Efficient Vector Search**
+- **Smart Caching**: In-memory LRU cache for embeddings (1000+ entries)
+- **Optimized Queries**: Reduced topK to 3-5, score thresholding (0.8+)
+- **Report Filtering**: Scoped searches by reportId for better relevance
+- **Input Truncation**: 3K chars for reports, 500 chars for queries
+- **MCP Server**: Local embedding server with fallback to Hugging Face
+
+#### **Performance Optimizations**
+- **Image Compression**: Adaptive quality based on file size
+- **Batch Processing**: Efficient embedding generation
+- **Memory Management**: Canvas cleanup and object URL management
+- **Error Handling**: Graceful fallbacks and timeout management
+
+#### **Modern UI/UX**
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **Dark Mode**: Complete theme support throughout the application
+- **Interactive Elements**: Framer Motion animations and transitions
+- **Accessibility**: ARIA-compliant components and keyboard navigation
+
+#### **Scalable Architecture**
+- **Edge Runtime**: Fast API responses with Vercel Edge Functions
+- **Modular Components**: Reusable UI components with Radix UI
+- **Type Safety**: Full TypeScript implementation
+- **Analytics Integration**: Vercel Analytics for performance monitoring
 
 ---
 
