@@ -1120,12 +1120,11 @@ export default function DashboardPage() {
       
       {/* Subtle grid background */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04] dark:opacity-[0.06] z-5"
+        className="pointer-events-none absolute inset-0 opacity-[0.08] dark:opacity-[0.15] z-5 text-gray-400 dark:text-gray-600"
         style={{
           backgroundImage:
             "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
           backgroundSize: "24px 24px",
-          color: "#000",
         }}
       />
       {/* Ambient gradient glows */}
@@ -1181,10 +1180,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Upload Report", classes: "bg-black text-white dark:bg-white dark:text-black", href: "/report" },
             { label: "View History", classes: "bg-emerald-600 text-white", href: "/dashboard/timeline" },
+            { label: "Voice Assistant", classes: "bg-indigo-600 text-white", href: "/voice" },
+            { label: "Analysis", classes: "bg-orange-600 text-white", href: "/analysis" },
           ].map((b, i) => (
             <a key={i} href={b.href} className="block">
               <motion.button className={`w-full h-14 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 ${b.classes}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>

@@ -31,7 +31,7 @@ export function LampDemo() {
             duration: 0.6,
             ease: "easeInOut",
           }}
-          className="block text-lg md:text-3xl lg:text-4xl mt-8 text-neutral-600 dark:text-slate-300 font-medium tracking-wide leading-relaxed"
+          className="block text-lg md:text-3xl lg:text-4xl mt-2 text-neutral-600 dark:text-slate-300 font-medium tracking-wide leading-relaxed"
         >
           RAG-driven healthcare intelligence with a conversational voice interface
         </motion.span>

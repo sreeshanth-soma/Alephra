@@ -702,14 +702,12 @@ export default function VoiceAgentPage() {
   return (
     <div className="h-screen bg-gray-50 dark:bg-black p-2 overflow-hidden relative pt-20">
       <div className="w-full h-full flex flex-col">
-        {/* Header - Compact */}
-        <div className="mb-2 flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-black dark:text-white mb-1">Voice Agent</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Speak naturally in any Indian language for medical assistance</p>
-          </div>
-          
-          {/* Navigation Links removed as requested */}
+        {/* Header - Enhanced */}
+        <div className="mb-6 text-center">
+          <h1 className="text-4xl font-bold text-black dark:text-white mb-3">Voice Agent</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Speak naturally in any Indian language for medical assistance
+          </p>
         </div>
 
         {/* Language Selection - Compact */}
@@ -800,7 +798,7 @@ export default function VoiceAgentPage() {
             )}
 
             {/* Messages - New Conversation UI */}
-            <div className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden shadow-md min-h-0">
+            <div className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden shadow-md min-h-0 bg-gray-100 dark:bg-zinc-900">
               <Conversation className="relative w-full h-full">
                 <ConversationContent>
                   {messages.map((message) => (
