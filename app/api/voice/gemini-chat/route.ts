@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const trimmedMessage = (message || '').slice(0, maxMessageChars)
 
     // Query vector database for relevant clinical findings
-    const query = `Represent this for searching relevant passages: patient medical report says: \n${trimmedReport}. \n\n${trimmedMessage}`;
+    const query = `Represent this for searching relevant passages: patient medical report that says: \n${trimmedReport}. \n\n${trimmedMessage}`;
     const retrievals = await queryPineconeVectorStore(pinecone, indexName, namespace, query, {
       reportId,
       topK: 3,
