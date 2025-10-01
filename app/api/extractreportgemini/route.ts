@@ -3,6 +3,9 @@ export const maxDuration = 60;
 import { Pinecone } from "@pinecone-database/pinecone";
 import { createAndStoreVectorEmbeddings } from "@/utils";
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
     model: 'gemini-flash-lite-latest',
