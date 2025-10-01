@@ -12,6 +12,9 @@ import { Conversation, ConversationContent, ConversationScrollButton } from '@/c
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
+const isProd = process.env.NODE_ENV === 'production';
+const log = (...args: any[]) => { if (!isProd) console.log(...args); };
+
 // TypeScript declarations for browser speech recognition
 declare global {
   interface Window {
@@ -124,7 +127,7 @@ export default function VoiceAgentPage() {
         loadVoices();
         // Debug: Log all available voices
         const voices = speechSynthesis.getVoices();
-        console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang, voiceURI: v.voiceURI })));
+        log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang, voiceURI: v.voiceURI })));
       };
     }
 
@@ -136,7 +139,7 @@ export default function VoiceAgentPage() {
   }, []);
 
   const startRecording = async () => {
-    console.log('startRecording called');
+    log('startRecording called');
     try {
       // Try browser's built-in speech recognition first (more reliable)
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -151,12 +154,12 @@ export default function VoiceAgentPage() {
         recognition.onstart = () => {
           setIsRecording(true);
           setSpeechMethod('browser');
-          console.log('Browser speech recognition started');
+          log('Browser speech recognition started');
         };
 
         recognition.onresult = async (event: any) => {
           const transcript = event.results[0][0].transcript;
-          console.log('Browser speech recognition result:', transcript);
+          log('Browser speech recognition result:', transcript);
           
           if (transcript.trim()) {
             const userMessage: VoiceMessage = {
@@ -174,7 +177,7 @@ export default function VoiceAgentPage() {
         };
 
         recognition.onerror = (event: any) => {
-          console.error('Browser speech recognition error:', event.error);
+      console.error('Browser speech recognition error:', event.error);
           setIsRecording(false);
           // Fallback to MediaRecorder
           startMediaRecorder();
@@ -219,7 +222,7 @@ export default function VoiceAgentPage() {
         }
       }
       
-      console.log('Using MIME type:', selectedMimeType);
+      log('Using MIME type:', selectedMimeType);
       
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: selectedMimeType || undefined,
@@ -232,7 +235,7 @@ export default function VoiceAgentPage() {
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
-          console.log('Audio chunk received:', event.data.size, 'bytes');
+          log('Audio chunk received:', event.data.size, 'bytes');
         }
       };
 
@@ -240,7 +243,7 @@ export default function VoiceAgentPage() {
         const audioBlob = new Blob(audioChunksRef.current, { 
           type: selectedMimeType || 'audio/webm' 
         });
-        console.log('Final audio blob:', {
+        log('Final audio blob:', {
           size: audioBlob.size,
           type: audioBlob.type
         });
@@ -283,7 +286,7 @@ export default function VoiceAgentPage() {
       const formData = new FormData();
       formData.append('audio', audioBlob, `recording.${fileExtension}`);
 
-      console.log('Sending audio blob:', {
+    log('Sending audio blob:', {
         size: audioBlob.size,
         type: audioBlob.type,
         extension: fileExtension
@@ -295,7 +298,7 @@ export default function VoiceAgentPage() {
       });
 
       const result = await response.json();
-      console.log('Speech-to-text result:', result);
+      log('Speech-to-text result:', result);
 
       if (result.success) {
         const userMessage: VoiceMessage = {
@@ -430,11 +433,11 @@ export default function VoiceAgentPage() {
     const browserLangCode = language?.browserCode || langCode;
     const fallbackCode = language?.fallbackCode || langCode.split('-')[0];
     
-    console.log('Looking for voice for language:', langCode, 'browserCode:', browserLangCode);
+    log('Looking for voice for language:', langCode, 'browserCode:', browserLangCode);
     
         // Special handling for Telugu - prioritize Telugu voices
         if (langCode === 'te-IN') {
-          console.log('Available voices for Telugu selection:', availableVoices.map(v => ({ name: v.name, lang: v.lang })));
+          log('Available voices for Telugu selection:', availableVoices.map(v => ({ name: v.name, lang: v.lang })));
           
           // First try exact Telugu matches
           let voice = availableVoices.find(v => 
@@ -443,7 +446,7 @@ export default function VoiceAgentPage() {
             v.name.toLowerCase().includes('telugu')
           );
           if (voice) {
-            console.log('Found Telugu voice:', voice.name, voice.lang);
+            log('Found Telugu voice:', voice.name, voice.lang);
             return voice;
           }
           
@@ -455,7 +458,7 @@ export default function VoiceAgentPage() {
             v.name.toLowerCase().includes('hindi') // Hindi voices often work better for Telugu than Tamil
           );
           if (voice) {
-            console.log('Using multilingual/Indian voice for Telugu:', voice.name, voice.lang);
+            log('Using multilingual/Indian voice for Telugu:', voice.name, voice.lang);
             return voice;
           }
           
@@ -466,7 +469,7 @@ export default function VoiceAgentPage() {
             v.lang.includes('ml')    // Malayalam
           );
           if (voice) {
-            console.log('Using South Indian language voice for Telugu:', voice.name, voice.lang);
+            log('Using South Indian language voice for Telugu:', voice.name, voice.lang);
             return voice;
           }
           
@@ -476,7 +479,7 @@ export default function VoiceAgentPage() {
             v.name.toLowerCase().includes('hindi')
           );
           if (voice) {
-            console.log('Using Hindi voice for Telugu (better Telugu support):', voice.name, voice.lang);
+            log('Using Hindi voice for Telugu (better Telugu support):', voice.name, voice.lang);
             return voice;
           }
           
@@ -489,18 +492,18 @@ export default function VoiceAgentPage() {
             v.lang.includes('pa')
           );
           if (voice) {
-            console.log('Using Indian language voice for Telugu:', voice.name, voice.lang);
+            log('Using Indian language voice for Telugu:', voice.name, voice.lang);
             return voice;
           }
           
           // Last resort - any non-English voice
           voice = availableVoices.find(v => !v.lang.includes('en'));
           if (voice) {
-            console.log('Using non-English voice for Telugu:', voice.name, voice.lang);
+            log('Using non-English voice for Telugu:', voice.name, voice.lang);
             return voice;
           }
           
-          console.log('No suitable voice found for Telugu');
+          log('No suitable voice found for Telugu');
           return null;
         }
     
@@ -543,8 +546,8 @@ export default function VoiceAgentPage() {
   };
 
   const textToSpeech = async (text: string) => {
-    console.log('textToSpeech called with text:', text.substring(0, 50) + '...');
-    console.log('textToSpeech called from:', new Error().stack);
+    log('textToSpeech called with text:', text.substring(0, 50) + '...');
+    log('textToSpeech called from:', new Error().stack);
     
     if (isMuted) return;
 
@@ -562,13 +565,13 @@ export default function VoiceAgentPage() {
       });
 
       const result = await response.json();
-      console.log('TTS API result:', result);
-      console.log('Selected language for TTS:', selectedLanguage);
-      console.log('Selected speaker for TTS:', selectedSpeaker);
+      log('TTS API result:', result);
+      log('Selected language for TTS:', selectedLanguage);
+      log('Selected speaker for TTS:', selectedSpeaker);
 
       // Try Sarvam TTS first
       if (result.success && result.audio_base64) {
-        console.log('Using Sarvam TTS with audio data length:', result.audio_base64.length);
+        log('Using Sarvam TTS with audio data length:', result.audio_base64.length);
         try {
           // Convert base64 to audio blob
           const audioData = atob(result.audio_base64);
@@ -591,7 +594,7 @@ export default function VoiceAgentPage() {
           };
           audio.onerror = (error) => {
             console.error('Audio playback error:', error);
-            console.log('Falling back to browser TTS due to audio error');
+            log('Falling back to browser TTS due to audio error');
             setIsPlaying(false);
             URL.revokeObjectURL(audioUrl);
             audioRef.current = null;
@@ -600,7 +603,7 @@ export default function VoiceAgentPage() {
           };
           
           await audio.play();
-          console.log('Sarvam TTS audio playing successfully');
+          log('Sarvam TTS audio playing successfully');
           return;
         } catch (audioError) {
           console.error('Audio processing error:', audioError);
@@ -609,11 +612,11 @@ export default function VoiceAgentPage() {
         }
       } else {
         // Sarvam TTS failed, use browser TTS
-        console.log('Sarvam TTS failed, falling back to browser TTS. Result:', result);
+        log('Sarvam TTS failed, falling back to browser TTS. Result:', result);
         
         // Show user-friendly message for subscription issues
         if (result.error === 'Subscription issue') {
-          console.log('Sarvam API subscription issue - using browser TTS with improved voice selection');
+          log('Sarvam API subscription issue - using browser TTS with improved voice selection');
         }
         
         fallbackToBrowserTTS(text);
@@ -626,7 +629,7 @@ export default function VoiceAgentPage() {
   };
 
   const fallbackToBrowserTTS = (text: string) => {
-    console.log('fallbackToBrowserTTS called with text:', text.substring(0, 50) + '...');
+    log('fallbackToBrowserTTS called with text:', text.substring(0, 50) + '...');
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       const language = languages.find(lang => lang.code === selectedLanguage);
@@ -639,17 +642,17 @@ export default function VoiceAgentPage() {
         utterance.voice = voice;
         // console.log('Using voice:', voice.name, 'for language:', voice.lang);
       } else {
-        console.log('No voice found, using language code:', utterance.lang);
+        log('No voice found, using language code:', utterance.lang);
         // For Telugu, try to avoid English voices
         if (selectedLanguage === 'te-IN') {
           utterance.lang = 'te-IN';
-          console.log('Forcing Telugu language code for utterance');
+          log('Forcing Telugu language code for utterance');
         }
       }
       
       // Force language setting
       utterance.lang = browserLangCode;
-      console.log('Final utterance settings:', {
+      log('Final utterance settings:', {
         text: text.substring(0, 50) + '...',
         lang: utterance.lang,
         voice: voice?.name || 'default',
@@ -663,11 +666,11 @@ export default function VoiceAgentPage() {
   };
 
   const stopAudio = () => {
-    console.log('stopAudio called');
+    log('stopAudio called');
     
     // Stop the current audio element (Sarvam TTS)
     if (audioRef.current) {
-      console.log('Stopping current audio element');
+      log('Stopping current audio element');
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       audioRef.current = null;
