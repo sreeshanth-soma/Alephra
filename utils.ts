@@ -84,14 +84,27 @@ async function embedWithFallback(texts: string[], model: string): Promise<number
       const mcpVecs = await embedViaMCP(payload, model)
       computed = mcpVecs
     } catch (e) {
-      // Fallback to local transformers
-      try {
-        const payload = missingIdx.map(i => texts[i])
-        const localVecs = await embedViaLocalTransformers(payload, model)
-        computed = localVecs
-      } catch (e2) {
-        // Final fallback: HuggingFace inference if configured
-        if (!process.env.HF_TOKEN) throw e2
+      // On Vercel, skip local transformers to avoid /vercel cache writes
+      const runningOnVercel = Boolean(process.env.VERCEL)
+      if (!runningOnVercel) {
+        try {
+          const payload = missingIdx.map(i => texts[i])
+          const localVecs = await embedViaLocalTransformers(payload, model)
+          computed = localVecs
+        } catch (e2) {
+          // Final fallback: HuggingFace inference if configured
+          if (!process.env.HF_TOKEN) throw e2
+          const mxbOutputs = [] as number[][]
+          for (const i of missingIdx) {
+            const apiOutput: any = await hf.featureExtraction({ model, inputs: texts[i] })
+            const vec = Array.from(apiOutput).map((x: any) => Number(x))
+            mxbOutputs.push(vec)
+          }
+          computed = mxbOutputs
+        }
+      } else {
+        // Vercel path: go straight to HF fallback to avoid local cache
+        if (!process.env.HF_TOKEN) throw e
         const mxbOutputs = [] as number[][]
         for (const i of missingIdx) {
           const apiOutput: any = await hf.featureExtraction({ model, inputs: texts[i] })

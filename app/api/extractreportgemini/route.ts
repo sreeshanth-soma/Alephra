@@ -3,6 +3,7 @@ export const maxDuration = 60;
 import { Pinecone } from "@pinecone-database/pinecone";
 import { createAndStoreVectorEmbeddings } from "@/utils";
 
+if (process.env.NODE_ENV !== "production") console.log("extractreportgemini route loaded");
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
