@@ -17,8 +17,8 @@ const google = createGoogleGenerativeAI({
     apiKey: process.env.GEMINI_API_KEY,
 });
 
-// Using gemini-1.5-pro-latest for enhanced capabilities
-const model = google('models/gemini-1.5-flash-8b');
+// Use selected model from user
+const model = google('models/gemini-flash-lite-latest');
 console.log("Using Gemini model:", model.modelId);
 
 export async function POST(req: Request, res: Response) {

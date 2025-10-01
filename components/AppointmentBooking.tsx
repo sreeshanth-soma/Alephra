@@ -168,6 +168,17 @@ export default function AppointmentBooking({ onClose }: AppointmentBookingProps)
               />
             </div>
 
+            {/* Calendar sync notice */}
+            {!session && (
+              <div className="flex items-start gap-3 rounded-lg border border-yellow-300/40 bg-yellow-50 dark:bg-yellow-900/20 p-3">
+                <span className="text-yellow-700 dark:text-yellow-300 text-lg">⚠️</span>
+                <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <p className="font-medium">Sign in to sync with Google Calendar</p>
+                  <p className="opacity-90">Appointments and reminders will be saved to your calendar after sign in.</p>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea

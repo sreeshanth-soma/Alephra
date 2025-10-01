@@ -9,7 +9,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Activity, Calendar, Filter, CalendarDays } from "lucide-react";
+import { Heart, Activity, Calendar, Filter, CalendarDays, AlertTriangle, Trash2 } from "lucide-react";
+import BasicModal from "@/components/ui/modal";
 import { Noise } from "@/components/ui/noise";
 import { useSession } from "next-auth/react";
 import { safeGetItem, safeSetItem, safeRemoveItem, clearAllMedScanData, isLocalStorageAvailable } from "@/lib/localStorage";
@@ -516,6 +517,8 @@ export default function DashboardPage() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [newReminder, setNewReminder] = useState("");
   const [newTime, setNewTime] = useState("");
+  const [showRemindersConfirm, setShowRemindersConfirm] = useState(false);
+  const [showAppointmentsConfirm, setShowAppointmentsConfirm] = useState(false);
   const [remindersStatus, setRemindersStatus] = useState<string>("");
   const [apptTitle, setApptTitle] = useState<string>("");
   const [apptDate, setApptDate] = useState<string>("");
@@ -524,9 +527,7 @@ export default function DashboardPage() {
   const [appointmentsStatus, setAppointmentsStatus] = useState<string>("");
   const [showRemindersModal, setShowRemindersModal] = useState<boolean>(false);
   const clearAllReminders = () => {
-    const ok = typeof window !== 'undefined' ? window.confirm('Remove all reminders? This cannot be undone.') : true;
-    if (!ok) return;
-    setReminders([]);
+    setShowRemindersConfirm(true);
   };
   // Appointment duration fixed to 30 minutes; input removed for a cleaner UI
   // Vitals interactive state
@@ -1182,10 +1183,10 @@ export default function DashboardPage() {
         {/* Quick actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Upload Report", classes: "bg-black text-white dark:bg-white dark:text-black", href: "/report" },
-            { label: "View History", classes: "bg-emerald-600 text-white", href: "/dashboard/timeline" },
-            { label: "Voice Assistant", classes: "bg-indigo-600 text-white", href: "/voice" },
-            { label: "Analysis", classes: "bg-orange-600 text-white", href: "/analysis" },
+            { label: "Upload Report", classes: "text-white bg-[#26A69A] hover:bg-[#219187] dark:text-black dark:bg-[#00BCD4] dark:hover:bg-[#00a7be]", href: "/report" },
+            { label: "View History", classes: "text-black bg-[#B0BEC5] hover:bg-[#9aa8b0] dark:text-black dark:bg-[#8BC34A] dark:hover:bg-[#7eb63f]", href: "/dashboard/timeline" },
+            { label: "Voice Assistant", classes: "text-white bg-[#3F51B5] hover:bg-[#3546a6] dark:text-white dark:bg-[#AB47BC] dark:hover:bg-[#9a3fa9]", href: "/voice" },
+            { label: "Analysis", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-black dark:bg-[#FFC107] dark:hover:bg-[#e0ac06]", href: "/analysis" },
           ].map((b, i) => (
             <a key={i} href={b.href} className="block">
               <motion.button className={`w-full h-14 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 ${b.classes}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -1201,11 +1202,54 @@ export default function DashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-sm font-medium text-black dark:text-white">Medical Reminders</div>
-                <div className="flex items-center gap-3">
-                  <button onClick={clearAllReminders} className="text-xs text-red-600 hover:underline">Remove all</button>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">📅 Syncs with Google Calendar</div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    onClick={clearAllReminders}
+                    className="text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                  >
+                    Remove all
+                  </button>
+                  {session?.user ? (
+                    <div className="text-xs text-green-600 dark:text-green-400">✅ Synced with Google Calendar</div>
+                  ) : (
+                    <div className="text-xs text-orange-600 dark:text-orange-400">⚠️ Sign in to sync with Google Calendar</div>
+                  )}
                 </div>
               </div>
+              {/* Reminders Clear Modal */}
+              <BasicModal
+                isOpen={showRemindersConfirm}
+                onClose={() => setShowRemindersConfirm(false)}
+                title="Clear All Reminders"
+                size="sm"
+              >
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                      <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Are you sure?</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">This will permanently delete all reminders.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end gap-3 pt-2">
+                    <button
+                      className="px-4 h-9 rounded-md border border-gray-300 dark:border-gray-700 text-sm"
+                      onClick={() => setShowRemindersConfirm(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 h-9 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm inline-flex items-center"
+                      onClick={() => { setReminders([]); setShowRemindersConfirm(false); }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" /> Clear All
+                    </button>
+                  </div>
+                </div>
+              </BasicModal>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
                 <input
                   value={newReminder}
@@ -1221,7 +1265,7 @@ export default function DashboardPage() {
                   title="Add time to sync with Google Calendar"
                   className="md:col-span-1 h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-3 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                 />
-                <button onClick={addReminder} className="h-11 rounded-lg bg-cyan-600 text-white text-sm font-medium hover:opacity-90 transition">📅 Add</button>
+                <button onClick={addReminder} className="h-11 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white text-sm font-medium shadow-lg hover:shadow-xl transition">📅 Add</button>
               </div>
 
               <div className="space-y-2">
@@ -1288,14 +1332,54 @@ export default function DashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-sm font-medium text-black dark:text-white">Appointments</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    onClick={() => setShowAppointmentsConfirm(true)}
+                    className="text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                  >
+                    Remove all
+                  </button>
                   {session?.user ? (
-                    <span className="text-green-600 dark:text-green-400">✅ Connected to Google Calendar</span>
+                    <span className="text-xs text-green-600 dark:text-green-400">✅ Connected to Google Calendar</span>
                   ) : (
-                    <span className="text-orange-600 dark:text-orange-400">⚠️ Sign in to sync with Google Calendar</span>
+                    <span className="text-xs text-orange-600 dark:text-orange-400">⚠️ Sign in to sync with Google Calendar</span>
                   )}
                 </div>
               </div>
+              {/* Appointments Clear Modal */}
+              <BasicModal
+                isOpen={showAppointmentsConfirm}
+                onClose={() => setShowAppointmentsConfirm(false)}
+                title="Clear All Appointments"
+                size="sm"
+              >
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                      <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Are you sure?</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">This will permanently delete all appointments.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end gap-3 pt-2">
+                    <button
+                      className="px-4 h-9 rounded-md border border-gray-300 dark:border-gray-700 text-sm"
+                      onClick={() => setShowAppointmentsConfirm(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 h-9 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm inline-flex items-center"
+                      onClick={() => { setAppointments([]); setShowAppointmentsConfirm(false); }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" /> Clear All
+                    </button>
+                  </div>
+                </div>
+              </BasicModal>
               <div className="flex flex-col md:flex-row items-start gap-6">
                 <div className="flex-1">
                   <div className="text-sm font-medium text-black dark:text-white mb-2">Create Appointment</div>
@@ -1426,7 +1510,7 @@ export default function DashboardPage() {
                       setNewHrDate(new Date().toISOString().split('T')[0]);
                     }
                   }}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white text-sm font-medium rounded-lg shadow-lg hover:shadow-xl transition"
                 >
                   {showVitalsForm ? "Cancel" : "Add Vitals"}
                 </button>

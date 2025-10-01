@@ -6,7 +6,7 @@ import { Pinecone } from '@pinecone-database/pinecone';
 import { indexName, namespace } from '@/app/config';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-8b' });
+const model = genAI.getGenerativeModel({ model: 'gemini-flash-lite-latest' });
 
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY ?? "",
@@ -92,13 +92,24 @@ Respond in a natural, conversational tone that works well for voice output.
 
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
-    const text = response.text();
+    const rawText = response.text();
 
-    console.log('Voice API generated response:', text.substring(0, 100) + '...');
+    // Clean markdown formatting for voice output
+    const cleanText = rawText
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
+      .replace(/\*(.*?)\*/g, '$1')     // Remove italic markdown
+      .replace(/#{1,6}\s*/g, '')       // Remove headers
+      .replace(/`(.*?)`/g, '$1')       // Remove code backticks
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links, keep text
+      .replace(/\n{2,}/g, '. ')        // Replace multiple newlines with periods
+      .replace(/\n/g, ' ')             // Replace single newlines with spaces
+      .trim();
+
+    console.log('Voice API generated response:', cleanText.substring(0, 100) + '...');
 
     return NextResponse.json({ 
       success: true, 
-      response: text.trim(),
+      response: cleanText,
       retrievals: retrievals
     });
 

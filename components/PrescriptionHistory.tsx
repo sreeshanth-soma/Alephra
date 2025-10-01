@@ -5,9 +5,10 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-import { Trash2, FileText, Calendar, Clock, Download } from 'lucide-react';
+import { Trash2, FileText, Calendar, Clock, Download, AlertTriangle } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 import { prescriptionStorage, PrescriptionRecord } from '@/lib/prescription-storage';
+import BasicModal from './ui/modal';
 
 interface Props {
   onSelectPrescription: (prescription: PrescriptionRecord) => void;
@@ -19,6 +20,7 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
   const { toast } = useToast();
   const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
 
   useEffect(() => {
     loadPrescriptions();
@@ -38,13 +40,16 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
   };
 
   const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to delete all prescriptions? This action cannot be undone.')) {
-      prescriptionStorage.clearAllPrescriptions();
-      loadPrescriptions();
-      toast({
-        description: "All prescriptions cleared",
-      });
-    }
+    setShowClearModal(true);
+  };
+
+  const confirmClearAll = () => {
+    prescriptionStorage.clearAllPrescriptions();
+    loadPrescriptions();
+    setShowClearModal(false);
+    toast({
+      description: "All prescriptions cleared",
+    });
   };
 
   const handleExport = (prescription: PrescriptionRecord) => {
@@ -190,6 +195,53 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
           ))}
         </div>
       )}
+
+      {/* Clear All Confirmation Modal */}
+      <BasicModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        title="Clear All Prescriptions"
+        size="md"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Are you sure?
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                This will permanently delete all {prescriptions.length} prescription{prescriptions.length !== 1 ? 's' : ''} from your history.
+              </p>
+            </div>
+          </div>
+          
+          <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-3">
+            <p className="text-sm text-red-800 dark:text-red-200">
+              <strong>Warning:</strong> This action cannot be undone. All prescription data will be permanently lost.
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowClearModal(false)}
+              className="px-6"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmClearAll}
+              className="bg-red-600 hover:bg-red-700 text-white px-6"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear All
+            </Button>
+          </div>
+        </div>
+      </BasicModal>
     </div>
   );
 };

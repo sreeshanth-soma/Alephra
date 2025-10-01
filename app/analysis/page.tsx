@@ -13,12 +13,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Info } from "lucide-react";
 import Link from "next/link";
 import { Squares } from "@/components/ui/squares-background";
+import { MultiStepLoader as Loader } from "@/components/ui/multi-step-loader";
 
 const AnalysisPage = () => {
   const { toast } = useToast()
   const [reportData, setreportData] = useState("");
   const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<string>("");
   const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const onReportConfirmation = (data: string) => {
     setreportData(data);
@@ -26,6 +28,10 @@ const AnalysisPage = () => {
     toast({
       description: "Report loaded successfully! You can now ask questions about it."
     });
+  }
+
+  const handleLoadingChange = (loading: boolean) => {
+    setLoading(loading);
   }
 
   const handlePrescriptionSelect = (prescription: PrescriptionRecord) => {
@@ -55,6 +61,18 @@ const AnalysisPage = () => {
       
       
       <div className="container mx-auto px-4 pt-4 pb-12 relative z-10">
+        <Loader 
+          loadingStates={[
+            { text: "Uploading report" },
+            { text: "Extracting values" },
+            { text: "Structuring data" },
+            { text: "Analyzing findings" },
+            { text: "Preparing insights" },
+          ]} 
+          loading={loading} 
+          duration={2000}
+          onClose={() => setLoading(false)}
+        />
         <div className="text-center mb-12">
           <h1 className="text-6xl font-bold text-black dark:text-white mb-6 font-playfair">
             MedScan
@@ -67,7 +85,7 @@ const AnalysisPage = () => {
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-6">
-              <ReportComponent onReportConfirmation={onReportConfirmation} />
+              <ReportComponent onReportConfirmation={onReportConfirmation} onLoadingChange={handleLoadingChange} />
             </div>
             <div className="space-y-6">
               <ChatComponent reportData={reportData} />

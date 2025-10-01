@@ -710,16 +710,16 @@ export default function VoiceAgentPage() {
           </p>
         </div>
 
-        {/* Language Selection - Compact */}
-        <Card className="mb-2 border border-gray-300 dark:border-gray-700">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 mr-4">
-                <h3 className="text-xs font-medium text-black dark:text-white mb-1">Response Language</h3>
+        {/* Language / Voice Controls - Elevated & sticky */}
+        <Card className="mb-3 border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-zinc-900/80 backdrop-blur sticky top-20 z-20 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 mr-2">
+                <h3 className="text-[11px] uppercase tracking-wide font-semibold text-gray-700 dark:text-gray-300 mb-1">Response Language</h3>
                 <select
                   value={selectedLanguage}
                   onChange={(e) => setSelectedLanguage(e.target.value)}
-                  className="px-2 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white w-full focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none"
+                  className="h-9 px-3 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 >
                   {languages.map((lang) => (
                     <option key={lang.code} value={lang.code}>
@@ -729,11 +729,11 @@ export default function VoiceAgentPage() {
                 </select>
               </div>
               <div className="flex-1">
-                <h3 className="text-xs font-medium text-black dark:text-white mb-1">Voice Speaker</h3>
+                <h3 className="text-[11px] uppercase tracking-wide font-semibold text-gray-700 dark:text-gray-300 mb-1">Voice Speaker</h3>
                 <select
                   value={selectedSpeaker}
                   onChange={(e) => setSelectedSpeaker(e.target.value)}
-                  className="px-2 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white w-full focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none"
+                  className="h-9 px-3 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 >
                   {sarvamSpeakers.map((speaker) => (
                     <option key={speaker.code} value={speaker.code}>
@@ -742,12 +742,12 @@ export default function VoiceAgentPage() {
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-1 ml-4">
+              <div className="flex items-center gap-2 ml-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsMuted(!isMuted)}
-                  className="flex items-center gap-1 text-xs px-2 py-1 h-7 border border-gray-400 dark:border-gray-600"
+                  className="flex items-center gap-1 text-xs px-3 h-9 border border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800"
                 >
                   {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
                   {isMuted ? 'Unmute' : 'Mute'}
@@ -756,7 +756,7 @@ export default function VoiceAgentPage() {
                   variant="outline"
                   size="sm"
                   onClick={clearMessages}
-                  className="flex items-center gap-1 text-xs px-2 py-1 h-7 border border-gray-400 dark:border-gray-600"
+                  className="flex items-center gap-1 text-xs px-3 h-9 border border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800"
                 >
                   <RotateCcw className="h-3 w-3" />
                   Clear

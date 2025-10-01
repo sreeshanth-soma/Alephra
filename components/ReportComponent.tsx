@@ -11,8 +11,9 @@ import { prescriptionStorage } from '@/lib/prescription-storage'
 
 type Props = {
     onReportConfirmation: (data: string) => void
+    onLoadingChange?: (loading: boolean) => void
 }
-const ReportComponent = ({ onReportConfirmation }: Props) => {
+const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
     const { toast } = useToast()
 
     const [base64Data, setBase64Data] = useState('')
@@ -49,7 +50,6 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
                     reader.onloadend = () => {
                         const base64String = reader.result as string;
                         setBase64Data(base64String);
-                        console.log(base64String);
                     };
                     reader.readAsDataURL(compressedFile);
                 });
@@ -60,7 +60,6 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
                 reader.onloadend = () => {
                     const base64String = reader.result as string;
                     setBase64Data(base64String);
-                    console.log(base64String);
                 };
                 reader.readAsDataURL(file);
             }
@@ -136,6 +135,7 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
         }
         
         setIsLoading(true);
+        onLoadingChange?.(true);
 
         try {
             const response = await fetch("api/extractreportgemini", {
@@ -150,7 +150,6 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
 
             if (response.ok) {
                 const responseData = await response.json();
-                console.log('Report extraction response:', responseData);
                 
                 const reportText = responseData.text;
                 const reportId = responseData.reportId;
@@ -179,6 +178,7 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
             });
         } finally {
             setIsLoading(false);
+            onLoadingChange?.(false);
         }
     }
 
@@ -229,14 +229,6 @@ const ReportComponent = ({ onReportConfirmation }: Props) => {
                     )}
                 </Button>
 
-                {isLoading && (
-                    <div className="absolute inset-0 bg-white/80 dark:bg-black/70 rounded-2xl border border-gray-300 dark:border-gray-700 flex items-center justify-center z-10">
-                        <div className="text-center">
-                            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-black dark:text-white" />
-                            <p className="text-sm text-gray-700 dark:text-gray-300">Processing your report...</p>
-                        </div>
-                    </div>
-                )}
 
                 <div className="space-y-4">
                     <Label className="text-base font-semibold text-gray-800 dark:text-gray-100">Report Summary</Label>

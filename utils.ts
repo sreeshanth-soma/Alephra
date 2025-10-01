@@ -1,5 +1,5 @@
 import { Pinecone } from "@pinecone-database/pinecone";
-import { modelname, namespace, topK } from "./app/config";
+import { modelname, namespace, topK, indexDim } from "./app/config";
 import crypto from "crypto";
 import { HfInference } from '@huggingface/inference'
 
@@ -24,10 +24,11 @@ function cacheGet(key: string): number[] | undefined {
   return hit
 }
 
-function cacheSet(key: string, vec: number[]) {
+function cacheSet(key: string, vec: number[] = []) {
   if (localEmbedCache.has(key)) localEmbedCache.delete(key)
   // defend against non-number entries
-  const clean = vec.map((x: any) => Number(x)).filter((x: number) => Number.isFinite(x))
+  const arr = Array.isArray(vec) ? vec : []
+  const clean = arr.map((x: any) => Number(x)).filter((x: number) => Number.isFinite(x))
   localEmbedCache.set(key, clean)
   if (localEmbedCache.size > LOCAL_CACHE_MAX) {
     const firstKey = localEmbedCache.keys().next().value
@@ -104,7 +105,7 @@ async function embedWithFallback(texts: string[], model: string): Promise<number
     // write back to cache
     for (let j = 0; j < missingIdx.length; j++) {
       const idx = missingIdx[j]
-      const vec = computed[j]
+      const vec = Array.isArray(computed[j]) ? computed[j] : []
       cacheSet(keys[idx], vec)
       results[idx] = vec
     }
@@ -205,16 +206,31 @@ export async function createAndStoreVectorEmbeddings(
     
     // Split report into chunks for better retrieval
     const chunks = splitTextIntoChunks(reportData, 1000); // 1000 characters per chunk
+    if (!Array.isArray(chunks) || chunks.length === 0) {
+      console.warn("No content to embed - skipping vector storage");
+      return false;
+    }
 
     // Generate chunk-specific embeddings in batch via MCP server (with fallbacks)
     let embeddings = await embedWithFallback(chunks, modelname)
     embeddings = await sanitizeEmbeddings(chunks, modelname, embeddings)
     const dims = embeddings[0]?.length || 0
     console.log("Generated per-chunk embeddings:", { chunks: chunks.length, dims })
+    if (dims !== indexDim) {
+      console.warn(`Embedding dimension ${dims} does not match Pinecone index dimension ${indexDim}. Normalizing shape...`)
+      // Simple pad/trim to match index dimension
+      const fixLength = (v: number[]): number[] => {
+        if (!Array.isArray(v)) return new Array(indexDim).fill(0)
+        if (v.length === indexDim) return v
+        if (v.length > indexDim) return v.slice(0, indexDim)
+        return [...v, ...new Array(indexDim - v.length).fill(0)]
+      }
+      embeddings = embeddings.map(fixLength)
+    }
     
     const vectors = chunks.map((chunk, index) => ({
       id: `${reportId}_chunk_${index}`,
-      values: embeddings[index] as number[],
+      values: Array.isArray(embeddings[index]) ? (embeddings[index] as number[]) : new Array(indexDim).fill(0),
       metadata: {
         chunk: chunk,
         reportId: reportId,
