@@ -43,7 +43,7 @@ const AnalysisPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black relative pt-16">
+    <div className="min-h-screen bg-gray-50 dark:bg-black relative pt-20">
       {/* Squares Background */}
       <div className="absolute inset-0 z-0">
         <Squares 
@@ -60,7 +60,7 @@ const AnalysisPage = () => {
       
       
       
-      <div className="container mx-auto px-4 pt-4 pb-12 relative z-10">
+      <div className="container mx-auto px-4 pt-6 pb-6 relative z-10">
         <Loader 
           loadingStates={[
             { text: "Uploading report" },
@@ -74,35 +74,37 @@ const AnalysisPage = () => {
           onClose={() => setLoading(false)}
         />
         
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-black dark:text-white mb-6 font-playfair">
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold text-black dark:text-white mb-2 font-playfair">
             MedScan
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 font-medium">
+          <p className="text-lg text-gray-600 dark:text-gray-300 font-medium">
             AI-powered medical report analysis
           </p>
         </div>
         
-        {/* Medical History Nav - Top Right Overlay */}
-        <div className="absolute top-24 right-4 z-30">
+        {/* History control pinned to top-right below navbar */}
+        <div className="absolute top-16 right-6 z-30">
           <a 
             href="#history" 
-            className="inline-flex items-center px-6 py-3 text-base font-semibold text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
+            className="inline-flex items-center px-6 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
           >
             History
           </a>
         </div>
         
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div id="upload" className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div id="upload" className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[calc(100vh-220px)]">
+            <div className="space-y-4 h-full">
               <ReportComponent onReportConfirmation={onReportConfirmation} onLoadingChange={handleLoadingChange} />
             </div>
-            <div className="space-y-6">
-              <ChatComponent reportData={reportData} />
+            <div className="space-y-4 h-full">
+              <div className="h-full">
+                <ChatComponent reportData={reportData} />
+              </div>
             </div>
           </div>
-          <div id="history" className="space-y-6">
+          <div id="history" className="space-y-4">
             <PrescriptionHistory 
               onSelectPrescription={handlePrescriptionSelect}
               selectedPrescriptionId={selectedPrescriptionId}

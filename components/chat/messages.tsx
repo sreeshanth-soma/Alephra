@@ -2,6 +2,7 @@
 
 import type { UIMessage as Message } from 'ai';
 import React, { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import MessageBox from './messagebox';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -34,7 +35,14 @@ const Messages = ({ messages, isLoading, data }: Props) => {
   }
 
   return (
-    <div className='flex flex-col gap-3 overflow-y-auto flex-1 custom-scrollbar max-h-[500px]'>
+    <div className='flex flex-col gap-3 overflow-y-auto flex-1 custom-scrollbar max-h-[500px] relative'>
+      {/* Subtle animated background to match glassy chat */}
+      <motion.div
+        className="absolute inset-0 -z-10 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-zinc-900 dark:via-black dark:to-zinc-900"
+        animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        style={{ backgroundSize: '200% 200%' }}
+      />
       {messages.map((m, index) => {
         // Extract content from parts array or fallback to content string
         let messageContent = '';
@@ -132,10 +140,19 @@ const Messages = ({ messages, isLoading, data }: Props) => {
       })}
       
       {isLoading && (
-        <div className="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400">
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-          <span>MedScan is thinking...</span>
-        </div>
+        <motion.div
+          className="flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.4, 1, 0.6, 1] }}
+          transition={{ repeat: Infinity, duration: 1.2 }}
+        >
+          <div className="flex items-center gap-1 px-3 py-2 rounded-xl max-w-[30%] bg-black/70 dark:bg-white/10 text-white backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse [animation-delay:200ms]"></span>
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse [animation-delay:400ms]"></span>
+            <span className="ml-2">MedScan is thinking...</span>
+          </div>
+        </motion.div>
       )}
       <div ref={messagesEndRef} />
     </div>

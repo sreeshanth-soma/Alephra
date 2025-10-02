@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react'
 import { Textarea } from '../ui/textarea'
 import { Button } from '../ui/button';
-import { CornerDownLeft, Loader2 } from 'lucide-react';
+import { CornerDownLeft, Loader2, Trash2 } from 'lucide-react';
+import BasicModal from '../ui/modal';
 import { Badge } from '../ui/badge';
 import Messages from './messages';
 import type { UIMessage as Message } from 'ai';
 import { prescriptionStorage } from '@/lib/prescription-storage';
+import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 
 type Props = {
   reportData?: string
@@ -19,6 +21,37 @@ const ChatComponent = ({ reportData }: Props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [data, setData] = useState<any>(undefined);
   const [allReportsData, setAllReportsData] = useState<string>("");
+  const [showClearModal, setShowClearModal] = useState<boolean>(false);
+
+  // Load chat history from localStorage on component mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('medscan-chat-messages');
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+          setMessages(parsedMessages);
+        } else {
+          const welcome = { id: crypto.randomUUID(), role: 'assistant', parts: [{ type: 'text', text: 'Hello, how can I help you?' }] } as Message;
+          setMessages([welcome]);
+        }
+      } catch (error) {
+        console.error('Error parsing saved messages:', error);
+        const welcome = { id: crypto.randomUUID(), role: 'assistant', parts: [{ type: 'text', text: 'Hello, how can I help you?' }] } as Message;
+        setMessages([welcome]);
+      }
+    } else {
+      const welcome = { id: crypto.randomUUID(), role: 'assistant', parts: [{ type: 'text', text: 'Hello, how can I help you?' }] } as Message;
+      setMessages([welcome]);
+    }
+  }, []);
+
+  // Save messages to localStorage whenever messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('medscan-chat-messages', JSON.stringify(messages));
+    }
+  }, [messages]);
 
   // Load all reports when no specific report is provided
   useEffect(() => {
@@ -34,6 +67,16 @@ const ChatComponent = ({ reportData }: Props) => {
       }
     }
   }, [reportData]);
+
+  // Preserve chat when a new report is selected
+  // (Previously cleared messages on report change.)
+
+  // Clear chat function
+  const clearChat = () => {
+    setMessages([]);
+    localStorage.removeItem('medscan-chat-messages');
+    setShowClearModal(false);
+  };
     
   return (
     <div className="h-[600px] bg-white dark:bg-zinc-900 relative flex flex-col rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl">
@@ -50,13 +93,42 @@ const ChatComponent = ({ reportData }: Props) => {
         </Badge>
       </div>
       
-      <div className="flex-1 px-6 pt-6 pb-2 overflow-hidden">
+      {/* Clear Chat Button */}
+      {messages.length > 0 && (
+        <div className="absolute -top-3 right-6 z-10">
+          <Button
+            onClick={() => setShowClearModal(true)}
+            size="sm"
+            variant="outline"
+            className="h-8 px-3 bg-white dark:bg-zinc-800 border-gray-200 dark:border-gray-600 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 transition-all duration-200 text-gray-600 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 shadow-sm rounded-full"
+            title="Clear chat history"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Clear
+          </Button>
+        </div>
+      )}
+      
+      <div className="flex-1 px-6 pt-12 pb-2 overflow-hidden">
         <Messages messages={messages} isLoading={isLoading} data={data} />
       </div>
       
       <div className="px-6 pb-6 pt-2">
-        <form
-          className="relative group"
+        <PlaceholdersAndVanishInput
+          placeholders={[
+            "What do my lab results mean?",
+            "Explain my blood pressure readings",
+            "Are there any concerning values?",
+            "What should I discuss with my doctor?",
+            "Summarize my health status",
+            "What lifestyle changes should I make?",
+            "Explain my cholesterol levels",
+            "What do these test results indicate?"
+          ]}
+          onChange={(e) => {
+            const next = e.target.value;
+            setInput(next);
+          }}
           onSubmit={(event) => {
             event.preventDefault();
             const msg = input.trim();
@@ -86,32 +158,35 @@ const ChatComponent = ({ reportData }: Props) => {
               })
               .finally(() => setIsLoading(false));
           }}
-        >
-          <div className="relative">
-            <Textarea
-              value={input}
-              onChange={(e) => {
-                const next = e.target.value;
-                setInput(next);
-              }}
-              placeholder="Ask about your medical report..."
-              className="min-h-[52px] max-h-32 resize-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-0 transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 pr-12 relative z-10"
-            />
+        />
+      </div>
+
+      {/* Clear Chat Confirmation Modal */}
+      <BasicModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        title="Clear Chat History"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Are you sure you want to clear all chat messages? This action cannot be undone.
+          </p>
+          <div className="flex justify-end space-x-3">
             <Button
-              disabled={isLoading || !input.trim()}
-              type="submit"
-              size="sm"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-black hover:bg-zinc-900 disabled:bg-gray-300 dark:disabled:bg-zinc-700 transition-all duration-200 shadow-lg z-20"
+              variant="outline"
+              onClick={() => setShowClearModal(false)}
             >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-white" />
-              ) : (
-                <CornerDownLeft className="h-4 w-4 text-white" />
-              )}
+              Cancel
+            </Button>
+            <Button
+              onClick={clearChat}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Clear Chat
             </Button>
           </div>
-        </form>
-      </div>
+        </div>
+      </BasicModal>
     </div>
   )
 }

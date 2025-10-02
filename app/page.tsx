@@ -11,13 +11,16 @@ import { Mic, Brain } from "lucide-react";
 import RadialOrbitalTimelineDemo from "@/components/RadialOrbitalTimelineDemo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GlowingEffectDemoSecond } from "@/components/GlowingEffectDemoSecond";
+import { BackgroundBeams } from "@/components/ui/background-beams";
 
 export default function Home() {
   return (
     <>
-      <LampDemo />
-      <div className="flex flex-col overflow-hidden pb-24 pt-0 bg-white dark:bg-black">
-        <ContainerScroll
+      <div className="relative min-h-screen bg-white dark:bg-black">
+        <BackgroundBeams className="z-0" />
+        <LampDemo />
+        <div className="flex flex-col overflow-hidden pb-24 pt-0 relative">
+          <ContainerScroll
           titleComponent={
             <>
               <h1 className="text-4xl font-semibold text-black dark:text-white">
@@ -33,7 +36,7 @@ export default function Home() {
             </>
           }
         >
-          <div className="relative mx-auto rounded-2xl overflow-hidden">
+          <div className="relative mx-auto rounded-2xl overflow-hidden z-10">
           <Image
             src="/landing-hero.jpg"
               alt="MedScan AI Medical Assistant Dashboard"
@@ -66,10 +69,10 @@ export default function Home() {
             />
           </div>
         </ContainerScroll>
-      </div>
+        </div>
 
-      {/* Interactive Features Timeline */}
-      <div className="py-24 px-4 bg-white dark:bg-black">
+        {/* Interactive Features Timeline */}
+        <div className="py-24 px-4 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* Section Header - How MedScan Works */}
           <div className="text-center mb-6">
@@ -128,6 +131,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </>

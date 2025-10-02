@@ -8,6 +8,7 @@ import { Label } from './ui/label'
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from 'lucide-react'
 import { prescriptionStorage } from '@/lib/prescription-storage'
+import { FileUpload } from '@/components/ui/file-upload'
 
 type Props = {
     onReportConfirmation: (data: string) => void
@@ -21,9 +22,8 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
     const [reportData, setReportData] = useState("");
     const [uploadedFileName, setUploadedFileName] = useState("");
     
-    function handleReportSelection(event: ChangeEvent<HTMLInputElement>): void {
-        if (!event.target.files) return;
-        const file = event.target.files[0];
+    function handleSelectedFiles(files: File[]): void {
+        const file = files[0];
         if (file) {
             setUploadedFileName(file.name);
             let isValidImage = false;
@@ -64,6 +64,11 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                 reader.readAsDataURL(file);
             }
         }
+    }
+
+    function handleReportSelection(event: ChangeEvent<HTMLInputElement>): void {
+        if (!event.target.files) return;
+        handleSelectedFiles(Array.from(event.target.files));
     }
 
     function compressImage(file: File, callback: (compressedFile: File) => void) {
@@ -183,35 +188,15 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
     }
 
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl p-8">
-            <div className="space-y-8">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl p-6 h-full">
+            <div className="space-y-6 h-full flex flex-col">
                 <div className="text-center">
                     <h3 className="text-2xl font-bold text-black dark:text-white mb-3 font-playfair">Medical Report Analysis</h3>
                     <p className="text-gray-600 dark:text-gray-300">Upload your medical report for AI-powered analysis</p>
                 </div>
 
                 <div className="relative">
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 p-8 text-center transition-all duration-200 hover:border-black dark:hover:border-white hover:bg-gray-50 dark:hover:bg-zinc-800">
-                        <Input 
-                            type='file'
-                            onChange={handleReportSelection}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        {uploadedFileName ? (
-                            <div className="space-y-2">
-                                <div className="mx-auto h-1.5 w-12 rounded-full bg-black dark:bg-white"></div>
-                                <p className="text-base font-medium text-gray-700 dark:text-gray-200">✓ File uploaded</p>
-                                <p className="text-sm text-gray-600 dark:text-gray-300 font-mono">{uploadedFileName}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Click to change file</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <div className="mx-auto h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700"></div>
-                                <p className="text-base font-medium text-gray-700 dark:text-gray-200">Click to upload or drag and drop</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Supports JPG, PNG, PDF</p>
-                            </div>
-                        )}
-                    </div>
+                    <FileUpload onChange={handleSelectedFiles} />
                 </div>
 
                 <Button 
@@ -230,13 +215,13 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                 </Button>
 
 
-                <div className="space-y-4">
+                <div className="space-y-3 flex-1 min-h-0">
                     <Label className="text-base font-semibold text-gray-800 dark:text-gray-100">Report Summary</Label>
                     <Textarea
                         value={reportData}
                         onChange={(e) => setReportData(e.target.value)}
                         placeholder="Summary will appear here (You can even add additional information to the summary for better insights)" 
-                        className="min-h-48 resize-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-0 transition-all duration-200"
+                        className="h-36 lg:h-[180px] resize-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-0 transition-all duration-200"
                     />
                 </div>
 

@@ -15,6 +15,7 @@ import { Noise } from "@/components/ui/noise";
 import { useSession } from "next-auth/react";
 import { safeGetItem, safeSetItem, safeRemoveItem, clearAllMedScanData, isLocalStorageAvailable } from "@/lib/localStorage";
 import { toast } from "@/components/ui/use-toast";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 // Removed dropdown menu in Appointments to keep a single add button
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string; bp?: { systolic: number; diastolic: number }; weight?: number; temperature?: number };
@@ -1188,9 +1189,23 @@ export default function DashboardPage() {
             { label: "Voice Assistant", classes: "text-white bg-[#3F51B5] hover:bg-[#3546a6] dark:text-white dark:bg-[#7B1FA2] dark:hover:bg-[#6A1B9A]", href: "/voice" },
             { label: "Analysis", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-white dark:bg-[#F57C00] dark:hover:bg-[#EF6C00]", href: "/analysis" },
           ].map((b, i) => (
-            <a key={i} href={b.href} className="block">
-              <motion.button className={`w-full h-14 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 ${b.classes}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                {b.label}
+            <a key={i} href={b.href} className="block relative group">
+              <motion.button 
+                className={`relative w-full h-14 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 overflow-hidden ${b.classes}`} 
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }}
+              >
+                <GlowingEffect
+                  disabled={false}
+                  glow={true}
+                  proximity={50}
+                  spread={30}
+                  blur={0}
+                  movementDuration={1.5}
+                  borderWidth={2}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                />
+                <span className="relative z-10">{b.label}</span>
               </motion.button>
             </a>
           ))}

@@ -1,6 +1,7 @@
 import React from 'react'
-import { Card, CardContent, CardFooter } from '../ui/card'
 import Markdown from '../markdown'
+import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 type Props = {
   role: string,
@@ -21,22 +22,28 @@ const MessageBox = ({ role, content }: Props) => {
   }
   
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <Card className={`overflow-hidden max-w-[85%] ${
-        isUser 
-          ? 'bg-blue-500 text-white border-blue-500' 
-          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-      } shadow-sm`}>
-        <CardContent className="p-4 text-sm">
-          <Markdown text={displayContent} />
-        </CardContent>
-        {!isUser && displayContent && displayContent.length > 20 && !displayContent.toLowerCase().includes('you\'re welcome') && !displayContent.toLowerCase().includes('hello') && (
-          <CardFooter className="border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2 text-xs text-slate-500 dark:text-slate-400">
-            Disclaimer: Medical advice is for informational purposes only and should not replace professional medical diagnosis.
-          </CardFooter>
+    <motion.div
+      className={cn('flex', isUser ? 'justify-end' : 'justify-start')}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div
+        className={cn(
+          'overflow-hidden max-w-[85%] px-4 py-3 rounded-xl shadow-md backdrop-blur-md text-sm border-2',
+          isUser
+            ? 'bg-white text-black border-gray-500 dark:border-gray-700'
+            : 'bg-black text-white border-white/25 dark:border-white/20'
         )}
-      </Card>
-    </div>
+      >
+        <Markdown text={displayContent} />
+        {!isUser && displayContent && displayContent.length > 20 && !displayContent.toLowerCase().includes("you're welcome") && !displayContent.toLowerCase().includes('hello') && (
+          <div className="mt-2 pt-2 border-t border-white/10 text-[11px] opacity-80">
+            Disclaimer: Medical advice is for informational purposes only and should not replace professional medical diagnosis.
+          </div>
+        )}
+      </div>
+    </motion.div>
   )
 }
 

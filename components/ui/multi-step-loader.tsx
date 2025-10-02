@@ -1,106 +1,163 @@
 "use client";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "motion/react";
+import { useState, useEffect } from "react";
 
-import * as React from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+const CheckIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className={cn("w-6 h-6 ", className)}
+    >
+      <path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  );
+};
 
-export interface LoadingState {
+const CheckFilled = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={cn("w-6 h-6 ", className)}
+    >
+      <path
+        fillRule="evenodd"
+        d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+};
+
+type LoadingState = {
   text: string;
-}
+};
 
-interface MultiStepLoaderProps {
+const LoaderCore = ({
+  loadingStates,
+  value = 0,
+}: {
   loadingStates: LoadingState[];
-  loading: boolean;
-  duration?: number; // total duration in ms (approx)
-  onClose?: () => void; // Optional close handler
-}
+  value?: number;
+}) => {
+  return (
+    <div className="flex relative justify-start max-w-xl mx-auto flex-col mt-40">
+      {loadingStates.map((loadingState, index) => {
+        const distance = Math.abs(index - value);
+        const opacity = Math.max(1 - distance * 0.2, 0); // Minimum opacity is 0, keep it 0.2 if you're sane.
 
-export function MultiStepLoader({ loadingStates, loading, duration = 2000, onClose }: MultiStepLoaderProps) {
-  const [stepIndex, setStepIndex] = React.useState(0);
+        return (
+          <motion.div
+            key={index}
+            className={cn("text-left flex gap-2 mb-4")}
+            initial={{ opacity: 0, y: -(value * 40) }}
+            animate={{ opacity: opacity, y: -(value * 40) }}
+            transition={{ duration: 0.5 }}
+          >
+            <div>
+              {index > value && (
+                <CheckIcon className="text-black dark:text-white" />
+              )}
+              {index <= value && (
+                <CheckFilled
+                  className={cn(
+                    "text-black dark:text-white",
+                    value === index &&
+                      "text-black dark:text-lime-500 opacity-100"
+                  )}
+                />
+              )}
+            </div>
+            <span
+              className={cn(
+                "text-black dark:text-white",
+                value === index && "text-black dark:text-lime-500 opacity-100"
+              )}
+            >
+              {loadingState.text}
+            </span>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+};
 
-  React.useEffect(() => {
+export const MultiStepLoader = ({
+  loadingStates,
+  loading,
+  duration = 2000,
+  loop = true,
+  onClose,
+}: {
+  loadingStates: LoadingState[];
+  loading?: boolean;
+  duration?: number;
+  loop?: boolean;
+  onClose?: () => void;
+}) => {
+  const [currentState, setCurrentState] = useState(0);
+
+  useEffect(() => {
     if (!loading) {
-      setStepIndex(0);
+      setCurrentState(0);
       return;
     }
-    const steps = loadingStates.length;
-    const perStep = Math.max(200, Math.floor(duration / Math.max(1, steps)));
+    const timeout = setTimeout(() => {
+      setCurrentState((prevState) =>
+        loop
+          ? prevState === loadingStates.length - 1
+            ? 0
+            : prevState + 1
+          : Math.min(prevState + 1, loadingStates.length - 1)
+      );
+    }, duration);
 
-    setStepIndex(0);
-    const interval = setInterval(() => {
-      setStepIndex((prev) => {
-        const next = prev + 1;
-        if (next >= steps) return prev; // stop at last
-        return next;
-      });
-    }, perStep);
-    return () => clearInterval(interval);
-  }, [loading, duration, loadingStates.length]);
-
+    return () => clearTimeout(timeout);
+  }, [currentState, loading, loop, loadingStates.length, duration]);
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {loading && (
         <motion.div
-          className="fixed inset-0 z-[120] flex items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          exit={{
+            opacity: 0,
+          }}
+          className="w-full h-full fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-2xl"
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
-          <motion.div
-            className="relative mx-auto w-full max-w-xl p-0 text-white"
-            initial={{ scale: 0.96, y: 16, opacity: 0 }}
-            animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.98, y: 8, opacity: 0 }}
-            transition={{ type: "spring", damping: 24, stiffness: 300 }}
-          >
-            <div className="space-y-4 w-fit mx-auto">
-              {loadingStates.map((state, index) => (
-                <motion.div
-                  key={index}
-                  className="flex items-center space-x-4"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <div className="flex-shrink-0">
-                    {index <= stepIndex ? (
-                      <motion.div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center ${index === stepIndex ? 'bg-lime-500' : 'bg-gray-300'}`}
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", damping: 15, stiffness: 300 }}
-                      >
-                        <svg className="w-3.5 h-3.5 text-black" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </motion.div>
-                    ) : (
-                      <div className="w-6 h-6 rounded-full border-2 border-gray-500 bg-transparent"></div>
-                    )}
-                  </div>
-                  <span className={`text-lg md:text-xl ${index === stepIndex ? 'text-lime-400' : index < stepIndex ? 'text-gray-100' : 'text-gray-400'}`}>
-                    {state.text}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+          <div className="h-96  relative">
+            <LoaderCore value={currentState} loadingStates={loadingStates} />
+          </div>
 
+          <div className="bg-gradient-to-t inset-x-0 z-20 bottom-0 bg-white dark:bg-black h-full absolute [mask-image:radial-gradient(900px_at_center,transparent_30%,white)]" />
+          
           {/* Close button */}
           {onClose && (
             <button
               className="fixed top-4 right-4 text-black dark:text-white z-[120]"
               onClick={onClose}
             >
-              <X className="h-10 w-10" />
+              <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           )}
         </motion.div>
       )}
     </AnimatePresence>
   );
-}
+};
 
 export default MultiStepLoader;
 

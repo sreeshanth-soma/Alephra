@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw, BarChart3, LayoutDashboard } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { VoiceChatInteractive } from '@/components/VoiceChatInteractive';
 import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ui/conversation';
 import { cn } from '@/lib/utils';
@@ -31,30 +32,30 @@ interface VoiceMessage {
   audioUrl?: string;
 }
 
-// Message component for conversation UI - matching demo.tsx exactly
+// Message component with glassy animated bubbles (similar to AIChatCard)
 type MessageProps = {
   from: 'user' | 'bot';
   children: React.ReactNode;
 };
 
 const Message = ({ from, children }: MessageProps) => (
-  <div
-    className={cn(
-      'my-2 flex',
-      from === 'user' ? 'justify-end' : 'justify-start'
-    )}
+  <motion.div
+    className={cn('my-2 flex', from === 'user' ? 'justify-end' : 'justify-start')}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
   >
     <div
       className={cn(
-        'max-w-md lg:max-w-lg rounded-lg p-3',
+        'px-3 py-2 rounded-xl max-w-[80%] shadow-md border-2',
         from === 'user'
-          ? 'bg-blue-500 text-white'
-          : 'bg-gray-200 text-gray-800'
+          ? 'bg-white text-black font-semibold border-gray-500 dark:border-gray-700'
+          : 'bg-black text-white border-white/25'
       )}
     >
       {children}
     </div>
-  </div>
+  </motion.div>
 );
 
 const MessageContent = ({ children }: { children: React.ReactNode }) => (
@@ -101,14 +102,40 @@ export default function VoiceAgentPage() {
   ];
 
   useEffect(() => {
-    // Initialize with welcome message
-    const welcomeMessage: VoiceMessage = {
-      id: '1',
-      text: 'Hello! I am your AI medical voice assistant. I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?',
-      timestamp: new Date(),
-      type: 'assistant'
-    };
-    setMessages([welcomeMessage]);
+    // Load saved voice messages if available; otherwise initialize with welcome message
+    try {
+      const saved = localStorage.getItem('medscan-voice-messages');
+      if (saved) {
+        const parsed: VoiceMessage[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed.map(m => ({ ...m, timestamp: new Date(m.timestamp) })));
+        } else {
+          const welcomeMessage: VoiceMessage = {
+            id: '1',
+            text: 'Hello! I am your AI medical voice assistant. I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?',
+            timestamp: new Date(),
+            type: 'assistant'
+          };
+          setMessages([welcomeMessage]);
+        }
+      } else {
+        const welcomeMessage: VoiceMessage = {
+          id: '1',
+          text: 'Hello! I am your AI medical voice assistant. I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?',
+          timestamp: new Date(),
+          type: 'assistant'
+        };
+        setMessages([welcomeMessage]);
+      }
+    } catch {
+      const welcomeMessage: VoiceMessage = {
+        id: '1',
+        text: 'Hello! I am your AI medical voice assistant. I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?',
+        timestamp: new Date(),
+        type: 'assistant'
+      };
+      setMessages([welcomeMessage]);
+    }
 
     // Load available voices
     const loadVoices = () => {
@@ -137,6 +164,15 @@ export default function VoiceAgentPage() {
       }
     };
   }, []);
+
+  // Persist messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      try {
+        localStorage.setItem('medscan-voice-messages', JSON.stringify(messages));
+      } catch {}
+    }
+  }, [messages]);
 
   const startRecording = async () => {
     log('startRecording called');
@@ -700,6 +736,9 @@ export default function VoiceAgentPage() {
       type: 'assistant'
     }]);
     setCurrentText('');
+    try {
+      localStorage.removeItem('medscan-voice-messages');
+    } catch {}
   };
 
   return (
@@ -800,8 +839,15 @@ export default function VoiceAgentPage() {
               </Card>
             )}
 
-            {/* Messages - New Conversation UI */}
-            <div className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden shadow-md min-h-0 bg-gray-100 dark:bg-zinc-900">
+            {/* Messages - Glassy Chat UI */}
+            <div className="flex-1 border border-white/10 dark:border-gray-700 rounded-lg overflow-hidden shadow-md min-h-0 relative">
+              {/* Subtle animated background */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-zinc-900 dark:via-black dark:to-zinc-900"
+                animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
+                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                style={{ backgroundSize: '200% 200%' }}
+              />
               <Conversation className="relative w-full h-full">
                 <ConversationContent>
                   {messages.map((message) => (
@@ -812,6 +858,21 @@ export default function VoiceAgentPage() {
                       <MessageContent>{message.text}</MessageContent>
                     </Message>
                   ))}
+                  {/* AI Typing Indicator */}
+                  {isProcessing && (
+                    <motion.div
+                      className="my-2 flex justify-start"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0.4, 1, 0.6, 1] }}
+                      transition={{ repeat: Infinity, duration: 1.2 }}
+                    >
+                      <div className="flex items-center gap-1 px-3 py-2 rounded-xl max-w-[30%] bg-black/70 dark:bg-white/10 text-white backdrop-blur-md">
+                        <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                        <span className="w-2 h-2 rounded-full bg-white animate-pulse [animation-delay:200ms]"></span>
+                        <span className="w-2 h-2 rounded-full bg-white animate-pulse [animation-delay:400ms]"></span>
+                      </div>
+                    </motion.div>
+                  )}
                 </ConversationContent>
                 <ConversationScrollButton />
               </Conversation>
