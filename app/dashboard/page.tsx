@@ -1183,10 +1183,10 @@ export default function DashboardPage() {
         {/* Quick actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Upload Report", classes: "text-white bg-[#26A69A] hover:bg-[#219187] dark:text-black dark:bg-[#00BCD4] dark:hover:bg-[#00a7be]", href: "/report" },
-            { label: "View History", classes: "text-black bg-[#B0BEC5] hover:bg-[#9aa8b0] dark:text-black dark:bg-[#8BC34A] dark:hover:bg-[#7eb63f]", href: "/dashboard/timeline" },
-            { label: "Voice Assistant", classes: "text-white bg-[#3F51B5] hover:bg-[#3546a6] dark:text-white dark:bg-[#AB47BC] dark:hover:bg-[#9a3fa9]", href: "/voice" },
-            { label: "Analysis", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-black dark:bg-[#FFC107] dark:hover:bg-[#e0ac06]", href: "/analysis" },
+            { label: "Upload Report", classes: "text-white bg-[#26A69A] hover:bg-[#219187] dark:text-white dark:bg-[#1E88E5] dark:hover:bg-[#1976D2]", href: "/report" },
+            { label: "View History", classes: "text-black bg-[#B0BEC5] hover:bg-[#9aa8b0] dark:text-white dark:bg-[#43A047] dark:hover:bg-[#388E3C]", href: "/dashboard/timeline" },
+            { label: "Voice Assistant", classes: "text-white bg-[#3F51B5] hover:bg-[#3546a6] dark:text-white dark:bg-[#7B1FA2] dark:hover:bg-[#6A1B9A]", href: "/voice" },
+            { label: "Analysis", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-white dark:bg-[#F57C00] dark:hover:bg-[#EF6C00]", href: "/analysis" },
           ].map((b, i) => (
             <a key={i} href={b.href} className="block">
               <motion.button className={`w-full h-14 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 ${b.classes}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -1205,7 +1205,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3 flex-wrap">
                   <button
                     onClick={clearAllReminders}
-                    className="text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                    className="text-xs px-2 py-1 rounded border border-rose-300 text-red-900 dark:text-red-300 hover:bg-rose-50 dark:border-rose-800 dark:hover:bg-rose-900/20 transition-all duration-200"
                   >
                     Remove all
                   </button>
@@ -1226,7 +1226,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-                      <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
                     </div>
                     <div>
                       <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Are you sure?</h4>
@@ -1242,7 +1242,7 @@ export default function DashboardPage() {
                       Cancel
                     </button>
                     <button
-                      className="px-4 h-9 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm inline-flex items-center"
+                      className="px-4 h-9 rounded-md bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-sm inline-flex items-center shadow-sm hover:shadow-md transition-all duration-200"
                       onClick={() => { setReminders([]); setShowRemindersConfirm(false); }}
                     >
                       <Trash2 className="h-4 w-4 mr-2" /> Clear All
@@ -1279,7 +1279,7 @@ export default function DashboardPage() {
                       <div className={`text-sm ${r.done ? 'line-through text-gray-400' : 'text-black dark:text-white'}`}>{r.text}</div>
                       {r.time && <Badge variant="secondary" className="text-xs">{r.time}</Badge>}
                     </div>
-                    <button onClick={() => removeReminder(r.id)} className="text-xs text-red-600 hover:underline">Remove</button>
+                    <button onClick={() => removeReminder(r.id)} className="text-xs text-rose-600 hover:text-rose-700 hover:underline transition-colors duration-200">Remove</button>
                   </div>
                 ))}
                 {reminders.length > 3 && (
@@ -1303,7 +1303,13 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="text-sm font-medium text-black dark:text-white">All Medical Reminders</div>
                 <div className="flex items-center gap-3">
-                  <button onClick={clearAllReminders} className="text-xs text-red-600 hover:underline">Remove all</button>
+                <button
+                  onClick={clearAllReminders}
+                  className="text-xs text-red-700 hover:text-red-800 dark:text-red-600 dark:hover:text-red-500 hover:underline transition-colors duration-200"
+                >
+                  Remove all
+                </button>
+
                   <button onClick={() => setShowRemindersModal(false)} className="text-xs text-gray-600 dark:text-gray-300 hover:underline">Close</button>
                 </div>
               </div>
@@ -1315,7 +1321,7 @@ export default function DashboardPage() {
                       <div className={`text-sm ${r.done ? 'line-through text-gray-400' : 'text-black dark:text-white'}`}>{r.text}</div>
                       {r.time && <Badge variant="secondary" className="text-xs">{r.time}</Badge>}
                     </div>
-                    <button onClick={() => removeReminder(r.id)} className="text-xs text-red-600 hover:underline">Remove</button>
+                    <button onClick={() => removeReminder(r.id)} className="text-xs text-rose-600 hover:text-rose-700 hover:underline transition-colors duration-200">Remove</button>
                   </div>
                 ))}
                 {reminders.length === 0 && (
@@ -1335,7 +1341,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3 flex-wrap">
                   <button
                     onClick={() => setShowAppointmentsConfirm(true)}
-                    className="text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                    className="text-xs px-2 py-1 rounded border border-rose-300 text-red-900 dark:text-red-300 hover:bg-rose-50 dark:border-rose-800 dark:hover:bg-rose-900/20 transition-all duration-200"
                   >
                     Remove all
                   </button>
@@ -1356,7 +1362,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-                      <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
                     </div>
                     <div>
                       <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Are you sure?</h4>
@@ -1372,7 +1378,7 @@ export default function DashboardPage() {
                       Cancel
                     </button>
                     <button
-                      className="px-4 h-9 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm inline-flex items-center"
+                      className="px-4 h-9 rounded-md bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-sm inline-flex items-center shadow-sm hover:shadow-md transition-all duration-200"
                       onClick={() => { setAppointments([]); setShowAppointmentsConfirm(false); }}
                     >
                       <Trash2 className="h-4 w-4 mr-2" /> Clear All

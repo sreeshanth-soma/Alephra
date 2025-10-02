@@ -95,7 +95,7 @@ export default function BasicModal({
               role="dialog"
               aria-modal="true"
               aria-labelledby={title ? "basic-modal-title" : undefined}
-              className={`${modalSizes[size]} relative mx-auto w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-4 text-gray-900 dark:text-white shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 sm:p-6`}
+              className={`${modalSizes[size]} relative mx-auto w-full rounded-xl border border-gray-200 dark:border-gray-400 bg-white dark:bg-black p-4 text-gray-900 dark:text-white shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 sm:p-6`}
               initial={{ scale: 0.96, y: 16, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.98, y: 8, opacity: 0, transition: { duration: 0.15 } }}

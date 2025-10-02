@@ -397,16 +397,17 @@ export function VoiceChatInteractive({
 
       {/* AI indicator - positioned at bottom right */}
       <motion.div
-        className="absolute bottom-4 right-4 flex items-center space-x-2 text-xs text-white/80 bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full"
-        animate={{ opacity: [0.5, 1, 0.5] }}
+        className="absolute bottom-4 right-4 flex items-center space-x-2 text-xs text-white bg-black px-3 py-2 rounded-lg shadow-lg border border-gray-700"
+        style={{ backgroundColor: 'rgba(0, 0, 0, 1)' }}
+        animate={{ opacity: [0.9, 1, 0.9] }}
         transition={{
           duration: 3,
           repeat: Infinity,
           ease: "easeInOut"
         }}
       >
-        <Sparkles className="w-3 h-3" />
-        <span>MedScan AI</span>
+        <Sparkles className="w-3 h-3 text-yellow-400" />
+        <span className="font-medium">AI Voice Assistant</span>
       </motion.div>
     </div>
   );

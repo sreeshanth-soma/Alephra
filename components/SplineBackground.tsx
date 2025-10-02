@@ -90,6 +90,7 @@ export function SplineBackground({
             <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
             <span className="text-xs font-medium ml-2">AI Voice Assistant</span>
           </div>
+
         </div>
       </div>
       
@@ -106,3 +107,4 @@ export function SplineBackground({
 }
 
 export default SplineBackground;
+

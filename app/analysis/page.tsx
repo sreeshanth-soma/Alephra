@@ -73,6 +73,7 @@ const AnalysisPage = () => {
           duration={2000}
           onClose={() => setLoading(false)}
         />
+        
         <div className="text-center mb-12">
           <h1 className="text-6xl font-bold text-black dark:text-white mb-6 font-playfair">
             MedScan
@@ -82,8 +83,18 @@ const AnalysisPage = () => {
           </p>
         </div>
         
+        {/* Medical History Nav - Top Right Overlay */}
+        <div className="absolute top-24 right-4 z-30">
+          <a 
+            href="#history" 
+            className="inline-flex items-center px-6 py-3 text-base font-semibold text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
+          >
+            History
+          </a>
+        </div>
+        
         <div className="max-w-7xl mx-auto space-y-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div id="upload" className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-6">
               <ReportComponent onReportConfirmation={onReportConfirmation} onLoadingChange={handleLoadingChange} />
             </div>
@@ -91,7 +102,7 @@ const AnalysisPage = () => {
               <ChatComponent reportData={reportData} />
             </div>
           </div>
-          <div className="space-y-6">
+          <div id="history" className="space-y-6">
             <PrescriptionHistory 
               onSelectPrescription={handlePrescriptionSelect}
               selectedPrescriptionId={selectedPrescriptionId}

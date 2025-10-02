@@ -33,25 +33,25 @@ const Navbar = () => {
       name: 'Home',
       href: '/',
       description: 'Landing page',
-      gradient: 'from-blue-800 to-black'
+      gradient: 'from-gray-800 to-black'
     },
     {
       name: 'Analysis',
       href: '/analysis',
       description: 'AI report analysis',
-      gradient: 'from-blue-800 to-black'
+      gradient: 'from-gray-800 to-black'
     },
     {
       name: 'Dashboard',
       href: '/dashboard',
       description: 'Health overview',
-      gradient: 'from-blue-800 to-black'
+      gradient: 'from-gray-800 to-black'
     },
     {
       name: 'Voice Agent',
       href: '/voice',
       description: 'AI voice assistant',
-      gradient: 'from-blue-800 to-black'
+      gradient: 'from-gray-800 to-black'
     }
   ];
 
@@ -86,7 +86,7 @@ const Navbar = () => {
                   as={Link}
                   href={item.href}
                   className={`dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 ${
-                    isActive ? 'bg-gray-100 dark:bg-gray-800' : ''
+                    isActive ? 'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 border border-gray-200 dark:border-gray-600 shadow-sm dark:shadow-gray-900/10' : ''
                   }`}
                   duration={0.5}
                   clockwise={false}
@@ -94,7 +94,7 @@ const Navbar = () => {
                   <div className="flex items-center space-x-2">
                     <span className={`font-semibold transition-colors duration-300 ${
                       isActive 
-                        ? 'text-blue-600 dark:text-blue-400' 
+                        ? 'text-gray-900 dark:text-white font-bold tracking-wide' 
                         : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
                     }`}>
                       {item.name}
@@ -107,7 +107,7 @@ const Navbar = () => {
               <ThemeToggle className="relative" />
               {session ? (
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-800 to-black flex items-center justify-center">
                     <span className="text-white font-bold text-sm">
                       {session.user?.name?.charAt(0).toUpperCase() || 'U'}
                     </span>
@@ -129,7 +129,7 @@ const Navbar = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                    className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
                   >
                     <LogIn className="w-4 h-4 mr-2" />
                     Sign In
@@ -185,7 +185,7 @@ const Navbar = () => {
                       onClick={closeMenu}
                       className={`dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-3 py-2 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-lg ${
                         isActive 
-                          ? 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700' 
+                          ? 'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 border border-gray-200 dark:border-gray-600 shadow-md dark:shadow-gray-900/10' 
                           : 'hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-700'
                       }`}
                       duration={0.5}
@@ -194,14 +194,14 @@ const Navbar = () => {
                       <div className="flex-1">
                         <div className={`font-bold text-lg transition-colors duration-300 ${
                           isActive 
-                            ? 'text-blue-600 dark:text-blue-400' 
+                            ? 'text-gray-900 dark:text-white tracking-wide' 
                             : 'text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200'
                         }`}>
                           {item.name}
                         </div>
                         <div className={`text-sm transition-colors duration-300 ${
                           isActive 
-                            ? 'text-blue-500 dark:text-blue-300' 
+                            ? 'text-gray-600 dark:text-gray-300' 
                             : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'
                         }`}>
                           {item.description}
@@ -216,8 +216,8 @@ const Navbar = () => {
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 {session ? (
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
+                    <div className="flex items-center space-x-3 p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/20 dark:to-gray-700/20">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-gray-800 to-black flex items-center justify-center">
                         <span className="text-white font-bold text-lg">
                           {session.user?.name?.charAt(0).toUpperCase() || 'U'}
                         </span>
@@ -242,7 +242,7 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <Link href="/signin" onClick={closeMenu}>
-                    <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white">
+                    <Button className="w-full h-12 bg-gradient-to-r from-gray-800 to-black hover:from-gray-700 hover:to-gray-900 text-white">
                       <LogIn className="w-4 h-4 mr-2" />
                       Sign In with Google
                     </Button>

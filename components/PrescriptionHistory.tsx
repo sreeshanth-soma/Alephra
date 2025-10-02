@@ -35,7 +35,7 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
     prescriptionStorage.deletePrescription(id);
     loadPrescriptions();
     toast({
-      description: "Prescription deleted successfully",
+      description: "Report deleted successfully",
     });
   };
 
@@ -48,7 +48,7 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
     loadPrescriptions();
     setShowClearModal(false);
     toast({
-      description: "All prescriptions cleared",
+      description: "All reports cleared",
     });
   };
 
@@ -71,7 +71,7 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
     URL.revokeObjectURL(url);
     
     toast({
-      description: "Prescription exported successfully",
+      description: "Report exported successfully",
     });
   };
 
@@ -95,9 +95,9 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-black dark:text-white mb-2">Prescription History</h3>
+          <h3 className="text-2xl font-bold text-black dark:text-white mb-2">Report History</h3>
           <p className="text-gray-600 dark:text-gray-300">
-            {prescriptions.length} prescription{prescriptions.length !== 1 ? 's' : ''} stored
+            {prescriptions.length} report{prescriptions.length !== 1 ? 's' : ''} stored
           </p>
         </div>
         {prescriptions.length > 0 && (
@@ -119,7 +119,7 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
           <CardContent className="text-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h4 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
-              No prescriptions yet
+              No reports yet
             </h4>
             <p className="text-gray-500 dark:text-gray-400">
               Upload your first medical report to see it here
@@ -200,7 +200,7 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
       <BasicModal
         isOpen={showClearModal}
         onClose={() => setShowClearModal(false)}
-        title="Clear All Prescriptions"
+        title="Clear All Reports"
         size="md"
       >
         <div className="flex flex-col gap-4">
@@ -213,14 +213,14 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
                 Are you sure?
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                This will permanently delete all {prescriptions.length} prescription{prescriptions.length !== 1 ? 's' : ''} from your history.
+                This will permanently delete all {prescriptions.length} report{prescriptions.length !== 1 ? 's' : ''} from your history.
               </p>
             </div>
           </div>
           
           <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-3">
             <p className="text-sm text-red-800 dark:text-red-200">
-              <strong>Warning:</strong> This action cannot be undone. All prescription data will be permanently lost.
+              <strong>Warning:</strong> This action cannot be undone. All report data will be permanently lost.
             </p>
           </div>
 

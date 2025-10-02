@@ -46,7 +46,7 @@ const ChatComponent = ({ reportData }: Props) => {
               : "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300 border-gray-200 dark:border-gray-700"
           }`}
         >
-          {reportData ? "✓ Report Loaded" : allReportsData ? `✓ ${prescriptionStorage.getPrescriptionsCount()} Reports Available` : "No Report"}
+          {reportData ? "✓ Report Loaded" : allReportsData ? `✓ ${prescriptionStorage.getPrescriptionsCount()} ${prescriptionStorage.getPrescriptionsCount() === 1 ? 'Report' : 'Reports'} Available` : "No Report"}
         </Badge>
       </div>
       

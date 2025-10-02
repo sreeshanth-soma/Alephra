@@ -777,7 +777,7 @@ export default function VoiceAgentPage() {
               onStart={startRecording}
               onStop={stopRecording}
               onStopAudio={stopAudio}
-              onVolumeChange={(volume) => console.log(`Volume: ${volume}%`)}
+              onVolumeChange={(volume) => { if (!isProd) console.log(`Volume: ${volume}%`); }}
               demoMode={false}
               isRecording={isRecording}
               isProcessing={isProcessing}
