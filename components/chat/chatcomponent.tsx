@@ -80,7 +80,7 @@ const ChatComponent = ({ reportData }: Props) => {
     
   return (
     <div className="h-[600px] bg-white dark:bg-zinc-900 relative flex flex-col rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl">
-      <div className="absolute -top-3 left-6 px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-300 dark:border-gray-700 shadow-lg">
+      <div className="absolute -top-3 left-6 z-20 px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-300 dark:border-gray-700 shadow-lg">
         <Badge 
           variant="secondary" 
           className={`text-sm font-semibold transition-all duration-200 ${
@@ -109,7 +109,7 @@ const ChatComponent = ({ reportData }: Props) => {
         </div>
       )}
       
-      <div className="flex-1 px-6 pt-12 pb-2 overflow-hidden">
+      <div className="flex-1 px-6 pt-16 pb-2 overflow-hidden">
         <Messages messages={messages} isLoading={isLoading} data={data} />
       </div>
       

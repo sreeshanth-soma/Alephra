@@ -130,21 +130,21 @@ export const FileUpload = ({
                   damping: 20,
                 }}
                 className={cn(
-                  "relative group-hover/file:shadow-2xl z-40 bg-white dark:bg-neutral-900 flex items-center justify-center h-32 aspect-square mt-2 w-full max-w-[8rem] mx-auto rounded-lg",
-                  "shadow-[0px_10px_50px_rgba(0,0,0,0.1)]"
+                  "relative group-hover/file:shadow-2xl z-40 bg-white dark:bg-neutral-900 flex items-center justify-center h-32 aspect-square mt-2 w-full max-w-[9rem] mx-auto rounded-lg border border-gray-300 dark:border-white/30",
+                  "shadow-[0px_10px_50px_rgba(0,0,0,0.15)]"
                 )}
               >
                 {isDragActive ? (
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-neutral-600 flex flex-col items-center"
+                    className="text-neutral-800 dark:text-neutral-100 flex flex-col items-center"
                   >
                     Drop it
-                    <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                    <IconUpload className="h-8 w-8 text-neutral-800 dark:text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
                   </motion.p>
                 ) : (
-                  <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+                  <IconUpload className="h-8 w-8 text-neutral-800 dark:text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
                 )}
               </motion.div>
             )}
@@ -152,7 +152,7 @@ export const FileUpload = ({
             {!files.length && (
               <motion.div
                 variants={secondaryVariant}
-                className="absolute opacity-0 border border-dashed border-sky-400 inset-0 z-30 bg-transparent flex items-center justify-center h-32 aspect-square mt-2 w-full max-w-[8rem] mx-auto rounded-lg"
+                className="absolute opacity-0 border border-dashed border-sky-400 inset-0 z-30 bg-transparent flex items-center justify-center h-32 aspect-square mt-2 w-full max-w-[9rem] mx-auto rounded-lg"
               ></motion.div>
             )}
           </div>
