@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { signIn } from "next-auth/react";
+import { SignInButton, useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,32 +21,18 @@ export default function SignInPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const { isSignedIn } = useAuth();
+
+  // Redirect if already signed in
+  if (isSignedIn) {
+    router.push(callbackUrl);
+    return null;
+  }
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    try {
-      const result = await signIn("google", {
-        callbackUrl,
-        redirect: true,
-      });
-
-      if (result?.error) {
-        toast({
-          title: "Error",
-          description: `Google sign-in failed: ${result.error}`,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Sign-in exception:", error);
-      toast({
-        title: "Error",
-        description: "Something went wrong with Google sign-in.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Clerk will handle the Google sign-in flow
+    // This is just for loading state
   };
 
   return (
@@ -86,16 +72,14 @@ export default function SignInPageContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Google Sign-In Button - Gradient style - TEMPORARILY COMMENTED OUT */}
-                {/* <GradientButton
-                  width="100%"
-                  height="48px"
-                  onClick={handleGoogleSignIn}
-                  className="select-none"
-                  aria-label="Continue with Google"
+                {/* Google Sign-In temporarily disabled during verification */}
+                <Button
+                  disabled
+                  variant="outline"
+                  className="w-full h-12 rounded-xl border-gray-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-gray-500 dark:text-gray-400"
                 >
-                  {isLoading ? "Signing in..." : "Continue with Google"}
-                </GradientButton>
+                  Sign in with Google (temporarily unavailable)
+                </Button>
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -106,7 +90,7 @@ export default function SignInPageContent() {
                       Continue as Guest
                     </span>
                   </div>
-                </div> */}
+                </div>
 
                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                   <Button

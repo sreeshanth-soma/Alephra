@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Heart, Activity, Calendar, Filter, CalendarDays, AlertTriangle, Trash2 } from "lucide-react";
 import BasicModal from "@/components/ui/modal";
 import { Noise } from "@/components/ui/noise";
-import { useSession } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 import { safeGetItem, safeSetItem, safeRemoveItem, clearAllMedScanData, isLocalStorageAvailable } from "@/lib/localStorage";
 import { toast } from "@/components/ui/use-toast";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
@@ -512,7 +512,7 @@ const MetricCard = ({ label, value, unit, accent }: { label: string; value: stri
 
 export default function DashboardPage() {
   // Session for authentication
-  const { data: session, status } = useSession();
+  const { user, isSignedIn } = useUser();
   
   type Reminder = { id: string; text: string; time?: string; done: boolean };
   const [reminders, setReminders] = useState<Reminder[]>([]);
@@ -750,14 +750,14 @@ export default function DashboardPage() {
     setAppointments(prev => [appointment, ...prev]);
     
     // Show immediate feedback
-    if (session?.user) {
+    if (isSignedIn) {
       setAppointmentsStatus("Adding appointment to Google Calendar...");
     } else {
       setAppointmentsStatus("Appointment saved locally. Sign in to sync with Google Calendar.");
     }
     
     // Try to sync with Google Calendar if user is signed in
-    if (session?.user) {
+    if (isSignedIn) {
       try {
       // Create a datetime for the appointment
       const appointmentDateTime = new Date(`${apptDate}T${apptTime}`);
@@ -1224,7 +1224,7 @@ export default function DashboardPage() {
                   >
                     Remove all
                   </button>
-                  {session?.user ? (
+                  {isSignedIn ? (
                     <div className="text-xs text-green-600 dark:text-green-400">✅ Synced with Google Calendar</div>
                   ) : (
                     <div className="text-xs text-orange-600 dark:text-orange-400">⚠️ Sign in to sync with Google Calendar</div>
@@ -1360,7 +1360,7 @@ export default function DashboardPage() {
                   >
                     Remove all
                   </button>
-                  {session?.user ? (
+                  {isSignedIn ? (
                     <span className="text-xs text-green-600 dark:text-green-400">✅ Connected to Google Calendar</span>
                   ) : (
                     <span className="text-xs text-orange-600 dark:text-orange-400">⚠️ Sign in to sync with Google Calendar</span>

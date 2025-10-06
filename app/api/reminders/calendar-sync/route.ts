@@ -1,27 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { google } from "googleapis";
-import { getToken } from "next-auth/jwt";
+import { getAuth, clerkClient } from "@clerk/nextjs/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
+    const { userId } = getAuth(request);
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the JWT token to access the stored access token
-    const token = await getToken({ 
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET 
-    });
-
-    if (!token?.accessToken) {
-      return NextResponse.json({ 
-        error: "No Google access token found. Please sign in again." 
-      }, { status: 400 });
+    // Fetch Google OAuth access token from Clerk
+    const client = await clerkClient();
+    const tokens = await client.users.getUserOauthAccessToken(userId, 'oauth_google');
+    const tokenRecord = tokens?.data?.[0];
+    if (!tokenRecord?.token) {
+      return NextResponse.json({ error: "No Google access token found. Please sign in again." }, { status: 400 });
     }
 
     const { title, description, reminderTime, reminderLocal, timeZone } = await request.json();
@@ -33,8 +26,8 @@ export async function POST(request: NextRequest) {
     );
 
     oauth2Client.setCredentials({
-      access_token: token.accessToken as string,
-      refresh_token: token.refreshToken as string,
+      access_token: tokenRecord.token as string,
+      refresh_token: (tokenRecord as any).refreshToken as string | undefined,
     });
 
     const calendar = google.calendar({ version: "v3", auth: oauth2Client });

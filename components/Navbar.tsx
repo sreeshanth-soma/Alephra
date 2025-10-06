@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Home, BarChart3, LayoutDashboard, Mic, User, LogOut, LogIn } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
@@ -13,7 +13,8 @@ import { HoverBorderGradient } from "./ui/hover-border-gradient";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -24,7 +25,7 @@ const Navbar = () => {
   };
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOut();
     closeMenu();
   };
 
@@ -105,15 +106,15 @@ const Navbar = () => {
             })}
             <div className="ml-4 pl-4 border-l border-gray-200 dark:border-gray-700 flex items-center space-x-3">
               <ThemeToggle className="relative" />
-              {session ? (
+              {user ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-800 to-black flex items-center justify-center">
                     <span className="text-white font-bold text-sm">
-                      {session.user?.name?.charAt(0).toUpperCase() || 'U'}
+                      {user.firstName?.charAt(0).toUpperCase() || user.emailAddresses[0]?.emailAddress?.charAt(0).toUpperCase() || 'U'}
                     </span>
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden lg:block">
-                    {session.user?.name?.split(' ')[0]}
+                    {user.firstName || user.emailAddresses[0]?.emailAddress?.split('@')[0]}
                   </span>
                   <Button
                     onClick={handleSignOut}
@@ -214,20 +215,20 @@ const Navbar = () => {
               
               {/* Mobile Auth Section */}
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                {session ? (
+                {user ? (
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3 p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/20 dark:to-gray-700/20">
                       <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-gray-800 to-black flex items-center justify-center">
                         <span className="text-white font-bold text-lg">
-                          {session.user?.name?.charAt(0).toUpperCase() || 'U'}
+                          {user.firstName?.charAt(0).toUpperCase() || user.emailAddresses[0]?.emailAddress?.charAt(0).toUpperCase() || 'U'}
                         </span>
                       </div>
                       <div className="flex-1">
                         <div className="font-bold text-lg text-gray-900 dark:text-white">
-                          {session.user?.name}
+                          {user.firstName} {user.lastName}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {session.user?.email}
+                          {user.emailAddresses[0]?.emailAddress}
                         </div>
                       </div>
                     </div>
