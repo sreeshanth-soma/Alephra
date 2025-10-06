@@ -1,131 +1,207 @@
 /* eslint-disable react/no-unescaped-entities */
-
 "use client";
 
-import { useEffect, useState } from "react";
-import PrescriptionHistory from "@/components/PrescriptionHistory";
+import { useEffect, useState, useMemo } from "react";
+import EnhancedHistoryList from "@/components/EnhancedHistory";
 import { PrescriptionRecord, prescriptionStorage } from "@/lib/prescription-storage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Download, Upload } from "lucide-react";
+import { Upload, BarChart3, TrendingUp, Activity, Heart, Shield, Brain, FileText, AlertCircle, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+// Removed health analytics - replaced with simple report management
+import { ResponsiveContainer, BarChart, XAxis, YAxis, Tooltip, Bar } from 'recharts';
+
+const TabButton = ({ active, onClick, children }: { active: boolean, onClick: () => void, children: React.ReactNode }) => (
+  <button 
+    onClick={onClick}
+    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${active ? 'bg-black text-white' : 'hover:bg-gray-800'}`}
+  >
+    {children}
+  </button>
+);
+
 
 export default function HistoryPage() {
+  const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
   const [selected, setSelected] = useState<PrescriptionRecord | null>(null);
-  const [refresh, setRefresh] = useState(0);
+  const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview');
+
 
   useEffect(() => {
-    // If nothing selected, preselect the most recent if available
-    if (!selected) {
-      const all = prescriptionStorage.getAllPrescriptions();
-      if (all.length > 0) setSelected(all[0]);
+    const all = prescriptionStorage.getAllPrescriptions();
+    const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+    setPrescriptions(sorted);
+    if (sorted.length > 0) {
+      setSelected(sorted[0]);
     }
-  }, [refresh, selected]);
+  }, []);
 
-  const handleSelect = (p: PrescriptionRecord) => setSelected(p);
-
-  const handleDelete = () => {
-    if (!selected) return;
-    prescriptionStorage.deletePrescription(selected.id);
-    setSelected(null);
-    setRefresh((n) => n + 1);
+  const refreshData = () => {
+    const all = prescriptionStorage.getAllPrescriptions();
+    const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+    setPrescriptions(sorted);
+    // If selected report was deleted, select the newest one
+    if (selected && !all.find(p => p.id === selected.id)) {
+        setSelected(sorted.length > 0 ? sorted[0] : null);
+    }
   };
 
-  const handleExport = () => {
-    if (!selected) return;
+  const handleDelete = (id: string) => {
+    prescriptionStorage.deletePrescription(id);
+    refreshData();
+  };
+
+  const handleClearAll = () => {
+    prescriptionStorage.clearAllPrescriptions();
+    setPrescriptions([]);
+    setSelected(null);
+  };
+
+  const handleExport = (prescription: PrescriptionRecord) => {
     const data = {
-      fileName: selected.fileName,
-      summary: selected.summary,
-      uploadedAt: selected.uploadedAt.toISOString(),
-      reportData: selected.reportData,
+      ...prescription,
+      exportedAt: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${selected.fileName}_${selected.uploadedAt.toISOString().split("T")[0]}.json`;
+    a.download = `${prescription.fileName}_${prescription.uploadedAt.toISOString().split("T")[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  const total = prescriptionStorage.getPrescriptionsCount();
+  const total = prescriptions.length;
 
   return (
-    <div className="min-h-[100dvh] bg-white dark:bg-black">
-      <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="min-h-[100dvh] bg-black">
+      <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-black dark:text-white">Report History</h1>
-            <p className="text-gray-600 dark:text-gray-400">View, manage, and export your uploaded reports</p>
+            <h1 className="text-3xl font-bold text-white">Health Analytics</h1>
+            <p className="text-gray-400">Your comprehensive health journey and insights.</p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-sm">
+            <Badge variant="outline" className="text-sm border-gray-600 text-gray-300">
               {total} {total === 1 ? "Report" : "Reports"}
             </Badge>
             <Link href="/analysis">
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2 border-gray-600 text-gray-300 hover:bg-gray-800">
                 <Upload className="w-4 h-4" /> Upload New
               </Button>
             </Link>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-5">
-            <PrescriptionHistory
-              onSelectPrescription={handleSelect}
-              selectedPrescriptionId={selected?.id || ""}
-              refreshTrigger={refresh}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-12rem)]">
+          <div className="lg:col-span-4 h-full">
+            <EnhancedHistoryList
+              prescriptions={prescriptions}
+              healthScores={new Map()}
+              onSelectPrescription={setSelected}
+              selectedPrescriptionId={selected?.id}
+              onClearAll={handleClearAll}
+              onDelete={handleDelete}
+              onExport={handleExport}
             />
           </div>
 
-          <div className="lg:col-span-7">
-            <Card className="bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl text-gray-900 dark:text-white">Details</CardTitle>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-2" onClick={handleExport} disabled={!selected}>
-                      <Download className="w-4 h-4" /> Export
-                    </Button>
-                    <Button variant="destructive" size="sm" className="gap-2" onClick={handleDelete} disabled={!selected}>
-                      <Trash2 className="w-4 h-4" /> Delete
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {selected ? (
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Badge variant="secondary" className="text-xs">
-                        {new Date(selected.uploadedAt).toLocaleString()}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {selected.fileName}
-                      </Badge>
+          <div className="lg:col-span-8 h-full">
+            {selected ? (
+              <Card className="h-full flex flex-col bg-black border-gray-700">
+                <CardHeader>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle className="text-xl text-white">{selected.fileName}</CardTitle>
+                            <p className="text-sm text-gray-400">{new Date(selected.uploadedAt).toLocaleString()}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>Overview</TabButton>
+                            <TabButton active={activeTab === 'details'} onClick={() => setActiveTab('details')}>Details</TabButton>
+                        </div>
                     </div>
-                    {selected.summary && (
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Summary</h3>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{selected.summary}</p>
-                      </div>
+                </CardHeader>
+                <CardContent className="flex-grow overflow-y-auto">
+                    {activeTab === 'overview' && (
+                        <div className="space-y-6">
+                            <Card className="bg-black border-gray-700">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-white">
+                                        <FileText className="h-5 w-5"/>
+                                        Report Summary
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <span className="text-gray-400">File Name:</span>
+                                                <p className="text-white font-medium">{selected.fileName}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-400">Upload Date:</span>
+                                                <p className="text-white font-medium">{selected.uploadedAt.toLocaleDateString()}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-400">File Size:</span>
+                                                <p className="text-white font-medium">{Math.round(selected.reportData.length / 1024)} KB</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-400">Report Type:</span>
+                                                <p className="text-white font-medium">Medical Report</p>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-gray-700 pt-4">
+                                            <h4 className="text-white font-semibold mb-3">AI Summary</h4>
+                                            <div className="text-gray-300 text-sm leading-relaxed">
+                                                <p className="line-clamp-4">
+                                                    {selected.summary.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <AlertCircle className="h-5 w-5 text-yellow-500" />
+                                                <h4 className="text-yellow-300 font-semibold">Important Notice</h4>
+                                            </div>
+                                            <p className="text-yellow-200 text-sm">
+                                                This is a medical report viewer only. No health analysis or medical advice is provided. 
+                                                Always consult with qualified healthcare professionals for medical interpretation and advice.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     )}
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Report Content</h3>
-                      <div className="max-h-[50vh] overflow-auto rounded-md border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                        {selected.reportData}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-600 dark:text-gray-400">Select a report from the list to view details.</p>
-                )}
-              </CardContent>
-            </Card>
+                    {activeTab === 'details' && (
+                        <div className="space-y-4">
+                            <div>
+                                <h4 className="font-semibold text-white mb-3">Full Report Data</h4>
+                                <div className="max-h-[60vh] overflow-y-auto p-4 border border-gray-700 rounded-lg whitespace-pre-wrap text-sm bg-gray-900 text-gray-300 font-mono">
+                                    {selected.reportData}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="h-full flex items-center justify-center bg-black border-gray-700">
+                <div className="text-center text-gray-400">
+                  <BarChart3 className="mx-auto h-12 w-12" />
+                  <p className="mt-4 font-semibold text-white">
+                    {total > 0 ? "Select a report to view analytics" : "No reports available"}
+                  </p>
+                  <p className="text-sm">
+                    {total === 0 && "Upload a medical report to get started."}
+                  </p>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       </div>

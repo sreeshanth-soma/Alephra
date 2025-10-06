@@ -73,7 +73,8 @@ const ChatComponent = ({ reportData }: Props) => {
 
   // Clear chat function
   const clearChat = () => {
-    setMessages([]);
+    const welcome = { id: crypto.randomUUID(), role: 'assistant', parts: [{ type: 'text', text: 'Hello, how can I help you?' }] } as Message;
+    setMessages([welcome]);
     localStorage.removeItem('medscan-chat-messages');
     setShowClearModal(false);
   };

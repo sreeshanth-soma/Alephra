@@ -2,18 +2,29 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast"
 import ReportComponent from "@/components/ReportComponent";
 import ChatComponent from "@/components/chat/chatcomponent";
-import PrescriptionHistory from "@/components/PrescriptionHistory";
-import { PrescriptionRecord } from "@/lib/prescription-storage";
+import EnhancedHistoryList from "@/components/EnhancedHistory";
+import { PrescriptionRecord, prescriptionStorage } from "@/lib/prescription-storage";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Info } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Info, Upload, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { Squares } from "@/components/ui/squares-background";
 import { MultiStepLoader as Loader } from "@/components/ui/multi-step-loader";
+import { 
+  extractMetricsFromReport, 
+  calculateHealthScore, 
+  generateInsights, 
+  compareReports,
+  HealthScore,
+  ReportInsight,
+  ReportComparison,
+  HealthMetric
+} from "@/lib/health-analytics";
+import { useMemo } from "react";
 
 const AnalysisPage = () => {
   const { toast } = useToast()
@@ -21,6 +32,53 @@ const AnalysisPage = () => {
   const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<string>("");
   const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Memoized analytics data
+  const analytics = useMemo(() => {
+    const healthScores = new Map<string, HealthScore>();
+    const insights = new Map<string, ReportInsight[]>();
+    const comparisons = new Map<string, ReportComparison>();
+    const metrics = new Map<string, HealthMetric[]>();
+
+    const sortedPrescriptions = [...prescriptions].sort((a,b) => a.uploadedAt.getTime() - b.uploadedAt.getTime());
+
+    for (let i = 0; i < sortedPrescriptions.length; i++) {
+      const p = sortedPrescriptions[i];
+      const currentMetrics = extractMetricsFromReport(p.reportData);
+      const score = calculateHealthScore(currentMetrics);
+      const reportInsights = generateInsights(currentMetrics);
+
+      metrics.set(p.id, currentMetrics);
+      healthScores.set(p.id, score);
+      insights.set(p.id, reportInsights);
+      
+      if (i > 0) {
+        const prev = sortedPrescriptions[i-1];
+        const prevMetrics = metrics.get(prev.id) || [];
+        const comp = compareReports(currentMetrics, prevMetrics);
+        comparisons.set(p.id, comp);
+      }
+    }
+    return { healthScores, insights, comparisons, metrics };
+  }, [prescriptions]);
+
+  // Filter prescriptions based on search term
+  const filteredPrescriptions = useMemo(() => {
+    if (!searchTerm) return prescriptions;
+    return prescriptions.filter(p => 
+      p.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.summary.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [prescriptions, searchTerm]);
+
+  // Load prescriptions on component mount
+  useEffect(() => {
+    const all = prescriptionStorage.getAllPrescriptions();
+    const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+    setPrescriptions(sorted);
+  }, [historyRefreshTrigger]);
 
   const onReportConfirmation = (data: string) => {
     setreportData(data);
@@ -41,6 +99,53 @@ const AnalysisPage = () => {
       description: `Loaded prescription: ${prescription.fileName}`
     });
   }
+
+  const handleDelete = (id: string) => {
+    prescriptionStorage.deletePrescription(id);
+    const all = prescriptionStorage.getAllPrescriptions();
+    const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+    setPrescriptions(sorted);
+    if (selectedPrescriptionId === id) {
+      setSelectedPrescriptionId("");
+      setreportData("");
+    }
+    toast({
+      description: "Report deleted successfully",
+    });
+  };
+
+  const handleClearAll = () => {
+    prescriptionStorage.clearAllPrescriptions();
+    setPrescriptions([]);
+    setSelectedPrescriptionId("");
+    setreportData("");
+    toast({
+      description: "All reports cleared",
+    });
+  };
+
+  const handleExport = (prescription: PrescriptionRecord) => {
+    const data = {
+      ...prescription,
+      analytics: {
+        healthScore: analytics.healthScores.get(prescription.id),
+        insights: analytics.insights.get(prescription.id),
+        comparison: analytics.comparisons.get(prescription.id)
+      }
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${prescription.fileName}_enhanced_${prescription.uploadedAt.toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({
+      description: "Report exported successfully",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black relative pt-20">
@@ -87,8 +192,9 @@ const AnalysisPage = () => {
         <div className="absolute top-16 right-6 z-30">
           <a 
             href="#history" 
-            className="inline-flex items-center px-6 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
+            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
           >
+            <BarChart3 className="h-4 w-4 mr-2" />
             History
           </a>
         </div>
@@ -104,12 +210,128 @@ const AnalysisPage = () => {
               </div>
             </div>
           </div>
-          <div id="history" className="space-y-4">
-            <PrescriptionHistory 
-              onSelectPrescription={handlePrescriptionSelect}
-              selectedPrescriptionId={selectedPrescriptionId}
-              refreshTrigger={historyRefreshTrigger}
-            />
+          <div id="history" className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-black dark:text-white mb-2">
+                Your Reports
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Select a report to analyze or upload a new one
+              </p>
+            </div>
+            
+            <div className="w-full">
+              <div className="bg-black/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
+                <div className="p-6 border-b border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-white">
+                      Report History ({filteredPrescriptions.length})
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <Link 
+                        href="/history"
+                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        <BarChart3 className="h-4 w-4 mr-1" />
+                        Analytics
+                      </Link>
+                    </div>
+                  </div>
+                  
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search reports..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                    <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
+                
+                <div className="max-h-96 overflow-y-auto">
+                  {filteredPrescriptions.length === 0 ? (
+                    <div className="text-center py-12">
+                      <BarChart3 className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <h4 className="text-lg font-medium text-white mb-2">
+                        {searchTerm ? "No matching reports" : "No reports yet"}
+                      </h4>
+                      <p className="text-gray-400 mb-4">
+                        {searchTerm ? "Try a different search term" : "Upload your first medical report to get started"}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-700">
+                      {filteredPrescriptions.map((prescription) => (
+                        <div
+                          key={prescription.id}
+                          onClick={() => handlePrescriptionSelect(prescription)}
+                          className={`p-4 hover:bg-gray-800 cursor-pointer transition-colors ${
+                            selectedPrescriptionId === prescription.id 
+                              ? 'bg-primary/10 border-l-4 border-primary' 
+                              : ''
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-medium text-white truncate">
+                                {prescription.fileName}
+                              </h4>
+                              <p className="text-sm text-gray-300 mt-1 line-clamp-2">
+                                {prescription.summary}
+                              </p>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                                <span>{prescription.uploadedAt.toLocaleDateString()}</span>
+                                <span>{prescription.uploadedAt.toLocaleTimeString()}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 ml-4">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleExport(prescription);
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-primary transition-colors"
+                                title="Export report"
+                              >
+                                <Upload className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(prescription.id);
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                                title="Delete report"
+                              >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                {prescriptions.length > 0 && (
+                  <div className="p-4 border-t border-gray-700 bg-gray-800/50">
+                    <button
+                      onClick={handleClearAll}
+                      className="w-full text-sm text-red-400 hover:text-red-300 font-medium transition-colors"
+                    >
+                      Clear All Reports
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

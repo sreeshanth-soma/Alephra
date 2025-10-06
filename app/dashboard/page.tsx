@@ -1185,7 +1185,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Upload Report", classes: "text-white bg-[#26A69A] hover:bg-[#219187] dark:text-white dark:bg-[#1E88E5] dark:hover:bg-[#1976D2]", href: "/report" },
-            { label: "View History", classes: "text-black bg-[#B0BEC5] hover:bg-[#9aa8b0] dark:text-white dark:bg-[#43A047] dark:hover:bg-[#388E3C]", href: "/dashboard/timeline" },
+            { label: "Health Analytics", classes: "text-black bg-[#B0BEC5] hover:bg-[#9aa8b0] dark:text-white dark:bg-[#43A047] dark:hover:bg-[#388E3C]", href: "/history" },
             { label: "Voice Assistant", classes: "text-white bg-[#3F51B5] hover:bg-[#3546a6] dark:text-white dark:bg-[#7B1FA2] dark:hover:bg-[#6A1B9A]", href: "/voice" },
             { label: "Analysis", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-white dark:bg-[#F57C00] dark:hover:bg-[#EF6C00]", href: "/analysis" },
           ].map((b, i) => (

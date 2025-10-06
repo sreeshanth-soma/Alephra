@@ -162,11 +162,25 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                 
                 setReportData(reportText);
                 
-                // Removed embedding status toast per request
-                
-                // Save prescription immediately after successful analysis
+                // --- NEW: Generate a concise summary ---
+                const summaryResponse = await fetch("/api/summarize-report", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reportText: reportText }),
+                });
+
+                let summaryText = reportText.substring(0, 250) + "..."; // Fallback summary
+                if (summaryResponse.ok) {
+                    const summaryData = await summaryResponse.json();
+                    summaryText = summaryData.summary;
+                } else {
+                    console.warn("Failed to generate concise summary, using fallback.");
+                }
+                // --- END NEW ---
+
+                // Save prescription with distinct summary
                 if (uploadedFileName) {
-                    prescriptionStorage.savePrescription(reportText, reportText, uploadedFileName);
+                    prescriptionStorage.savePrescription(reportText, summaryText, uploadedFileName);
                 }
             } else {
                 const errorData = await response.json().catch(() => ({ error: "Unknown error occurred" }));
