@@ -221,10 +221,10 @@ const AnalysisPage = () => {
             </div>
             
             <div className="w-full">
-              <div className="bg-black/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
-                <div className="p-6 border-b border-gray-700">
+              <div className="bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       Report History ({filteredPrescriptions.length})
                     </h3>
                     <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ const AnalysisPage = () => {
                       placeholder="Search reports..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     />
                     <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -257,20 +257,20 @@ const AnalysisPage = () => {
                   {filteredPrescriptions.length === 0 ? (
                     <div className="text-center py-12">
                       <BarChart3 className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <h4 className="text-lg font-medium text-white mb-2">
+                      <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                         {searchTerm ? "No matching reports" : "No reports yet"}
                       </h4>
-                      <p className="text-gray-400 mb-4">
+                      <p className="text-gray-500 dark:text-gray-400 mb-4">
                         {searchTerm ? "Try a different search term" : "Upload your first medical report to get started"}
                       </p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-700">
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
                       {filteredPrescriptions.map((prescription) => (
                         <div
                           key={prescription.id}
                           onClick={() => handlePrescriptionSelect(prescription)}
-                          className={`p-4 hover:bg-gray-800 cursor-pointer transition-colors ${
+                          className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
                             selectedPrescriptionId === prescription.id 
                               ? 'bg-primary/10 border-l-4 border-primary' 
                               : ''
@@ -278,13 +278,13 @@ const AnalysisPage = () => {
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-medium text-white truncate">
+                              <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
                                 {prescription.fileName}
                               </h4>
-                              <p className="text-sm text-gray-300 mt-1 line-clamp-2">
+                              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
                                 {prescription.summary}
                               </p>
-                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                                 <span>{prescription.uploadedAt.toLocaleDateString()}</span>
                                 <span>{prescription.uploadedAt.toLocaleTimeString()}</span>
                               </div>
@@ -321,10 +321,10 @@ const AnalysisPage = () => {
                 </div>
                 
                 {prescriptions.length > 0 && (
-                  <div className="p-4 border-t border-gray-700 bg-gray-800/50">
+                  <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                     <button
                       onClick={handleClearAll}
-                      className="w-full text-sm text-red-400 hover:text-red-300 font-medium transition-colors"
+                      className="w-full text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors"
                     >
                       Clear All Reports
                     </button>

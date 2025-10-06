@@ -103,15 +103,15 @@ const EnhancedHistoryList = ({
   };
 
   return (
-    <Card className="h-full flex flex-col bg-black border-gray-700">
+    <Card className="h-full flex flex-col bg-white dark:bg-black border-gray-200 dark:border-gray-700">
       <CardHeader>
-        <CardTitle className="text-white">Report History</CardTitle>
+        <CardTitle className="text-gray-900 dark:text-white">Report History</CardTitle>
         <div className="flex items-center gap-2 pt-2">
           <div className="relative flex-grow">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input 
               placeholder="Search reports..." 
-              className="pl-8 w-full bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+              className="pl-8 w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -119,7 +119,7 @@ const EnhancedHistoryList = ({
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className="px-3 h-10 border border-gray-600 rounded-md bg-gray-800 text-white text-sm"
+                    className="px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                   >
                     <option value="date">Sort by Date</option>
                     <option value="file_name">Sort by Name</option>
@@ -128,10 +128,10 @@ const EnhancedHistoryList = ({
       </CardHeader>
       <CardContent className="flex-grow overflow-y-auto space-y-3 pr-3">
         {filteredPrescriptions.length === 0 ? (
-          <div className="text-center text-gray-400 py-12">
+          <div className="text-center text-gray-500 dark:text-gray-400 py-12">
             <FileText className="mx-auto h-12 w-12" />
-            <p className="mt-4 font-semibold text-white">No Reports Found</p>
-            <p className="text-sm text-gray-400">
+            <p className="mt-4 font-semibold text-gray-900 dark:text-white">No Reports Found</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               {searchTerm ? "Try a different search term." : "Upload a report to get started."}
             </p>
           </div>
@@ -142,24 +142,24 @@ const EnhancedHistoryList = ({
               <div
                 key={p.id}
                 onClick={() => onSelectPrescription(p)}
-                        className={`p-3 rounded-lg border border-gray-700 cursor-pointer transition-all ${selectedPrescriptionId === p.id ? 'bg-gray-800 border-gray-500' : 'hover:bg-gray-800'}`}
+                        className={`p-3 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer transition-all ${selectedPrescriptionId === p.id ? 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-500' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-grow truncate">
-                    <p className="font-semibold truncate text-white">{p.fileName}</p>
-                    <p className="text-sm text-gray-400 line-clamp-2">{p.summary}</p>
+                    <p className="font-semibold truncate text-gray-900 dark:text-white">{p.fileName}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{p.summary}</p>
                   </div>
                   {score && (
                     <div className="ml-4 text-right flex-shrink-0">
-                      <p className="font-bold text-lg text-white">{score}</p>
+                      <p className="font-bold text-lg text-gray-900 dark:text-white">{score}</p>
                       <HealthScoreBadge score={score} />
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+                <div className="flex items-center justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
                   <span>{getTimeAgo(p.uploadedAt)}</span>
                   <div className="flex items-center gap-2">
-                            <button onClick={(e) => { e.stopPropagation(); onExport(p); }} className="hover:text-white"><Download className="h-4 w-4" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onExport(p); }} className="hover:text-gray-900 dark:hover:text-white"><Download className="h-4 w-4" /></button>
                     <button onClick={(e) => { e.stopPropagation(); onDelete(p.id); }} className="hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
                   </div>
                 </div>
