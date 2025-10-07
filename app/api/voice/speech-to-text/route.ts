@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    const t0 = Date.now();
     const formData = await request.formData();
     const audioFile = formData.get('audio') as File;
     
@@ -20,6 +21,7 @@ export async function POST(request: NextRequest) {
     sarvamFormData.append('file', audioFile);
 
     // Call Sarvam AI API directly
+    const tApiStart = Date.now();
     const sarvamResponse = await fetch('https://api.sarvam.ai/speech-to-text', {
       method: 'POST',
       headers: {
@@ -27,6 +29,7 @@ export async function POST(request: NextRequest) {
       },
       body: sarvamFormData,
     });
+    const tApiEnd = Date.now();
 
     if (!sarvamResponse.ok) {
       const errorText = await sarvamResponse.text();
@@ -66,11 +69,19 @@ export async function POST(request: NextRequest) {
       detectedLanguage = result.detected_language;
     }
 
+    const tEnd = Date.now();
+    const timings = {
+      totalMs: tEnd - t0,
+      providerMs: tApiEnd - tApiStart
+    };
+    const serverTiming = [`total;dur=${timings.totalMs}`, `provider;dur=${timings.providerMs}`].join(', ');
+
     return NextResponse.json({ 
       success: true, 
       text: extractedText.trim(),
-      language: detectedLanguage
-    });
+      language: detectedLanguage,
+      timings
+    }, { headers: { 'Server-Timing': serverTiming } });
 
   } catch (error) {
     console.error('Speech-to-text error:', error);

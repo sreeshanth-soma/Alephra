@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, ReferenceLine } from "recharts";
 import { Button } from "@/components/ui/button";
+import BlackTimePicker from "@/components/ui/black-time-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, Activity, Calendar, Filter, CalendarDays, AlertTriangle, Trash2 } from "lucide-react";
@@ -346,7 +347,7 @@ const HealthMetricsChart: React.FC = () => {
       {showAddForm && (
         <div className="p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800">
           <div className="text-sm font-medium text-black dark:text-white mb-3">Add New Health Data</div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
               <Label htmlFor="date" className="text-xs">Date</Label>
               <Input
@@ -1272,13 +1273,10 @@ export default function DashboardPage() {
                   placeholder="e.g., Take Zoclar 500"
                   className="md:col-span-3 h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-3 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                 />
-                <input
-                  type="time"
+                <BlackTimePicker
                   value={newTime}
                   onChange={e => setNewTime(e.target.value)}
-                  placeholder="Time"
-                  title="Add time to sync with Google Calendar"
-                  className="md:col-span-1 h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-3 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="md:col-span-1"
                 />
                 <button onClick={addReminder} className="h-11 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white text-sm font-medium shadow-lg hover:shadow-xl transition">📅 Add</button>
               </div>

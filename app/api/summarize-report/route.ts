@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash-latest',
+    model: 'gemini-flash-lite-latest',
 });
 
 const prompt = `You are a medical expert. Analyze the following clinical report text and generate a concise, easy-to-understand summary in no more than 3-4 short sentences. Focus on the most critical findings, abnormal values, and overall assessment.

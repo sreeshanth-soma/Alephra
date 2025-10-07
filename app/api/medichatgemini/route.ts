@@ -16,6 +16,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
 
 export async function POST(req: Request, res: Response) {
     try {
+        const t0 = Date.now();
         const reqBody = await req.json();
         console.log(reqBody);
 
@@ -41,9 +42,11 @@ export async function POST(req: Request, res: Response) {
             ? `Represent this for searching relevant passages: patient medical report says: \n${reportData}. \n\n${userQuestion}`
             : `Represent this for searching relevant passages: user question: ${userQuestion}`;
 
+        const tPineconeStart = Date.now();
         const retrievals = reportData
             ? await queryPineconeVectorStore(pinecone, indexName, namespace, query)
             : "<nomatches>";
+        const tPineconeEnd = Date.now();
 
         // Check if the query is a casual conversation (not a medical question)
         const isCasualQuery = /^(thank you|thanks|bye|goodbye|hello|hi|ok|okay|yes|no)$/i.test(userQuestion.trim());
@@ -81,13 +84,31 @@ export async function POST(req: Request, res: Response) {
         // Add a 15s timeout to avoid hanging requests
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const tGeminiStart = Date.now();
         const result = await model.generateContent(finalPrompt, { signal: controller.signal } as any);
+        const tGeminiEnd = Date.now();
         clearTimeout(timeoutId);
         console.log("Gemini Response Result:", result);
         const text = result.response.text();
         console.log("Extracted Text:", text);
+        const tEnd = Date.now();
 
-        return new Response(JSON.stringify({ text, retrievals }), { headers: { "Content-Type": "application/json" } });
+        const timings = {
+            totalMs: tEnd - t0,
+            pineconeMs: reportData ? (tPineconeEnd - tPineconeStart) : 0,
+            geminiMs: tGeminiEnd - tGeminiStart,
+            parsingMs: 0
+        };
+
+        const serverTiming = [
+            `total;dur=${timings.totalMs}`,
+            reportData ? `pinecone;dur=${timings.pineconeMs}` : undefined,
+            `gemini;dur=${timings.geminiMs}`
+        ].filter(Boolean).join(", ");
+
+        return new Response(JSON.stringify({ text, retrievals, timings }), {
+            headers: { "Content-Type": "application/json", "Server-Timing": serverTiming }
+        });
         
     } catch (error: any) {
         console.error("Error in POST handler:", error);

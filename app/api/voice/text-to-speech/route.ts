@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    const t0 = Date.now();
     const { text, target_language_code, speaker } = await request.json();
     
     if (!text || text.trim() === '') {
@@ -132,6 +133,7 @@ export async function POST(request: NextRequest) {
       }
     });
     
+    const tApiStart = Date.now();
     const ttsResp = await fetch("https://api.sarvam.ai/text-to-speech", {
       method: "POST",
       headers: {
@@ -140,6 +142,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(requestBody),
     });
+    const tApiEnd = Date.now();
 
     if (!ttsResp.ok) {
       const err = await ttsResp.text();
@@ -189,12 +192,19 @@ export async function POST(request: NextRequest) {
     const audioBase64 = ttsJson.audios && ttsJson.audios.length > 0 ? ttsJson.audios[0] : null;
     
     if (audioBase64) {
+      const tEnd = Date.now();
+      const timings = {
+        totalMs: tEnd - t0,
+        providerMs: tApiEnd - tApiStart
+      };
+      const serverTiming = [`total;dur=${timings.totalMs}`, `provider;dur=${timings.providerMs}`].join(', ');
       return NextResponse.json({ 
         success: true,
         audio_base64: audioBase64,
         language: targetLanguageCode,
-        message: 'Audio generated successfully'
-      });
+        message: 'Audio generated successfully',
+        timings
+      }, { headers: { 'Server-Timing': serverTiming } });
     } else {
       throw new Error('No audio data received from Sarvam AI');
     }

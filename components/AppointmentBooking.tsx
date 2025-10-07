@@ -7,6 +7,8 @@ import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import BlackDatePicker from "@/components/ui/black-date-picker";
+import BlackTimePicker from "@/components/ui/black-time-picker";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Clock, MapPin, User, CheckCircle } from "lucide-react";
@@ -194,10 +196,9 @@ export default function AppointmentBooking({ onClose }: AppointmentBookingProps)
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date">Date *</Label>
-                <Input
+                <BlackDatePicker
                   id="date"
                   name="date"
-                  type="date"
                   value={formData.date}
                   onChange={handleInputChange}
                   min={new Date().toISOString().split('T')[0]}
@@ -206,10 +207,9 @@ export default function AppointmentBooking({ onClose }: AppointmentBookingProps)
               </div>
               <div className="space-y-2">
                 <Label htmlFor="time">Time *</Label>
-                <Input
+                <BlackTimePicker
                   id="time"
                   name="time"
-                  type="time"
                   value={formData.time}
                   onChange={handleInputChange}
                   required

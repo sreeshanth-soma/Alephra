@@ -14,6 +14,7 @@ const pinecone = new Pinecone({
 
 export async function POST(request: NextRequest) {
   try {
+    const t0 = Date.now();
     const { message, language = 'en-IN', reportData = '', reportId } = await request.json();
     
     console.log('Voice API received:', { message, language, reportDataLength: reportData.length });
@@ -50,11 +51,13 @@ export async function POST(request: NextRequest) {
 
     // Query vector database for relevant clinical findings
     const query = `Represent this for searching relevant passages: patient medical report that says: \n${trimmedReport}. \n\n${trimmedMessage}`;
+    const tPineconeStart = Date.now();
     const retrievals = await queryPineconeVectorStore(pinecone, indexName, namespace, query, {
       reportId,
       topK: 3,
       minScore: 0.8
     });
+    const tPineconeEnd = Date.now();
 
     // Create a medical-focused prompt using vector database results
     const finalPrompt = `You are a helpful medical voice assistant for MedScan. The user is speaking in ${languageName}.
@@ -90,7 +93,9 @@ Respond in a natural, conversational tone that works well for voice output.
 
 **Answer:**`;
 
+    const tGeminiStart = Date.now();
     const result = await model.generateContent(finalPrompt);
+    const tGeminiEnd = Date.now();
     const response = await result.response;
     const rawText = response.text();
 
@@ -107,11 +112,20 @@ Respond in a natural, conversational tone that works well for voice output.
 
     console.log('Voice API generated response:', cleanText.substring(0, 100) + '...');
 
+    const tEnd = Date.now();
+    const timings = {
+      totalMs: tEnd - t0,
+      pineconeMs: tPineconeEnd - tPineconeStart,
+      geminiMs: tGeminiEnd - tGeminiStart
+    };
+    const serverTiming = [`total;dur=${timings.totalMs}`, `pinecone;dur=${timings.pineconeMs}`, `gemini;dur=${timings.geminiMs}`].join(", ");
+
     return NextResponse.json({ 
       success: true, 
       response: cleanText,
-      retrievals: retrievals
-    });
+      retrievals: retrievals,
+      timings
+    }, { headers: { 'Server-Timing': serverTiming } });
 
   } catch (error) {
     console.error('Voice Gemini chat error:', error);
