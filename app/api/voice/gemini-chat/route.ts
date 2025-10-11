@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     const query = `Represent this for searching relevant passages: patient medical report that says: \n${trimmedReport}. \n\n${trimmedMessage}`;
     
     // Create base prompt that works without vector search results
-    const basePrompt = `You are a helpful medical voice assistant for MedScan. The user is speaking in ${languageName}.
+    const basePrompt = `You are a medical voice assistant for MedScan. The user is speaking in ${languageName}.
 
 Here is a summary of a patient's clinical report, and a user query.
 Go through the clinical report and answer the user query SPECIFICALLY and DIRECTLY.
@@ -65,18 +65,19 @@ Ensure the response is factually accurate, and demonstrates a thorough understan
 **User Query:**\n${message}?
 **end of user query** 
 
-Provide a helpful, conversational response that:
+Provide a professional medical response that:
 1. ANSWER ONLY what the user specifically asked - don't provide extra information unless requested
 2. Is relevant to medical/healthcare topics
 3. Is concise and suitable for voice output (under 100 words)
-4. If the user asks about appointments, guide them to the dashboard
-5. If they ask about medicines, provide information from the report if available, but always recommend consulting the doctor for dosage and timing
-6. If they ask about health metrics, refer to the dashboard vitals
-7. If they ask about symptoms or health concerns, provide general guidance but recommend consulting a doctor
-8. Be friendly and professional
-9. If the message is not medical-related, politely redirect to medical topics
+4. Be direct and professional - DO NOT use casual greetings like "Hello!", "I'm happy to help", "I'd be glad to", etc.
+5. Start directly with the medical information or answer
+6. If the user asks about appointments, guide them to the dashboard
+7. If they ask about medicines, provide information from the report if available, but always recommend consulting the doctor for dosage and timing
+8. If they ask about health metrics, refer to the dashboard vitals
+9. If they ask about symptoms or health concerns, provide general guidance but recommend consulting a doctor
+10. If the message is not medical-related, politely redirect to medical topics
 
-Respond in a natural, conversational tone that works well for voice output.
+Respond in a professional, medical tone that works well for voice output. Start directly with the medical information.
 
 **Answer:**`;
 
@@ -94,13 +95,16 @@ Respond in a natural, conversational tone that works well for voice output.
         const response = await result.response;
         const rawText = response.text();
         
-        // Clean markdown formatting for voice output
+        // Clean markdown and LaTeX formatting for voice output
         const cleanText = rawText
           .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
           .replace(/\*(.*?)\*/g, '$1')     // Remove italic markdown
           .replace(/#{1,6}\s*/g, '')       // Remove headers
           .replace(/`(.*?)`/g, '$1')       // Remove code backticks
           .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links, keep text
+          .replace(/\$([^$]+)\$/g, '$1')   // Remove LaTeX math delimiters
+          .replace(/\\text\{([^}]+)\}/g, '$1') // Remove LaTeX text commands
+          .replace(/\\[a-zA-Z]+\{[^}]*\}/g, '') // Remove other LaTeX commands
           .replace(/\n{2,}/g, '. ')        // Replace multiple newlines with periods
           .replace(/\n/g, ' ')             // Replace single newlines with spaces
           .trim();
@@ -180,6 +184,9 @@ Please enhance your previous response with any relevant information from the add
             .replace(/#{1,6}\s*/g, '')
             .replace(/`(.*?)`/g, '$1')
             .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+            .replace(/\$([^$]+)\$/g, '$1')   // Remove LaTeX math delimiters
+            .replace(/\\text\{([^}]+)\}/g, '$1') // Remove LaTeX text commands
+            .replace(/\\[a-zA-Z]+\{[^}]*\}/g, '') // Remove other LaTeX commands
             .replace(/\n{2,}/g, '. ')
             .replace(/\n/g, ' ')
             .trim();
