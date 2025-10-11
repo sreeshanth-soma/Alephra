@@ -93,11 +93,21 @@ const AnalysisPage = () => {
   }
 
   const handlePrescriptionSelect = (prescription: PrescriptionRecord) => {
-    setreportData(prescription.reportData);
-    setSelectedPrescriptionId(prescription.id);
-    toast({
-      description: `Loaded prescription: ${prescription.fileName}`
-    });
+    // Toggle selection: if already selected, deselect it
+    if (selectedPrescriptionId === prescription.id) {
+      setSelectedPrescriptionId("");
+      setreportData("");
+      toast({
+        description: "Report deselected"
+      });
+    } else {
+      // Select the new prescription
+      setreportData(prescription.reportData);
+      setSelectedPrescriptionId(prescription.id);
+      toast({
+        description: `Loaded prescription: ${prescription.fileName}`
+      });
+    }
   }
 
   const handleDelete = (id: string) => {
@@ -272,15 +282,20 @@ const AnalysisPage = () => {
                           onClick={() => handlePrescriptionSelect(prescription)}
                           className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
                             selectedPrescriptionId === prescription.id 
-                              ? 'bg-primary/10 border-l-4 border-primary' 
-                              : ''
+                              ? 'bg-primary/10 border-l-4 border-primary shadow-sm' 
+                              : 'hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
                           }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                {prescription.fileName}
-                              </h4>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {prescription.fileName}
+                                </h4>
+                                {selectedPrescriptionId === prescription.id && (
+                                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                                )}
+                              </div>
                               <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
                                 {prescription.summary}
                               </p>

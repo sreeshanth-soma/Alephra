@@ -96,6 +96,52 @@
   .dark .custom-scrollbar::-webkit-scrollbar-thumb:active {
     background: #f3f4f6;
   }
+  
+  /* Mathematical expression styling */
+  .markdown-content .katex {
+    font-size: 1.1em;
+  }
+  
+  .markdown-content .katex-display {
+    margin: 1em 0;
+    text-align: center;
+  }
+  
+  .markdown-content .katex-display .katex {
+    font-size: 1.2em;
+  }
+  
+  /* Medical report specific styling */
+  .markdown-content {
+    line-height: 1.6;
+  }
+  
+  .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+  }
+  
+  .markdown-content p {
+    margin-bottom: 1em;
+  }
+  
+  .markdown-content ul, .markdown-content ol {
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+  }
+  
+  .markdown-content li {
+    margin-bottom: 0.25em;
+  }
+  
+  .markdown-content strong {
+    font-weight: 600;
+  }
+  
+  .markdown-content em {
+    font-style: italic;
+  }
 }
 
 @layer base {

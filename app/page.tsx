@@ -41,7 +41,7 @@ export default function Home() {
         >
           <div className="relative mx-auto rounded-2xl overflow-hidden z-10">
           <Image
-            src={theme === "dark" ? "/landing-hero-dark.jpg.jpg" : "/landing-hero-light.jpg"}
+            src={theme === "dark" ? "/landing-hero-dark1.jpg" : "/landing-hero-light.jpg"}
               alt="MedScan AI Medical Assistant Dashboard"
             height={720}
             width={1400}

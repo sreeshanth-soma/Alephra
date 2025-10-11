@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, BarChart3, TrendingUp, Activity, Heart, Shield, Brain, FileText, AlertCircle, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Markdown from "@/components/markdown";
 // Removed health analytics - replaced with simple report management
 import { ResponsiveContainer, BarChart, XAxis, YAxis, Tooltip, Bar } from 'recharts';
 
@@ -127,47 +128,63 @@ export default function HistoryPage() {
                 <CardContent className="flex-grow overflow-y-auto">
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
-                            <Card className="bg-gray-50 dark:bg-black border-gray-200 dark:border-gray-700">
+                            {/* Report Information Card */}
+                            <Card className="bg-white dark:bg-black border-gray-200 dark:border-gray-700">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                                         <FileText className="h-5 w-5"/>
-                                        Report Summary
+                                        Report Information
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                        <div className="space-y-3">
                                             <div>
-                                                <span className="text-gray-500 dark:text-gray-400">File Name:</span>
+                                                <span className="text-gray-500 dark:text-gray-400 block">File Name</span>
                                                 <p className="text-gray-900 dark:text-white font-medium">{selected.fileName}</p>
                                             </div>
                                             <div>
-                                                <span className="text-gray-500 dark:text-gray-400">Upload Date:</span>
+                                                <span className="text-gray-500 dark:text-gray-400 block">Upload Date</span>
                                                 <p className="text-gray-900 dark:text-white font-medium">{selected.uploadedAt.toLocaleDateString()}</p>
                                             </div>
+                                        </div>
+                                        <div className="space-y-3">
                                             <div>
-                                                <span className="text-gray-500 dark:text-gray-400">File Size:</span>
+                                                <span className="text-gray-500 dark:text-gray-400 block">File Size</span>
                                                 <p className="text-gray-900 dark:text-white font-medium">{Math.round(selected.reportData.length / 1024)} KB</p>
                                             </div>
                                             <div>
-                                                <span className="text-gray-500 dark:text-gray-400">Report Type:</span>
+                                                <span className="text-gray-500 dark:text-gray-400 block">Report Type</span>
                                                 <p className="text-gray-900 dark:text-white font-medium">Medical Report</p>
                                             </div>
                                         </div>
-                                        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                            <h4 className="text-gray-900 dark:text-white font-semibold mb-3">AI Summary</h4>
-                                            <div className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                                                <p className="line-clamp-4">
-                                                    {selected.summary.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-500/30 rounded-lg p-4">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
-                                                <h4 className="text-yellow-800 dark:text-yellow-300 font-semibold">Important Notice</h4>
-                                            </div>
-                                            <p className="text-yellow-700 dark:text-yellow-200 text-sm">
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* AI Summary Card */}
+                            <Card className="bg-white dark:bg-black border-gray-200 dark:border-gray-700">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                                        <Brain className="h-5 w-5"/>
+                                        AI Summary
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-gray-100">
+                                        <Markdown text={selected.summary} />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Important Notice Card */}
+                            <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-500/30">
+                                <CardContent className="pt-6">
+                                    <div className="flex items-start gap-3">
+                                        <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0" />
+                                        <div>
+                                            <h4 className="text-yellow-800 dark:text-yellow-300 font-semibold mb-2">Important Notice</h4>
+                                            <p className="text-yellow-700 dark:text-yellow-200 text-sm leading-relaxed">
                                                 This is a medical report viewer only. No health analysis or medical advice is provided. 
                                                 Always consult with qualified healthcare professionals for medical interpretation and advice.
                                             </p>
@@ -178,11 +195,55 @@ export default function HistoryPage() {
                         </div>
                     )}
                     {activeTab === 'details' && (
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
-                                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Full Report Data</h4>
-                                <div className="max-h-[60vh] overflow-y-auto p-4 border border-gray-200 dark:border-gray-700 rounded-lg whitespace-pre-wrap text-sm bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-300 font-mono">
-                                    {selected.reportData}
+                                <div className="flex items-center gap-2 mb-4">
+                                    <FileText className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                    <h4 className="font-semibold text-gray-900 dark:text-white">Full Report Data</h4>
+                                </div>
+                                <div className="max-h-[60vh] overflow-y-auto p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 custom-scrollbar">
+                                    <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-gray-100">
+                                        <Markdown text={selected.reportData} />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Report Metadata */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-lg p-4">
+                                    <h5 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Report Information</h5>
+                                    <div className="space-y-1 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-blue-700 dark:text-blue-400">File Size:</span>
+                                            <span className="text-blue-900 dark:text-blue-200 font-medium">{Math.round(selected.reportData.length / 1024)} KB</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-blue-700 dark:text-blue-400">Characters:</span>
+                                            <span className="text-blue-900 dark:text-blue-200 font-medium">{selected.reportData.length.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-blue-700 dark:text-blue-400">Words:</span>
+                                            <span className="text-blue-900 dark:text-blue-200 font-medium">{selected.reportData.split(/\s+/).length.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30 rounded-lg p-4">
+                                    <h5 className="font-semibold text-green-900 dark:text-green-300 mb-2">Processing Status</h5>
+                                    <div className="space-y-1 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                            <span className="text-green-700 dark:text-green-400">Text Extraction</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                            <span className="text-green-700 dark:text-green-400">AI Summary Generated</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                            <span className="text-green-700 dark:text-green-400">Vector Storage</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
