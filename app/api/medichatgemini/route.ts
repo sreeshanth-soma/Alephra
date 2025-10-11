@@ -3,7 +3,7 @@ import { Pinecone } from "@pinecone-database/pinecone";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { indexName, namespace } from "@/app/config";
 
-// Allow streaming responses up to 30 seconds
+// Allow streaming responses up to 60 seconds for vector search operations
 export const maxDuration = 60;
 // export const runtime = 'edge';
 
@@ -43,9 +43,24 @@ export async function POST(req: Request, res: Response) {
             : `Represent this for searching relevant passages: user question: ${userQuestion}`;
 
         const tPineconeStart = Date.now();
-        const retrievals = reportData
-            ? await queryPineconeVectorStore(pinecone, indexName, namespace, query)
-            : "<nomatches>";
+        let retrievals = "<nomatches>";
+        
+        if (reportData) {
+            try {
+                // Add timeout for Pinecone query (30 seconds)
+                const pineconeController = new AbortController();
+                const pineconeTimeoutId = setTimeout(() => pineconeController.abort(), 30000);
+                
+                retrievals = await queryPineconeVectorStore(pinecone, indexName, namespace, query);
+                clearTimeout(pineconeTimeoutId);
+                
+                console.log("Pinecone query successful, retrievals:", retrievals.substring(0, 200) + "...");
+            } catch (error) {
+                console.error("Pinecone query failed:", error);
+                retrievals = "<nomatches>";
+                // Continue with Gemini even if Pinecone fails
+            }
+        }
         const tPineconeEnd = Date.now();
 
         // Check if the query is a casual conversation (not a medical question)
@@ -81,11 +96,20 @@ export async function POST(req: Request, res: Response) {
         }
 
         console.log("Final Prompt:", finalPrompt);
-        // Add a 15s timeout to avoid hanging requests
+        // Add a 45s timeout for Gemini (increased from 15s to allow for vector search context)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const timeoutId = setTimeout(() => controller.abort(), 45000);
         const tGeminiStart = Date.now();
-        const result = await model.generateContent(finalPrompt, { signal: controller.signal } as any);
+        
+        let result;
+        try {
+            result = await model.generateContent(finalPrompt, { signal: controller.signal } as any);
+        } catch (error) {
+            clearTimeout(timeoutId);
+            console.error("Gemini API error:", error);
+            throw error;
+        }
+        
         const tGeminiEnd = Date.now();
         clearTimeout(timeoutId);
         console.log("Gemini Response Result:", result);
@@ -106,7 +130,18 @@ export async function POST(req: Request, res: Response) {
             `gemini;dur=${timings.geminiMs}`
         ].filter(Boolean).join(", ");
 
-        return new Response(JSON.stringify({ text, retrievals, timings }), {
+        // Include vector search status in response
+        const vectorSearchStatus = retrievals === "<nomatches>" ? "no_matches" : "success";
+        const hasVectorData = retrievals !== "<nomatches>" && retrievals.length > 50;
+
+        return new Response(JSON.stringify({ 
+            text, 
+            retrievals, 
+            timings,
+            vectorSearchStatus,
+            hasVectorData,
+            usedVectorSearch: reportData && hasVectorData
+        }), {
             headers: { "Content-Type": "application/json", "Server-Timing": serverTiming }
         });
         

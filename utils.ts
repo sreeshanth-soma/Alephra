@@ -15,6 +15,47 @@ const MCP_EMBED_URL = process.env.MCP_EMBED_URL || `http://${MCP_EMBED_HOST}:${M
 const localEmbedCache = new Map<string, number[]>()
 const LOCAL_CACHE_MAX = 1000
 
+// Query result cache for vector search
+const queryResultCache = new Map<string, string>()
+const QUERY_CACHE_MAX = 100
+
+// Voice-specific embedding cache for faster voice responses
+const voiceEmbedCache = new Map<string, number[]>()
+const VOICE_EMBED_CACHE_MAX = 200
+
+// Pre-warm common voice queries for instant responses
+const COMMON_VOICE_QUERIES = [
+  "what is the diagnosis",
+  "what does the report say",
+  "what are the symptoms",
+  "what medications are prescribed",
+  "what is the treatment",
+  "what are the test results",
+  "what should I do",
+  "is this serious",
+  "what are the side effects",
+  "when should I follow up"
+];
+
+// Pre-warm function (call this on server startup)
+export async function preWarmVoiceCache() {
+  console.log("Pre-warming voice cache with common queries...");
+  try {
+    const promises = COMMON_VOICE_QUERIES.map(async (query) => {
+      try {
+        await embedForVoice([query], modelname);
+        console.log(`Pre-warmed: ${query}`);
+      } catch (error) {
+        console.log(`Failed to pre-warm: ${query}`, error);
+      }
+    });
+    await Promise.allSettled(promises);
+    console.log("Voice cache pre-warming completed");
+  } catch (error) {
+    console.error("Voice cache pre-warming failed:", error);
+  }
+}
+
 function cacheGet(key: string): number[] | undefined {
   const hit = localEmbedCache.get(key)
   if (!hit) return undefined
@@ -68,6 +109,50 @@ async function embedViaLocalTransformers(texts: string[], model: string): Promis
 function hashText(text: string): string {
   // Stable SHA-256 hash for cache keys to avoid very large strings
   return crypto.createHash('sha256').update(text).digest('hex')
+}
+
+// Ultra-fast voice embedding function - skip MCP, go straight to HF API
+async function embedForVoice(texts: string[], model: string): Promise<number[][]> {
+  // Check voice-specific cache first
+  const keys = texts.map(t => `voice|${model}|${hashText(t)}`)
+  const results: (number[]|undefined)[] = keys.map(k => voiceEmbedCache.get(k))
+  const missingIdx: number[] = []
+  for (let i = 0; i < results.length; i++) if (!results[i]) missingIdx.push(i)
+  
+  let computed: number[][] = []
+  if (missingIdx.length > 0) {
+    // For voice, skip MCP entirely and go straight to HF API for maximum speed
+    if (!process.env.HF_TOKEN) {
+      throw new Error("HF_TOKEN required for voice embeddings")
+    }
+    
+    console.log(`Voice: Generating ${missingIdx.length} embeddings via HF API (skipping MCP for speed)`);
+    const hfOutputs = [] as number[][]
+    
+    // Process all missing embeddings in parallel for maximum speed
+    const promises = missingIdx.map(async (i) => {
+      const apiOutput: any = await hf.featureExtraction({ model, inputs: texts[i] })
+      return Array.from(apiOutput).map((x: any) => Number(x))
+    })
+    
+    const parallelResults = await Promise.all(promises)
+    computed = parallelResults
+
+    // Write back to voice cache
+    for (let j = 0; j < missingIdx.length; j++) {
+      const idx = missingIdx[j]
+      const vec = Array.isArray(computed[j]) ? computed[j] : []
+      if (voiceEmbedCache.size >= VOICE_EMBED_CACHE_MAX) {
+        const firstKey = voiceEmbedCache.keys().next().value
+        if (typeof firstKey !== 'undefined') {
+          voiceEmbedCache.delete(firstKey)
+        }
+      }
+      voiceEmbedCache.set(keys[idx], vec)
+      results[idx] = vec
+    }
+  }
+  return results as number[][]
 }
 
 async function embedWithFallback(texts: string[], model: string): Promise<number[][]> {
@@ -161,7 +246,8 @@ type QueryOptions = {
   minScore?: number
 }
 
-export async function queryPineconeVectorStore(
+// Voice-optimized vector search function
+export async function queryPineconeVectorStoreForVoice(
   client: Pinecone,
   indexName: string,
   namespace: string,
@@ -169,13 +255,34 @@ export async function queryPineconeVectorStore(
   options: QueryOptions = {}
 ): Promise<string> {
   try {
-    let [queryEmbedding] = await embedWithFallback([query], modelname)
+    // Check cache first
+    const cacheKey = `voice|${namespace}|${query.substring(0, 200)}|${options.topK || 3}|${options.minScore || 0.7}`;
+    const cachedResult = queryResultCache.get(cacheKey);
+    if (cachedResult) {
+      console.log("Returning cached voice vector search result");
+      return cachedResult;
+    }
+
+    console.log("Starting voice vector search for query:", query.substring(0, 100) + "...");
+    
+    // Generate embedding with voice-optimized function
+    const embeddingStart = Date.now();
+    let [queryEmbedding] = await embedForVoice([query], modelname)
     if (!isValidVector(queryEmbedding)) {
+      console.log("Voice embedding failed, trying fallback...");
       [queryEmbedding] = await embedViaLocalTransformers([query], modelname)
     }
-    // console.log("Querying database vector store...");
+    const embeddingTime = Date.now() - embeddingStart;
+    console.log(`Voice embedding generated in ${embeddingTime}ms`);
+    
+    if (!isValidVector(queryEmbedding)) {
+      console.error("Failed to generate valid voice embedding");
+      return "<nomatches>";
+    }
+
+    // Query Pinecone with optimized parameters for voice
     const index = client.Index(indexName);
-    const effectiveTopK = Math.max(1, Math.min(options.topK ?? 3, topK || 10))
+    const effectiveTopK = Math.max(1, Math.min(options.topK ?? 3, 5)) // Limit to 3 for voice
     const pineconeQuery: any = {
       topK: effectiveTopK,
       vector: queryEmbedding as any,
@@ -185,21 +292,169 @@ export async function queryPineconeVectorStore(
     if (options.reportId) {
       pineconeQuery.filter = { reportId: options.reportId }
     }
-    const queryResponse = await index.namespace(namespace).query(pineconeQuery);
     
+    const queryStart = Date.now();
+    const queryResponse = await index.namespace(namespace).query(pineconeQuery);
+    const queryTime = Date.now() - queryStart;
+    console.log(`Voice Pinecone query completed in ${queryTime}ms, found ${queryResponse.matches.length} matches`);
 
     if (queryResponse.matches.length > 0) {
-      const minScore = options.minScore ?? 0.8
+      const minScore = options.minScore ?? 0.7
       const filtered = queryResponse.matches
-        .filter((m: any) => typeof m.score === 'number' ? m.score >= minScore : true)
+        .filter((m: any) => {
+          const score = typeof m.score === 'number' ? m.score : 0;
+          return score >= minScore;
+        })
         .slice(0, effectiveTopK)
-      if (filtered.length === 0) return "<nomatches>"
+      
+      console.log(`Voice filtered to ${filtered.length} matches above threshold ${minScore}`);
+      
+      if (filtered.length === 0) {
+        console.log("No voice matches above score threshold");
+        return "<nomatches>";
+      }
+      
       const concatenatedRetrievals = filtered
-        .map((match: any, index: number) =>`\nClinical Finding ${index+1}: \n ${match.metadata?.chunk}`)
+        .map((match: any, index: number) => {
+          const score = typeof match.score === 'number' ? match.score.toFixed(3) : 'N/A';
+          return `\nClinical Finding ${index+1} (Score: ${score}): \n ${match.metadata?.chunk}`;
+        })
         .join(". \n\n");
+      
+      console.log(`Voice returning ${concatenatedRetrievals.length} characters of retrieved content`);
+      
+      // Cache the result
+      if (queryResultCache.size >= QUERY_CACHE_MAX) {
+        const firstKey = queryResultCache.keys().next().value;
+        if (typeof firstKey !== 'undefined') {
+          queryResultCache.delete(firstKey);
+        }
+      }
+      queryResultCache.set(cacheKey, concatenatedRetrievals);
+      
       return concatenatedRetrievals;
     } else {
+      console.log("No voice matches found in Pinecone");
+      const noMatchesResult = "<nomatches>";
+      
+      // Cache the no matches result too
+      if (queryResultCache.size >= QUERY_CACHE_MAX) {
+        const firstKey = queryResultCache.keys().next().value;
+        if (typeof firstKey !== 'undefined') {
+          queryResultCache.delete(firstKey);
+        }
+      }
+      queryResultCache.set(cacheKey, noMatchesResult);
+      
+      return noMatchesResult;
+    }
+  } catch (error) {
+    console.error("Error in voice vector search:", error);
+    return "<nomatches>";
+  }
+}
+
+export async function queryPineconeVectorStore(
+  client: Pinecone,
+  indexName: string,
+  namespace: string,
+  query: string,
+  options: QueryOptions = {}
+): Promise<string> {
+  try {
+    // Check cache first
+    const cacheKey = `${namespace}|${query.substring(0, 200)}|${options.topK || 5}|${options.minScore || 0.7}`;
+    const cachedResult = queryResultCache.get(cacheKey);
+    if (cachedResult) {
+      console.log("Returning cached vector search result");
+      return cachedResult;
+    }
+
+    console.log("Starting vector search for query:", query.substring(0, 100) + "...");
+    
+    // Generate embedding with timeout
+    const embeddingStart = Date.now();
+    let [queryEmbedding] = await embedWithFallback([query], modelname)
+    if (!isValidVector(queryEmbedding)) {
+      console.log("Primary embedding failed, trying fallback...");
+      [queryEmbedding] = await embedViaLocalTransformers([query], modelname)
+    }
+    const embeddingTime = Date.now() - embeddingStart;
+    console.log(`Embedding generated in ${embeddingTime}ms`);
+    
+    if (!isValidVector(queryEmbedding)) {
+      console.error("Failed to generate valid embedding");
       return "<nomatches>";
+    }
+
+    // Query Pinecone with optimized parameters
+    const index = client.Index(indexName);
+    const effectiveTopK = Math.max(1, Math.min(options.topK ?? 5, topK || 10))
+    const pineconeQuery: any = {
+      topK: effectiveTopK,
+      vector: queryEmbedding as any,
+      includeMetadata: true,
+      includeValues: false
+    }
+    if (options.reportId) {
+      pineconeQuery.filter = { reportId: options.reportId }
+    }
+    
+    const queryStart = Date.now();
+    const queryResponse = await index.namespace(namespace).query(pineconeQuery);
+    const queryTime = Date.now() - queryStart;
+    console.log(`Pinecone query completed in ${queryTime}ms, found ${queryResponse.matches.length} matches`);
+
+    if (queryResponse.matches.length > 0) {
+      const minScore = options.minScore ?? 0.7 // Lowered from 0.8 to get more results
+      const filtered = queryResponse.matches
+        .filter((m: any) => {
+          const score = typeof m.score === 'number' ? m.score : 0;
+          console.log(`Match score: ${score.toFixed(3)}`);
+          return score >= minScore;
+        })
+        .slice(0, effectiveTopK)
+      
+      console.log(`Filtered to ${filtered.length} matches above threshold ${minScore}`);
+      
+      if (filtered.length === 0) {
+        console.log("No matches above score threshold");
+        return "<nomatches>";
+      }
+      
+      const concatenatedRetrievals = filtered
+        .map((match: any, index: number) => {
+          const score = typeof match.score === 'number' ? match.score.toFixed(3) : 'N/A';
+          return `\nClinical Finding ${index+1} (Score: ${score}): \n ${match.metadata?.chunk}`;
+        })
+        .join(". \n\n");
+      
+      console.log(`Returning ${concatenatedRetrievals.length} characters of retrieved content`);
+      
+      // Cache the result
+      if (queryResultCache.size >= QUERY_CACHE_MAX) {
+        const firstKey = queryResultCache.keys().next().value;
+        if (typeof firstKey !== 'undefined') {
+          queryResultCache.delete(firstKey);
+        }
+      }
+      queryResultCache.set(cacheKey, concatenatedRetrievals);
+      
+      return concatenatedRetrievals;
+    } else {
+      console.log("No matches found in Pinecone");
+      const noMatchesResult = "<nomatches>";
+      
+      // Cache the no matches result too
+      if (queryResultCache.size >= QUERY_CACHE_MAX) {
+        const firstKey = queryResultCache.keys().next().value;
+        if (typeof firstKey !== 'undefined') {
+          queryResultCache.delete(firstKey);
+        }
+      }
+      queryResultCache.set(cacheKey, noMatchesResult);
+      
+      return noMatchesResult;
     }
   } catch (error) {
     console.error("Error in queryPineconeVectorStore:", error);

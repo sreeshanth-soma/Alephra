@@ -12,8 +12,11 @@ import RadialOrbitalTimelineDemo from "@/components/RadialOrbitalTimelineDemo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GlowingEffectDemoSecond } from "@/components/GlowingEffectDemoSecond";
 import { BackgroundBeams } from "@/components/ui/background-beams";
+import { useTheme } from "next-themes";
 
 export default function Home() {
+  const { theme } = useTheme();
+  
   return (
     <>
       <div className="relative min-h-screen bg-white dark:bg-black">
@@ -38,7 +41,7 @@ export default function Home() {
         >
           <div className="relative mx-auto rounded-2xl overflow-hidden z-10">
           <Image
-            src="/landing-hero.jpg"
+            src={theme === "dark" ? "/landing-hero-dark.jpg.jpg" : "/landing-hero-light.jpg"}
               alt="MedScan AI Medical Assistant Dashboard"
             height={720}
             width={1400}

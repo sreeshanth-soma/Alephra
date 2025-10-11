@@ -120,6 +120,15 @@ npm run dev
 
 Visit `http://localhost:3000` and start exploring! 🎉
 
+### Runtime Notes
+
+- Chat and voice routes now return timing info to help diagnose latency. Inspect Network → Response JSON and `Server-Timing` header.
+  - Chat: `timings.totalMs`, `timings.pineconeMs`, `timings.geminiMs`.
+  - Voice chat: `timings.totalMs`, `timings.pineconeMs`, `timings.geminiMs`.
+  - STT/TTS: `timings.totalMs`, `timings.providerMs`.
+
+- Summary model: `gemini-flash-lite-latest` (was `gemini-1.5-flash-latest`).
+
 ---
 
 ## 🏗️ Architecture
@@ -131,7 +140,7 @@ graph TB
     A[User Interface] --> B[Next.js 14 Frontend]
     B --> C[API Routes Layer]
     
-    C --> D[Google Gemini 1.5 Flash]
+    C --> D[Google Gemini Flash]
     C --> E[Pinecone Vector Database]
     C --> F[Sarvam AI TTS/STT]
     C --> G[Google Calendar API]
@@ -183,7 +192,7 @@ graph TB
 |----------|-------------|
 | **Frontend** | Next.js 14, TypeScript, Tailwind CSS, Framer Motion, Radix UI |
 | **Backend** | Next.js API Routes, Prisma ORM, Edge Runtime |
-| **AI/ML** | Google Gemini 1.5 Flash, Hugging Face Transformers, Vector Embeddings, MCP Server |
+| **AI/ML** | Google Gemini Flash Lite, Hugging Face Transformers, Vector Embeddings, MCP Server |
 | **Voice** | Sarvam AI (STT/TTS), Web Speech API, Multi-language Support |
 | **Database** | Pinecone Vector DB, SQLite (Development), Prisma ORM |
 | **Storage** | Local Storage, Vector Cache, Image Compression |
@@ -211,6 +220,7 @@ graph TB
 - **Dark Mode**: Complete theme support throughout the application
 - **Interactive Elements**: Framer Motion animations and transitions
 - **Accessibility**: ARIA-compliant components and keyboard navigation
+ - **Black-Themed Pickers**: Native date/time pickers styled with modern black UI for appointments, reminders, and time selection.
 
 #### **Scalable Architecture**
 - **Edge Runtime**: Fast API responses with Vercel Edge Functions
