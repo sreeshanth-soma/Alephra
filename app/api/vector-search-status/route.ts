@@ -29,7 +29,7 @@ export async function GET() {
             indexName,
             namespace,
             indexStats: {
-                totalVectorCount: stats.totalVectorCount,
+                totalVectorCount: stats.totalRecordCount,
                 dimension: stats.dimension,
                 indexFullness: stats.indexFullness
             },
