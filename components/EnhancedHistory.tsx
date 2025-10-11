@@ -81,7 +81,7 @@ const EnhancedHistoryList = ({
     });
 
     return filtered;
-  }, [prescriptions, healthScores, searchTerm, sortBy]);
+  }, [prescriptions, searchTerm, sortBy]);
 
 
   const confirmClearAll = () => {

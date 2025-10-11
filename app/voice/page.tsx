@@ -12,6 +12,7 @@ import { VoiceChatInteractive } from '@/components/VoiceChatInteractive';
 import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ui/conversation';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import BasicModal from '@/components/ui/modal';
 
 const isProd = process.env.NODE_ENV === 'production';
 const log = (...args: any[]) => { if (!isProd) console.log(...args); };
@@ -71,6 +72,7 @@ export default function VoiceAgentPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en-IN');
   const [selectedSpeaker, setSelectedSpeaker] = useState('anushka');
+  const [showClearModal, setShowClearModal] = useState(false);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechMethod, setSpeechMethod] = useState<'browser' | 'sarvam' | 'unknown'>('unknown');
 
@@ -739,6 +741,7 @@ export default function VoiceAgentPage() {
     try {
       localStorage.removeItem('medscan-voice-messages');
     } catch {}
+    setShowClearModal(false);
   };
 
   return (
@@ -797,7 +800,7 @@ export default function VoiceAgentPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={clearMessages}
+                  onClick={() => setShowClearModal(true)}
                   className="flex items-center gap-1 text-xs px-3 h-9 border border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800"
                 >
                   <RotateCcw className="h-3 w-3" />
@@ -880,6 +883,33 @@ export default function VoiceAgentPage() {
           </div>
         </div>
       </div>
+
+      {/* Clear Voice History Confirmation Modal */}
+      <BasicModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        title="Clear Voice History"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Are you sure you want to clear all voice conversation history? This action cannot be undone.
+          </p>
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowClearModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={clearMessages}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Clear History
+            </Button>
+          </div>
+        </div>
+      </BasicModal>
     </div>
   );
 }

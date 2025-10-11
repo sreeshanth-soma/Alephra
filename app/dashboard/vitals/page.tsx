@@ -110,7 +110,7 @@ export default function VitalsPage() {
     if (sameDay.length) return sameDay;
     // Fallback to daily series by date when no time-of-day values exist
     return daily.map(d => ({ time: d.day, hr: d.hr, spo2: d.spo2 }));
-  }, [vitals]);
+  }, [vitals, daily]);
 
   const openNotes = (day: string) => {
     setEditDate(day);

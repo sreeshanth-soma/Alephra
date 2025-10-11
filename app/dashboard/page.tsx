@@ -1185,14 +1185,14 @@ export default function DashboardPage() {
         {/* Quick actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Upload Report", classes: "text-white bg-[#26A69A] hover:bg-[#219187] dark:text-white dark:bg-[#1E88E5] dark:hover:bg-[#1976D2]", href: "/report" },
-            { label: "Health Analytics", classes: "text-black bg-[#B0BEC5] hover:bg-[#9aa8b0] dark:text-white dark:bg-[#43A047] dark:hover:bg-[#388E3C]", href: "/history" },
-            { label: "Voice Assistant", classes: "text-white bg-[#3F51B5] hover:bg-[#3546a6] dark:text-white dark:bg-[#7B1FA2] dark:hover:bg-[#6A1B9A]", href: "/voice" },
-            { label: "Analysis", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-white dark:bg-[#F57C00] dark:hover:bg-[#EF6C00]", href: "/analysis" },
+            { label: "Upload Report", description: "Simple upload & chat", classes: "text-white bg-[#26A69A] hover:bg-[#219187] dark:text-white dark:bg-[#1E88E5] dark:hover:bg-[#1976D2]", href: "/report" },
+            { label: "Health Analytics", description: "View health insights", classes: "text-black bg-[#B0BEC5] hover:bg-[#9aa8b0] dark:text-white dark:bg-[#43A047] dark:hover:bg-[#388E3C]", href: "/history" },
+            { label: "Voice Assistant", description: "Talk to AI assistant", classes: "text-white bg-[#3F51B5] hover:bg-[#3546a6] dark:text-white dark:bg-[#7B1FA2] dark:hover:bg-[#6A1B9A]", href: "/voice" },
+            { label: "Advanced Analysis", description: "Full analytics & history", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-white dark:bg-[#F57C00] dark:hover:bg-[#EF6C00]", href: "/analysis" },
           ].map((b, i) => (
             <a key={i} href={b.href} className="block relative group">
               <motion.button 
-                className={`relative w-full h-14 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 overflow-hidden ${b.classes}`} 
+                className={`relative w-full h-16 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 overflow-hidden ${b.classes}`} 
                 whileHover={{ scale: 1.02 }} 
                 whileTap={{ scale: 0.98 }}
               >
@@ -1206,7 +1206,10 @@ export default function DashboardPage() {
                   borderWidth={2}
                   className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 />
-                <span className="relative z-10">{b.label}</span>
+                <div className="relative z-10 text-center">
+                  <div className="font-semibold">{b.label}</div>
+                  <div className="text-xs opacity-80 mt-1">{b.description}</div>
+                </div>
               </motion.button>
             </a>
           ))}

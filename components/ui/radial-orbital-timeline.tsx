@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 // Removed unused icons after simplifying the details card
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,22 @@ export default function RadialOrbitalTimeline({
     });
   };
 
+  // Define functions before using them in useEffect
+  const getRelatedItems = useCallback((itemId: number): number[] => {
+    const currentItem = timelineData.find((item) => item.id === itemId);
+    return currentItem ? currentItem.relatedIds : [];
+  }, [timelineData]);
+
+  const centerViewOnNode = useCallback((nodeId: number) => {
+    if (viewMode !== "orbital" || !nodeRefs.current[nodeId]) return;
+
+    const nodeIndex = timelineData.findIndex((item) => item.id === nodeId);
+    const totalNodes = timelineData.length;
+    const targetAngle = (nodeIndex / totalNodes) * 360;
+
+    setRotationAngle(270 - targetAngle);
+  }, [viewMode, timelineData]);
+
   // Set up client-side rendering
   useEffect(() => {
     setIsClient(true);
@@ -104,7 +120,7 @@ export default function RadialOrbitalTimeline({
     });
     setPulseEffect(newPulseEffect);
     centerViewOnNode(1);
-  }, [isClient]);
+  }, [isClient, getRelatedItems, centerViewOnNode]);
 
   useEffect(() => {
     // Always clear the existing timer when autoRotate or viewMode changes
@@ -131,16 +147,6 @@ export default function RadialOrbitalTimeline({
     };
   }, [autoRotate, viewMode]);
 
-  const centerViewOnNode = (nodeId: number) => {
-    if (viewMode !== "orbital" || !nodeRefs.current[nodeId]) return;
-
-    const nodeIndex = timelineData.findIndex((item) => item.id === nodeId);
-    const totalNodes = timelineData.length;
-    const targetAngle = (nodeIndex / totalNodes) * 360;
-
-    setRotationAngle(270 - targetAngle);
-  };
-
   const calculateNodePosition = (index: number, total: number) => {
     const angle = ((index / total) * 360 + rotationAngle) % 360;
     const radius = 200;
@@ -158,11 +164,6 @@ export default function RadialOrbitalTimeline({
     return { x, y, angle, zIndex, opacity };
   };
 
-  const getRelatedItems = (itemId: number): number[] => {
-    const currentItem = timelineData.find((item) => item.id === itemId);
-    return currentItem ? currentItem.relatedIds : [];
-  };
-
   const isRelatedToActive = (itemId: number): boolean => {
     if (!activeNodeId) return false;
     const relatedItems = getRelatedItems(activeNodeId);
@@ -172,13 +173,13 @@ export default function RadialOrbitalTimeline({
   const getStatusStyles = (status: TimelineItem["status"]): string => {
     switch (status) {
       case "completed":
-        return "text-white bg-black border-white";
+        return "text-white bg-green-600 border-green-600 dark:text-white dark:bg-green-600 dark:border-green-600";
       case "in-progress":
-        return "text-black bg-white border-black";
+        return "text-white bg-blue-600 border-blue-600 dark:text-white dark:bg-blue-600 dark:border-blue-600";
       case "pending":
-        return "text-white bg-black/40 border-white/50";
+        return "text-white bg-gray-600 border-gray-600 dark:text-white dark:bg-gray-600 dark:border-gray-600";
       default:
-        return "text-white bg-black/40 border-white/50";
+        return "text-white bg-gray-600 border-gray-600 dark:text-white dark:bg-gray-600 dark:border-gray-600";
     }
   };
 
@@ -290,15 +291,15 @@ export default function RadialOrbitalTimeline({
                   absolute top-12  whitespace-nowrap
                   text-xs font-semibold tracking-wider
                   transition-all duration-300
-                  ${isExpanded ? "text-white scale-125" : "text-white/70"}
+                  ${isExpanded ? "text-black dark:text-white scale-125" : "text-black/70 dark:text-white/70"}
                 `}
                 >
                   {item.title}
                 </div>
 
                 {isExpanded && (
-                  <Card className="absolute top-20 left-1/2 -translate-x-1/2 w-64 bg-black/90 backdrop-blur-lg border-white/30 shadow-xl shadow-white/10 overflow-visible">
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
+                  <Card className="absolute top-20 left-1/2 -translate-x-1/2 w-64 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/30 dark:border-white/30 shadow-xl shadow-black/10 dark:shadow-white/10 overflow-visible">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-black/50 dark:bg-white/50"></div>
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-center">
                         <Badge
@@ -312,15 +313,15 @@ export default function RadialOrbitalTimeline({
                             ? "IN PROGRESS"
                             : "PENDING"}
                         </Badge>
-                        <span className="text-xs font-mono text-white/50">
+                        <span className="text-xs font-mono text-black/50 dark:text-white/50">
                           {item.date}
                         </span>
                       </div>
-                      <CardTitle className="text-sm mt-2">
+                      <CardTitle className="text-sm mt-2 text-black dark:text-white">
                         {item.title}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="text-xs text-white/80">
+                    <CardContent className="text-xs text-black/80 dark:text-white/80">
                       <p>{item.content}</p>
                     </CardContent>
                   </Card>

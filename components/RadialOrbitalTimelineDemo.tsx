@@ -82,6 +82,8 @@ export function RadialOrbitalTimelineDemo() {
   );
 }
 
-export default {
+const RadialOrbitalTimelineDemoComponent = {
   RadialOrbitalTimelineDemo,
 };
+
+export default RadialOrbitalTimelineDemoComponent;
