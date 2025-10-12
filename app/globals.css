@@ -46,6 +46,13 @@
     overflow: hidden;
   }
   
+  .line-clamp-6 {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
   .custom-scrollbar {
     scrollbar-width: auto;
     scrollbar-color: #6b7280 #e5e7eb;

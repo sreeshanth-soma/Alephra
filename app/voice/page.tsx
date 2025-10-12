@@ -434,8 +434,12 @@ export default function VoiceAgentPage() {
       };
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Convert response to speech
-      await textToSpeech(responseText);
+      // Convert response to speech (start immediately, don't wait)
+      textToSpeech(responseText).catch(error => {
+        console.error('TTS error:', error);
+        // Fallback to browser TTS if Sarvam fails
+        fallbackToBrowserTTS(responseText);
+      });
     } catch (error) {
       console.error('Response generation error:', error);
       
@@ -453,7 +457,11 @@ export default function VoiceAgentPage() {
         type: 'assistant'
       };
       setMessages(prev => [...prev, assistantMessage]);
-      await textToSpeech(fallbackText);
+      // Start TTS immediately for fallback too
+      textToSpeech(fallbackText).catch(error => {
+        console.error('Fallback TTS error:', error);
+        fallbackToBrowserTTS(fallbackText);
+      });
     }
   };
 

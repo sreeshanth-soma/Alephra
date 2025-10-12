@@ -97,7 +97,7 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-12rem)]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[calc(100vh-12rem)]">
           <div className="lg:col-span-4 h-full">
             <EnhancedHistoryList
               prescriptions={prescriptions}
@@ -113,7 +113,7 @@ export default function HistoryPage() {
           <div className="lg:col-span-8 h-full">
             {selected ? (
               <Card className="h-full flex flex-col bg-white dark:bg-black border-gray-200 dark:border-gray-700">
-                <CardHeader>
+                <CardHeader className="flex-shrink-0">
                     <div className="flex justify-between items-start">
                         <div>
                             <CardTitle className="text-xl text-gray-900 dark:text-white">{selected.fileName}</CardTitle>
@@ -125,7 +125,7 @@ export default function HistoryPage() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="flex-grow overflow-y-auto">
+                <CardContent className="flex-grow overflow-y-auto min-h-0">
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
                             {/* Report Information Card */}
@@ -164,14 +164,14 @@ export default function HistoryPage() {
 
                             {/* AI Summary Card */}
                             <Card className="bg-white dark:bg-black border-gray-200 dark:border-gray-700">
-                                <CardHeader>
+                                <CardHeader className="flex-shrink-0">
                                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                                         <Brain className="h-5 w-5"/>
                                         AI Summary
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-gray-100">
+                                    <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-gray-100 line-clamp-6">
                                         <Markdown text={selected.summary} />
                                     </div>
                                 </CardContent>

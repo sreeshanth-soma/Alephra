@@ -83,12 +83,11 @@ export async function POST(request: NextRequest) {
       return speakers[0];
     };
 
-    // Force anushka for Telugu to ensure compatibility
-    const selectedSpeaker = (targetLanguageCode === 'te-IN') ? 'anushka' : (speaker || getSpeakerForLanguage(targetLanguageCode));
+    // Use the speaker from the request, or fallback to language-appropriate speaker
+    const selectedSpeaker = speaker || getSpeakerForLanguage(targetLanguageCode);
     console.log('Selected speaker:', selectedSpeaker, 'for language:', targetLanguageCode);
     console.log('Speaker parameter from request:', speaker);
     console.log('Computed speaker from language:', getSpeakerForLanguage(targetLanguageCode));
-    console.log('Forced anushka for Telugu:', targetLanguageCode === 'te-IN');
 
     // Map language codes to Sarvam AI supported format
     const sarvamLanguageMap: { [key: string]: string } = {
@@ -109,17 +108,15 @@ export async function POST(request: NextRequest) {
     console.log('Mapped to Sarvam language code:', sarvamLanguageCode);
     
 
-    // Call Sarvam TTS with proper format matching API documentation
+    // Call Sarvam TTS with optimized payload for faster processing
     const requestBody = {
       text: text,
       target_language_code: sarvamLanguageCode,
       speaker: selectedSpeaker,
-      pitch: 0, // Default: 0
-      pace: 1, // Default: 1 (was 0.9, but API default is 1)
-      loudness: 1, // Default: 1
-      speech_sample_rate: 22050, // Default: 22050 (was 16000)
-      enable_preprocessing: false, // Default: false (was true)
-      model: "bulbul:v2"
+      speech_sample_rate: 22050, // High quality
+      model: "bulbul:v2", // Best quality model
+      pace: 1.0, // Normal speaking pace
+      loudness: 1.0 // Normal volume
     };
     
     console.log('Sending request to Sarvam TTS:', {
