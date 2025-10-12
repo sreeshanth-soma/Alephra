@@ -121,22 +121,42 @@ async function embedForVoice(texts: string[], model: string): Promise<number[][]
   
   let computed: number[][] = []
   if (missingIdx.length > 0) {
-    // For voice, skip MCP entirely and go straight to HF API for maximum speed
-    if (!process.env.HF_TOKEN) {
-      throw new Error("HF_TOKEN required for voice embeddings")
+    // Prefer local MCP embedding server if configured and responsive (lower latency)
+    let usedMCP = false
+    if (process.env.MCP_EMBED_URL) {
+      try {
+        // Try MCP with a short timeout (2s) to avoid blocking on a slow/missing MCP
+        const payload = missingIdx.map(i => texts[i])
+        const mcpPromise = embedViaMCP(payload, model)
+        const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('MCP timeout')), 2000))
+        const mcpVecs = await Promise.race([mcpPromise, timeout]) as number[][]
+        if (Array.isArray(mcpVecs) && mcpVecs.length > 0) {
+          computed = mcpVecs
+          usedMCP = true
+          console.log(`Voice: Used MCP embedding server for ${missingIdx.length} embeddings`)
+        }
+      } catch (e: any) {
+        console.log('MCP embedding attempt failed or timed out, falling back to HF API', (e && e.message) ? e.message : String(e))
+      }
     }
-    
-    console.log(`Voice: Generating ${missingIdx.length} embeddings via HF API (skipping MCP for speed)`);
-    const hfOutputs = [] as number[][]
-    
-    // Process all missing embeddings in parallel for maximum speed
-    const promises = missingIdx.map(async (i) => {
-      const apiOutput: any = await hf.featureExtraction({ model, inputs: texts[i] })
-      return Array.from(apiOutput).map((x: any) => Number(x))
-    })
-    
-    const parallelResults = await Promise.all(promises)
-    computed = parallelResults
+
+    if (!usedMCP) {
+      // Fallback to HF API if MCP wasn't used
+      if (!process.env.HF_TOKEN) {
+        throw new Error("HF_TOKEN required for voice embeddings")
+      }
+      console.log(`Voice: Generating ${missingIdx.length} embeddings via HF API`);
+      const hfOutputs = [] as number[][]
+
+      // Process all missing embeddings in parallel for maximum speed
+      const promises = missingIdx.map(async (i) => {
+        const apiOutput: any = await hf.featureExtraction({ model, inputs: texts[i] })
+        return Array.from(apiOutput).map((x: any) => Number(x))
+      })
+
+      const parallelResults = await Promise.all(promises)
+      computed = parallelResults
+    }
 
     // Write back to voice cache
     for (let j = 0; j < missingIdx.length; j++) {

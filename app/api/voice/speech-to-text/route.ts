@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const maskKey = (k?: string) => {
+  if (!k) return 'NONE';
+  if (k.length <= 8) return '****';
+  return `${k.substring(0, 4)}...${k.substring(k.length - 4)}`;
+};
+
 export async function POST(request: NextRequest) {
   try {
     const t0 = Date.now();
@@ -20,12 +26,16 @@ export async function POST(request: NextRequest) {
     const sarvamFormData = new FormData();
     sarvamFormData.append('file', audioFile);
 
-    // Call Sarvam AI API directly
+    // Call Sarvam AI API directly using configured key
+    const apiKey = process.env.SARVAM_API_KEY;
+    console.log('Sarvam API key present:', !!apiKey, 'masked:', maskKey(apiKey));
+    if (!apiKey) throw new Error('SARVAM_API_KEY not configured');
+
     const tApiStart = Date.now();
     const sarvamResponse = await fetch('https://api.sarvam.ai/speech-to-text', {
       method: 'POST',
       headers: {
-        'api-subscription-key': 'sk_vnf56acj_KuD1DN8dhtnk1E5M200PWLoY',
+        'api-subscription-key': apiKey,
       },
       body: sarvamFormData,
     });

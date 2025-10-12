@@ -49,8 +49,11 @@ export async function POST(request: NextRequest) {
     const trimmedReport = (reportData || '').slice(0, maxReportChars)
     const trimmedMessage = (message || '').slice(0, maxMessageChars)
 
-    // Start both Pinecone and Gemini processing in parallel for maximum speed
-    const query = `Represent this for searching relevant passages: patient medical report that says: \n${trimmedReport}. \n\n${trimmedMessage}`;
+  // Start both Pinecone and Gemini processing in parallel for maximum speed
+  const combinedQuery = `Represent this for searching relevant passages: patient medical report that says: \n${trimmedReport}. \n\n${trimmedMessage}`;
+  // If we have a reportId (precomputed vectors exist), only send the user's message to the vector search
+  // This avoids re-embedding the whole report on every request and does not add extra cost.
+  const searchQuery = reportId ? `Represent this for searching relevant passages: ${trimmedMessage}` : combinedQuery;
     
     // Create base prompt that works without vector search results
     const basePrompt = `You are a medical voice assistant for MedScan. The user is speaking in ${languageName}.
@@ -82,9 +85,10 @@ Respond in a professional, medical tone that works well for voice output. Start 
 **Answer:**`;
 
     const tStart = Date.now();
-    
+
     // Start Gemini immediately for fast response
     const geminiPromise = (async () => {
+      const tGeminiStartLocal = Date.now();
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); // Very fast timeout
@@ -109,6 +113,8 @@ Respond in a professional, medical tone that works well for voice output. Start 
           .replace(/\n/g, ' ')             // Replace single newlines with spaces
           .trim();
         
+        const tGeminiEndLocal = Date.now();
+        console.log('Gemini initial generate duration(ms):', tGeminiEndLocal - tGeminiStartLocal);
         return cleanText;
       } catch (error) {
         console.error("Voice Gemini API error:", error);
@@ -119,6 +125,7 @@ Respond in a professional, medical tone that works well for voice output. Start 
     // Start Pinecone in parallel (but don't wait for it)
     // Skip vector search for very short queries to maximize speed
     const pineconePromise = (async () => {
+      const tPineconeStartLocal = Date.now();
       if (!trimmedReport || trimmedMessage.length < 10) {
         console.log("Skipping vector search for short query or no report data");
         return "<nomatches>";
@@ -128,14 +135,14 @@ Respond in a professional, medical tone that works well for voice output. Start 
         const pineconeController = new AbortController();
         const pineconeTimeoutId = setTimeout(() => pineconeController.abort(), 8000); // Very fast timeout
         
-        const retrievals = await queryPineconeVectorStoreForVoice(pinecone, indexName, namespace, query, {
+        const retrievals = await queryPineconeVectorStoreForVoice(pinecone, indexName, namespace, searchQuery, {
           reportId,
           topK: 3,
           minScore: 0.7
         });
         clearTimeout(pineconeTimeoutId);
-        
-        console.log("Voice Pinecone query successful, retrievals:", retrievals.substring(0, 200) + "...");
+        const tPineconeEndLocal = Date.now();
+        console.log("Voice Pinecone query successful, retrievals length:", retrievals.length, 'durationMs:', tPineconeEndLocal - tPineconeStartLocal);
         return retrievals;
       } catch (error) {
         console.error("Voice Pinecone query failed:", error);
@@ -144,9 +151,9 @@ Respond in a professional, medical tone that works well for voice output. Start 
     })();
     
     // Get Gemini response immediately
-    const tGeminiStart = Date.now();
-    const cleanText = await geminiPromise;
-    const tGeminiEnd = Date.now();
+  const tGeminiStart = Date.now();
+  const cleanText = await geminiPromise;
+  const tGeminiEnd = Date.now();
     
     // Try to get Pinecone results if they're ready, otherwise use base response
     let retrievals = "<nomatches>";
@@ -174,10 +181,14 @@ Please enhance your previous response with any relevant information from the add
 **Enhanced Answer:**`;
         
         try {
+          const tEnhancedStart = Date.now();
           const enhancedResult = await model.generateContent(enhancedPrompt);
           const enhancedResponse = await enhancedResult.response;
           const enhancedText = enhancedResponse.text();
-          
+          const tEnhancedEnd = Date.now();
+
+          console.log('Enhanced Gemini generate duration(ms):', tEnhancedEnd - tEnhancedStart);
+
           finalResponse = enhancedText
             .replace(/\*\*(.*?)\*\*/g, '$1')
             .replace(/\*(.*?)\*/g, '$1')
@@ -204,7 +215,7 @@ Please enhance your previous response with any relevant information from the add
     const timings = {
       totalMs: tEnd - t0,
       geminiMs: tGeminiEnd - tGeminiStart,
-      pineconeMs: 0 // We don't wait for Pinecone, so timing is not relevant
+      pineconeMs: Math.max(0, tEnd - tStart) // approximate if available
     };
     const serverTiming = [`total;dur=${timings.totalMs}`, `gemini;dur=${timings.geminiMs}`].join(", ");
 
