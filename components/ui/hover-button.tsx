@@ -106,22 +106,23 @@ const HoverButton = React.forwardRef<HTMLButtonElement, HoverButtonProps>(
         style={{
           "--circle-start": "var(--tw-gradient-from, #a0d9f8)",
           "--circle-end": "var(--tw-gradient-to, #3a5bbf)",
-        }}
+        } as React.CSSProperties}
       >
         {circles.map(({ id, x, y, color, fadeState }) => (
           <div
             key={id}
             className={cn(
               "absolute w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full",
-              "blur-lg pointer-events-none z-[-1] transition-opacity duration-300",
-              fadeState === "in" && "opacity-75",
-              fadeState === "out" && "opacity-0 duration-[1.2s]",
+              "blur-lg pointer-events-none z-[-1] transition-opacity",
+              fadeState === "in" && "opacity-75 duration-300",
+              fadeState === "out" && "opacity-0",
               !fadeState && "opacity-0"
             )}
             style={{
               left: x,
               top: y,
               background: color,
+              transitionDuration: fadeState === "out" ? "1200ms" : "300ms",
             }}
           />
         ))}

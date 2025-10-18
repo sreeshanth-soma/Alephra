@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,9 +66,11 @@ const Navbar = () => {
           <Link href="/" className="flex items-center space-x-3 group" onClick={closeMenu}>
             <div className="relative">
               <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-black/25 group-hover:shadow-black/40 transition-all duration-300 group-hover:scale-105">
-                <img 
+                <Image 
                   src="/med.jpg" 
                   alt="MedScan Logo" 
+                  width={40}
+                  height={40}
                   className="w-full h-full object-cover"
                 />
               </div>

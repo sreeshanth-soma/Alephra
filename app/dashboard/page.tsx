@@ -2,6 +2,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -1114,9 +1115,11 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg">
-                <img 
+                <Image 
                   src="/med.jpg" 
                   alt="MedScan Logo" 
+                  width={48}
+                  height={48}
                   className="w-full h-full object-cover"
                 />
               </div>
