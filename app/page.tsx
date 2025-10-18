@@ -2,7 +2,6 @@
 "use client";
 import Image from "next/image";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
-import { LampDemo } from "@/components/ui/lamp";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,28 +10,86 @@ import { Mic, Brain } from "lucide-react";
 import RadialOrbitalTimelineDemo from "@/components/RadialOrbitalTimelineDemo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GlowingEffectDemoSecond } from "@/components/GlowingEffectDemoSecond";
-import { BackgroundBeams } from "@/components/ui/background-beams";
+import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
+import { motion } from "framer-motion";
+
+// Dynamic import to prevent SSR issues with Three.js/WebGL
+const Dither = dynamic(() => import("@/components/Dither"), { ssr: false });
 
 export default function Home() {
   const { theme } = useTheme();
   
   return (
     <>
-      <div className="relative min-h-screen bg-white dark:bg-black">
-        <BackgroundBeams className="z-0" />
-        <LampDemo />
-        <div className="flex flex-col overflow-hidden pb-24 pt-0 relative">
+      {/* Fixed background that covers entire viewport */}
+      <div className="fixed inset-0 z-0 bg-white dark:bg-black">
+        <Dither
+          waveColor={theme === "dark" ? [0.5, 0.5, 0.5] : [0.2, 0.2, 0.2]}
+          backgroundColor={theme === "dark" ? [0, 0, 0] : [1, 1, 1]}
+          invertColors={false}
+          disableAnimation={false}
+          enableMouseInteraction={true}
+          mouseRadius={0.3}
+          colorNum={4}
+          waveAmplitude={0.3}
+          waveFrequency={3}
+          waveSpeed={0.05}
+        />
+      </div>
+      
+      <div className="relative min-h-screen z-10">
+        {/* Hero Section */}
+        <div className="relative flex min-h-screen flex-col items-center justify-center px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.2,
+              duration: 0.8,
+              ease: "easeInOut",
+            }}
+            className="text-center"
+          >
+            <h1 className="text-8xl md:text-[12rem] lg:text-[14rem] font-extrabold tracking-tight text-black dark:text-white mb-8">
+              MedScan
+            </h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                delay: 0.5,
+                duration: 0.8,
+              }}
+              className="text-2xl md:text-4xl lg:text-5xl text-black dark:text-gray-200 font-medium tracking-wide max-w-5xl mx-auto"
+            >
+              Where care meets technology
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                delay: 0.8,
+                duration: 0.8,
+              }}
+              className="text-lg md:text-2xl lg:text-3xl text-black dark:text-gray-300 font-normal mt-6 max-w-4xl mx-auto leading-relaxed"
+            >
+              RAG-driven healthcare intelligence with a conversational voice interface
+            </motion.p>
+          </motion.div>
+        </div>
+
+        <div className="flex flex-col overflow-hidden pb-24 pt-0 relative z-10">
           <ContainerScroll
           titleComponent={
             <>
-              <h1 className="text-4xl font-semibold text-black dark:text-white">
+              <h1 className="text-5xl md:text-6xl font-bold text-black dark:text-white">
                 Your AI-Powered <br />
-                <span className="text-4xl md:text-[4rem] font-bold mt-1 leading-none text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                <span className="text-5xl md:text-7xl lg:text-8xl font-extrabold mt-2 leading-none text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-pink-400 dark:from-cyan-300 dark:to-pink-400 from-blue-600 to-purple-600 drop-shadow-lg">
                   Medical Assistant
                 </span>
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto text-center">
+              <p className="text-lg text-gray-800 dark:text-gray-200 mt-4 max-w-2xl mx-auto text-center">
                 Upload reports, ask questions, and get instant medical insights powered by advanced AI technology.
               </p>
               {/* Buttons moved below the image */}
@@ -75,7 +132,7 @@ export default function Home() {
         </div>
 
         {/* Interactive Features Timeline */}
-        <div className="py-24 px-4 relative z-10">
+        <div className="py-24 px-4 relative z-30">
         <div className="max-w-7xl mx-auto">
           {/* Section Header - How MedScan Works */}
           <div className="text-center mb-6">
@@ -86,7 +143,7 @@ export default function Home() {
             <h2 className="text-4xl font-bold text-black dark:text-white mb-2">
               A simple flow from report to recommendations
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-800 dark:text-gray-200 max-w-3xl mx-auto">
               Follow the steps to see how uploads become structured data, AI insights, and actions you can take.
             </p>
           </div>

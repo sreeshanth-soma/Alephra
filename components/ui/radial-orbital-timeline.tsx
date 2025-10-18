@@ -101,7 +101,7 @@ export default function RadialOrbitalTimeline({
     const totalNodes = timelineData.length;
     const targetAngle = (nodeIndex / totalNodes) * 360;
 
-    setRotationAngle(270 - targetAngle);
+    setRotationAngle(-targetAngle);
   }, [viewMode, timelineData]);
 
   // Set up client-side rendering
@@ -148,18 +148,16 @@ export default function RadialOrbitalTimeline({
   }, [autoRotate, viewMode]);
 
   const calculateNodePosition = (index: number, total: number) => {
-    const angle = ((index / total) * 360 + rotationAngle) % 360;
+    const baseAngle = (index / total) * 360;
+    const angle = (baseAngle + rotationAngle) % 360;
     const radius = 200;
     const radian = (angle * Math.PI) / 180;
 
-    const x = radius * Math.cos(radian) + centerOffset.x;
-    const y = radius * Math.sin(radian) + centerOffset.y;
+    const x = radius * Math.cos(radian);
+    const y = radius * Math.sin(radian);
 
     const zIndex = Math.round(100 + 50 * Math.cos(radian));
-    // Fix precision issues by rounding to a specific decimal place
-    const opacity = Math.round(
-      Math.max(0.4, Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2))) * 1000
-    ) / 1000;
+    const opacity = Math.max(0.4, Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2)));
 
     return { x, y, angle, zIndex, opacity };
   };
@@ -186,7 +184,7 @@ export default function RadialOrbitalTimeline({
   // Show loading state during hydration
   if (!isClient) {
     return (
-      <div className="w-full h-screen flex flex-col items-center justify-center bg-white dark:bg-black overflow-hidden -mt-6">
+      <div className="w-full h-screen flex flex-col items-center justify-center overflow-hidden -mt-6">
         <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-teal-500 animate-pulse flex items-center justify-center z-10">
             <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md"></div>
@@ -198,7 +196,7 @@ export default function RadialOrbitalTimeline({
 
   return (
     <div
-      className="w-full h-screen flex flex-col items-center justify-center bg-white dark:bg-black overflow-hidden -mt-6"
+      className="w-full h-screen flex flex-col items-center justify-center overflow-hidden -mt-6 relative z-40"
       ref={containerRef}
       onClick={handleContainerClick}
     >
@@ -208,7 +206,7 @@ export default function RadialOrbitalTimeline({
           ref={orbitRef}
           style={{
             perspective: "1000px",
-            transform: `translate(${Math.round(centerOffset.x * 100) / 100}px, ${Math.round(centerOffset.y * 100) / 100}px)`,
+            transform: `translate(0px, 0px)`,
           }}
         >
           <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-teal-500 animate-pulse flex items-center justify-center z-10">
@@ -220,7 +218,7 @@ export default function RadialOrbitalTimeline({
             <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md"></div>
           </div>
 
-          <div className="absolute w-96 h-96 rounded-full border border-black/20 dark:border-white/10"></div>
+          <div className="absolute w-96 h-96 rounded-full border-2 border-black/40 dark:border-white/30"></div>
 
           {timelineData.map((item, index) => {
             const position = calculateNodePosition(index, timelineData.length);
@@ -230,7 +228,7 @@ export default function RadialOrbitalTimeline({
             const Icon = item.icon;
 
             const nodeStyle = {
-              transform: `translate(${Math.round(position.x * 100) / 100}px, ${Math.round(position.y * 100) / 100}px)`,
+              transform: `translate(${Math.round(position.x)}px, ${Math.round(position.y)}px)`,
               zIndex: isExpanded ? 200 : position.zIndex,
               opacity: isExpanded ? 1 : position.opacity,
             };
@@ -241,7 +239,7 @@ export default function RadialOrbitalTimeline({
                 ref={(el) => {
                   nodeRefs.current[item.id] = el;
                 }}
-                className="absolute transition-all duration-700 cursor-pointer"
+                className="absolute transition-all duration-700 cursor-pointer relative z-50"
                 style={nodeStyle}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -266,18 +264,18 @@ export default function RadialOrbitalTimeline({
                   w-10 h-10 rounded-full flex items-center justify-center
                   ${
                     isExpanded
-                      ? "bg-white text-black"
+                      ? "bg-white dark:bg-white text-black"
                       : isRelated
-                      ? "bg-white/50 text-black"
-                      : "bg-black text-white"
+                      ? "bg-white/70 dark:bg-white/70 text-black"
+                      : "bg-black dark:bg-white text-white dark:text-black"
                   }
                   border-2 
                   ${
                     isExpanded
-                      ? "border-black dark:border-white shadow-lg shadow-white/30"
+                      ? "border-black dark:border-white shadow-lg shadow-black/50 dark:shadow-white/50"
                       : isRelated
                       ? "border-black dark:border-white animate-pulse"
-                      : "border-black/30 dark:border-white/40"
+                      : "border-black/50 dark:border-white/70"
                   }
                   transition-all duration-300 transform
                   ${isExpanded ? "scale-150" : ""}
@@ -289,21 +287,21 @@ export default function RadialOrbitalTimeline({
                 <div
                   className={`
                   absolute top-12  whitespace-nowrap
-                  text-xs font-semibold tracking-wider
+                  text-xs font-bold tracking-wider
                   transition-all duration-300
-                  ${isExpanded ? "text-black dark:text-white scale-125" : "text-black/70 dark:text-white/70"}
+                  ${isExpanded ? "text-black dark:text-white scale-125" : "text-black dark:text-white"}
                 `}
                 >
                   {item.title}
                 </div>
 
                 {isExpanded && (
-                  <Card className="absolute top-20 left-1/2 -translate-x-1/2 w-64 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/30 dark:border-white/30 shadow-xl shadow-black/10 dark:shadow-white/10 overflow-visible">
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-black/50 dark:bg-white/50"></div>
+                  <Card className="absolute top-20 left-1/2 -translate-x-1/2 w-64 bg-white/95 dark:bg-black/95 backdrop-blur-lg border-black/50 dark:border-white/50 shadow-xl shadow-black/20 dark:shadow-white/20 overflow-visible relative z-60">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-black/70 dark:bg-white/70"></div>
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-center">
                         <Badge
-                          className={`px-2 text-xs ${getStatusStyles(
+                          className={`px-2 text-xs font-semibold ${getStatusStyles(
                             item.status
                           )}`}
                         >
@@ -313,15 +311,15 @@ export default function RadialOrbitalTimeline({
                             ? "IN PROGRESS"
                             : "PENDING"}
                         </Badge>
-                        <span className="text-xs font-mono text-black/50 dark:text-white/50">
+                        <span className="text-xs font-mono font-semibold text-black/70 dark:text-white/70">
                           {item.date}
                         </span>
                       </div>
-                      <CardTitle className="text-sm mt-2 text-black dark:text-white">
+                      <CardTitle className="text-sm mt-2 font-bold text-black dark:text-white">
                         {item.title}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="text-xs text-black/80 dark:text-white/80">
+                    <CardContent className="text-xs font-medium text-black dark:text-white">
                       <p>{item.content}</p>
                     </CardContent>
                   </Card>

@@ -355,7 +355,13 @@ const HealthMetricsChart: React.FC = () => {
                 type="date"
                 value={newDate}
                 onChange={(e) => setNewDate(e.target.value)}
-                className="h-8 text-xs"
+                onClick={() => {
+                  const input = document.getElementById('date') as HTMLInputElement;
+                  if (input && input.showPicker) {
+                    input.showPicker();
+                  }
+                }}
+                className="h-8 text-xs cursor-pointer"
               />
             </div>
             <div>
@@ -1386,14 +1392,30 @@ export default function DashboardPage() {
                       type="date"
                       value={apptDate}
                       onChange={e => setApptDate(e.target.value)}
-                      className="h-10 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                      onClick={() => {
+                        const input = document.getElementById('appt-date') as HTMLInputElement;
+                        if (input && input.showPicker) {
+                          input.showPicker();
+                        }
+                      }}
+                      id="appt-date"
+                      className="h-10 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
                     />
-                    <input
-                      type="time"
-                      value={apptTime}
-                      onChange={e => setApptTime(e.target.value)}
-                      className="h-10 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 px-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
+                    <div className="h-10 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 hover:border-cyan-400 dark:hover:border-cyan-400 transition-colors">
+                      <input
+                        id="appt-time"
+                        type="time"
+                        value={apptTime}
+                        onChange={e => setApptTime(e.target.value)}
+                        onClick={() => {
+                          const input = document.getElementById('appt-time') as HTMLInputElement;
+                          if (input && input.showPicker) {
+                            input.showPicker();
+                          }
+                        }}
+                        className="w-full h-full rounded-lg bg-transparent px-2 text-sm text-black dark:text-white outline-none cursor-pointer"
+                      />
+                    </div>
                     <button
                       onClick={addAppointment}
                       className="h-10 px-4 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -1549,7 +1571,13 @@ export default function DashboardPage() {
                         type="date"
                         value={newHrDate || new Date().toISOString().split('T')[0]}
                         onChange={(e) => setNewHrDate(e.target.value)}
-                        className="mt-1 pr-10"
+                        onClick={() => {
+                          const input = document.getElementById('vitals-date') as HTMLInputElement;
+                          if (input && input.showPicker) {
+                            input.showPicker();
+                          }
+                        }}
+                        className="mt-1 pr-10 cursor-pointer"
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <CalendarDays className="h-4 w-4 text-gray-400" />
@@ -2277,7 +2305,13 @@ export default function DashboardPage() {
                       type="date"
                       value={newLabDate || new Date().toISOString().split('T')[0]}
                       onChange={(e) => setNewLabDate(e.target.value)}
-                      className="h-12 text-sm border-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-12"
+                      onClick={() => {
+                        const input = document.getElementById('modal-lab-date') as HTMLInputElement;
+                        if (input && input.showPicker) {
+                          input.showPicker();
+                        }
+                      }}
+                      className="h-12 text-sm border-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-12 cursor-pointer"
                       placeholder="Select date"
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
