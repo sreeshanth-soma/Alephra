@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Heart, Activity, Calendar, Filter, CalendarDays, AlertTriangle, Trash2 } from "lucide-react";
 import BasicModal from "@/components/ui/modal";
 import { Noise } from "@/components/ui/noise";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { safeGetItem, safeSetItem, safeRemoveItem, clearAllMedScanData, isLocalStorageAvailable } from "@/lib/localStorage";
 import { toast } from "@/components/ui/use-toast";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
@@ -513,7 +513,9 @@ const MetricCard = ({ label, value, unit, accent }: { label: string; value: stri
 
 export default function DashboardPage() {
   // Session for authentication
-  const { user, isSignedIn } = useUser();
+  const { data: session, status } = useSession();
+  const isSignedIn = status === "authenticated";
+  const user = session?.user;
   
   type Reminder = { id: string; text: string; time?: string; done: boolean };
   const [reminders, setReminders] = useState<Reminder[]>([]);
