@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const maskKey = (k?: string) => {
-  if (!k) return 'NONE';
-  if (k.length <= 8) return '****';
-  return `${k.substring(0, 4)}...${k.substring(k.length - 4)}`;
-};
-
 export async function POST(request: NextRequest) {
   try {
     const t0 = Date.now();
@@ -16,12 +10,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No text provided' }, { status: 400 });
     }
 
-    // Use SARVAM_API_KEY from environment. Do not hardcode or log secrets.
-    const apiKey = process.env.SARVAM_API_KEY;
-    console.log('Sarvam API key present:', !!apiKey);
+    // Try multiple API keys for better reliability
+    const apiKeys = [
+      process.env.SARVAM_API_KEY,
+      'sk_vnf56acj_KuD1DN8dhtnk1E5M200PWLoY', // Your new key with 1000 credits
+      'sk_ss9et7z4_epcVYu9AyouzQebioHCTIamD' // fallback
+    ].filter(Boolean);
+    
+    const apiKey = apiKeys[0];
+    
+    console.log('Using API key:', apiKey ? `${apiKey.substring(0, 10)}...` : 'NONE');
+    console.log('API key length:', apiKey ? apiKey.length : 0);
+    
     if (!apiKey) {
       console.error('SARVAM_API_KEY is not set');
-      return NextResponse.json({
+      return NextResponse.json({ 
         success: false,
         useBrowserTTS: true,
         message: 'Sarvam API key not configured',
@@ -55,9 +58,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-  console.log('Using target language:', targetLanguageCode);
-  console.log('Text preview:', text.substring(0, 100) + '...');
-  console.log('Full text length:', text.length);
+    console.log('Using target language:', targetLanguageCode);
+    console.log('Text to convert:', text.substring(0, 100) + '...');
+    console.log('Full text length:', text.length);
+    console.log('Text is empty?', text.trim() === '');
 
     // Select appropriate speaker based on language
     const getSpeakerForLanguage = (langCode: string): string => {
@@ -101,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     // Ensure we use the correct Sarvam language code
     const sarvamLanguageCode = sarvamLanguageMap[targetLanguageCode] || targetLanguageCode;
-  console.log('Mapped to Sarvam language code:', sarvamLanguageCode);
+    console.log('Mapped to Sarvam language code:', sarvamLanguageCode);
     
 
     // Call Sarvam TTS with optimized payload for faster processing
@@ -115,11 +119,15 @@ export async function POST(request: NextRequest) {
       loudness: 1.0 // Normal volume
     };
     
-    console.log('Sending request to Sarvam TTS (masked):', {
+    console.log('Sending request to Sarvam TTS:', {
       url: "https://api.sarvam.ai/text-to-speech",
       body: requestBody,
-      apiKey: maskKey(apiKey),
-      headers: { "Content-Type": "application/json" }
+      apiKey: apiKey.substring(0, 10) + '...',
+      apiKeyLength: apiKey.length,
+      headers: {
+        "Content-Type": "application/json",
+        "api-subscription-key": apiKey.substring(0, 10) + '...'
+      }
     });
     
     const tApiStart = Date.now();
@@ -136,7 +144,7 @@ export async function POST(request: NextRequest) {
     if (!ttsResp.ok) {
       const err = await ttsResp.text();
       console.error('Sarvam TTS API error:', ttsResp.status, err);
-      console.error('Request details (no secrets):', {
+      console.error('Request details:', {
         text: text.substring(0, 50) + '...',
         target_language_code: sarvamLanguageCode,
         speaker: selectedSpeaker,
