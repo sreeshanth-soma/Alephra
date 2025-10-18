@@ -184,9 +184,15 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                 }
             } else {
                 const errorData = await response.json().catch(() => ({ error: "Unknown error occurred" }));
+                
+                // Handle validation errors with more detail
+                const errorMessage = errorData.message || errorData.error || "Failed to extract report details";
+                
                 toast({
                     variant: 'destructive',
-                    description: errorData.error || "Failed to extract report details",
+                    title: errorData.error || "Error",
+                    description: errorMessage,
+                    duration: 6000, // Show longer for validation errors
                 });
             }
         } catch (error) {

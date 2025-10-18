@@ -150,7 +150,8 @@ export default function RadialOrbitalTimeline({
   const calculateNodePosition = (index: number, total: number) => {
     const baseAngle = (index / total) * 360;
     const angle = (baseAngle + rotationAngle) % 360;
-    const radius = 200;
+    const containerSize = containerRef.current ? Math.min(containerRef.current.offsetWidth, containerRef.current.offsetHeight) : 400;
+    const radius = Math.min(containerSize / 2.5, 250); // Dynamic radius, max 250
     const radian = (angle * Math.PI) / 180;
 
     const x = radius * Math.cos(radian);

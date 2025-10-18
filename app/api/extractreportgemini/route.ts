@@ -16,7 +16,13 @@ const pinecone = new Pinecone({
     apiKey: process.env.PINECONE_API_KEY ?? "",
 });
 
-const prompt = `Attached is an image of a clinical report. 
+const validationPrompt = `Analyze the attached image and determine if it is a medical/clinical report (such as lab results, blood tests, radiology reports, pathology reports, diagnostic reports, etc.).
+
+Respond with ONLY one of these options:
+- "VALID_MEDICAL_REPORT" if it is a medical/clinical report
+- "NOT_MEDICAL_REPORT: [brief reason]" if it is not a medical report (e.g., resume, invoice, general document, etc.)`;
+
+const extractionPrompt = `Attached is an image of a clinical report. 
 Go over the the clinical report and identify biomarkers that show slight or large abnormalities. Then summarize in 100 words. You may increase the word limit if the report has multiple pages. Do not output patient name, date etc. Make sure to include numerical values and key details from the report, including report title.
 ## Summary: `;
 
@@ -29,12 +35,12 @@ const waitForSlot = async () => {
     }
 };
 
-async function generateContentWithRetry(filePart: any, maxRetries = 3) {
+async function generateContentWithRetry(filePart: any, promptText: string, maxRetries = 3) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             await waitForSlot();
             inFlight++;
-            const generatedContent = await model.generateContent([prompt, filePart]);
+            const generatedContent = await model.generateContent([promptText, filePart]);
             return generatedContent.response.candidates![0].content.parts[0].text;
         } catch (error: any) {
             console.error(`Attempt ${attempt} failed:`, error);
@@ -65,8 +71,29 @@ export async function POST(req: Request) {
         const { base64 } = await req.json();
         const filePart = fileToGenerativePart(base64);
 
-        console.log("Processing image with Gemini API...");
-        const textResponse = await generateContentWithRetry(filePart);
+        // Step 1: Validate if the document is a medical report
+        console.log("Validating if document is a medical report...");
+        const validationResponse = await generateContentWithRetry(filePart, validationPrompt);
+        
+        console.log("Validation response:", validationResponse);
+        
+        // Check if document is valid medical report
+        if (!validationResponse || !validationResponse.includes("VALID_MEDICAL_REPORT")) {
+            const reason = validationResponse?.replace("NOT_MEDICAL_REPORT:", "").trim() || "This document does not appear to be a medical or clinical report";
+            console.log("Document validation failed:", reason);
+            return new Response(JSON.stringify({ 
+                error: "Invalid Document Type",
+                message: `This system only accepts medical/clinical reports (lab results, blood tests, radiology reports, pathology reports, etc.). ${reason}`,
+                isValidMedicalReport: false
+            }), { 
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Step 2: Document is valid, proceed with extraction
+        console.log("Document validated as medical report. Processing with Gemini API...");
+        const textResponse = await generateContentWithRetry(filePart, extractionPrompt);
 
         console.log("Successfully generated content");
         
@@ -92,7 +119,8 @@ export async function POST(req: Request) {
         return new Response(JSON.stringify({ 
             text: textResponse,
             reportId: reportId,
-            vectorStored: vectorSuccess
+            vectorStored: vectorSuccess,
+            isValidMedicalReport: true
         }), { 
             status: 200,
             headers: { 'Content-Type': 'application/json' }

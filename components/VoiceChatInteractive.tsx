@@ -249,12 +249,12 @@ export function VoiceChatInteractive({
           <motion.button
             onClick={handleToggleListening}
             className={cn(
-              "relative w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300",
+              "relative w-40 h-40 rounded-full flex items-center justify-center transition-all duration-300",
               "bg-white/95 backdrop-blur-sm border-2 shadow-lg",
               actualIsListening ? "border-blue-500 shadow-blue-500/25" :
               actualIsProcessing ? "border-yellow-500 shadow-yellow-500/25" :
               actualIsSpeaking ? "border-green-500 shadow-green-500/25" :
-              "border-gray-300 hover:border-primary/50"
+              "border-gray-600 hover:border-primary/50"
             )}
             animate={{
               boxShadow: actualIsListening 
@@ -274,7 +274,7 @@ export function VoiceChatInteractive({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
-                  <Loader2 className="w-12 h-12 text-yellow-500 animate-spin" />
+                  <Loader2 className="w-16 h-16 text-yellow-500 animate-spin" />
                 </motion.div>
               ) : actualIsSpeaking ? (
                 <motion.div
@@ -283,7 +283,7 @@ export function VoiceChatInteractive({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
-                  <Volume2 className="w-12 h-12 text-green-500" />
+                  <Volume2 className="w-16 h-16 text-green-500" />
                 </motion.div>
               ) : actualIsListening ? (
                 <motion.div
@@ -292,7 +292,7 @@ export function VoiceChatInteractive({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
-                  <Mic className="w-12 h-12 text-blue-500" />
+                  <Mic className="w-16 h-16 text-blue-500" />
                 </motion.div>
               ) : (
                 <motion.div
@@ -301,8 +301,24 @@ export function VoiceChatInteractive({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
-                  <Mic className="w-12 h-12 text-gray-600" />
+                  <Mic className="w-16 h-16 text-gray-600" />
                 </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Status text inside button */}
+            <AnimatePresence mode="wait">
+              {(actualIsListening || actualIsProcessing || actualIsSpeaking) && (
+                <motion.p
+                  key="status-text"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute bottom-4 text-sm font-semibold"
+                >
+                  {getStatusText()}
+                </motion.p>
               )}
             </AnimatePresence>
           </motion.button>
@@ -337,6 +353,20 @@ export function VoiceChatInteractive({
           </AnimatePresence>
         </motion.div>
 
+        {/* Original Status text, now only for idle state */}
+        {!actualIsListening && !actualIsProcessing && !actualIsSpeaking && (
+          <motion.p
+            key="idle-status-text"
+            className={cn("text-lg font-medium transition-colors bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full", getStatusColor())}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            Tap to speak
+          </motion.p>
+        )}
+
         {/* Stop button - only show when speaking */}
         <AnimatePresence>
           {actualIsSpeaking && (
@@ -357,18 +387,6 @@ export function VoiceChatInteractive({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Status text */}
-        <motion.p
-          className={cn("text-lg font-medium transition-colors bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full", getStatusColor())}
-          animate={{ opacity: [1, 0.7, 1] }}
-          transition={{
-            duration: 2,
-            repeat: actualIsListening || actualIsProcessing || actualIsSpeaking ? Infinity : 0
-          }}
-        >
-          {getStatusText()}
-        </motion.p>
       </div>
 
       {/* Waveform visualizer - positioned higher up */}
