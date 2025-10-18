@@ -20,12 +20,23 @@ export default function SignInPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const error = searchParams.get("error");
   const { data: session, status } = useSession();
 
   // Redirect if already signed in
   if (status === "authenticated") {
     router.push(callbackUrl);
     return null;
+  }
+
+  // Show error if there's an auth error
+  if (error) {
+    console.error("NextAuth error:", error);
+    toast({
+      title: "Authentication Error",
+      description: `Error: ${error}. Please try again or contact support.`,
+      variant: "destructive",
+    });
   }
 
   const handleGoogleSignIn = async () => {
