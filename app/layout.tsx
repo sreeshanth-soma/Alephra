@@ -8,8 +8,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 // import { Toaster } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/Navbar";
-import { ClerkProvider } from '@clerk/nextjs';
 import { Analytics } from "@vercel/analytics/next";
+import SessionWrapper from "@/components/SessionWrapper";
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -33,9 +33,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={`${poppins.variable} ${playfair.variable} font-sans`}>
+    <html lang="en">
+      <body className={`${poppins.variable} ${playfair.variable} font-sans`}>
+        <SessionWrapper>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -47,8 +47,8 @@ export default function RootLayout({
             <Toaster />
             <Analytics />
           </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </SessionWrapper>
+      </body>
+    </html>
   );
 }

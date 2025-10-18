@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Home, BarChart3, LayoutDashboard, Mic, User, LogOut, LogIn } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
@@ -13,8 +13,9 @@ import { HoverBorderGradient } from "./ui/hover-border-gradient";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isLoaded = status !== "loading";
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -25,7 +26,7 @@ const Navbar = () => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    await signOut({ callbackUrl: '/' });
     closeMenu();
   };
 
@@ -110,11 +111,11 @@ const Navbar = () => {
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-800 to-black flex items-center justify-center">
                     <span className="text-white font-bold text-sm">
-                      {user.firstName?.charAt(0).toUpperCase() || user.emailAddresses[0]?.emailAddress?.charAt(0).toUpperCase() || 'U'}
+                      {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
                     </span>
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden lg:block">
-                    {user.firstName || user.emailAddresses[0]?.emailAddress?.split('@')[0]}
+                    {user.name || user.email?.split('@')[0]}
                   </span>
                   <Button
                     onClick={handleSignOut}
@@ -220,15 +221,15 @@ const Navbar = () => {
                     <div className="flex items-center space-x-3 p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/20 dark:to-gray-700/20">
                       <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-gray-800 to-black flex items-center justify-center">
                         <span className="text-white font-bold text-lg">
-                          {user.firstName?.charAt(0).toUpperCase() || user.emailAddresses[0]?.emailAddress?.charAt(0).toUpperCase() || 'U'}
+                          {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
                         </span>
                       </div>
                       <div className="flex-1">
                         <div className="font-bold text-lg text-gray-900 dark:text-white">
-                          {user.firstName} {user.lastName}
+                          {user.name || 'User'}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {user.emailAddresses[0]?.emailAddress}
+                          {user.email}
                         </div>
                       </div>
                     </div>

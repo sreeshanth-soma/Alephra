@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Heart, Activity, Calendar, Filter, CalendarDays, AlertTriangle, Trash2 } from "lucide-react";
 import BasicModal from "@/components/ui/modal";
 import { Noise } from "@/components/ui/noise";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { safeGetItem, safeSetItem, safeRemoveItem, clearAllMedScanData, isLocalStorageAvailable } from "@/lib/localStorage";
 import { toast } from "@/components/ui/use-toast";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
@@ -513,7 +513,9 @@ const MetricCard = ({ label, value, unit, accent }: { label: string; value: stri
 
 export default function DashboardPage() {
   // Session for authentication
-  const { user, isSignedIn } = useUser();
+  const { data: session, status } = useSession();
+  const isSignedIn = status === "authenticated";
+  const user = session?.user;
   
   type Reminder = { id: string; text: string; time?: string; done: boolean };
   const [reminders, setReminders] = useState<Reminder[]>([]);
@@ -665,64 +667,50 @@ export default function DashboardPage() {
     }
   }, [appointments, isInitialized]);
 
-  const addReminder = async () => {
+  const addReminder = () => {
     if (!newReminder.trim()) return;
     
     // Create local reminder
     const r: Reminder = { id: crypto.randomUUID(), text: newReminder.trim(), time: newTime || undefined, done: false };
     setReminders(prev => [r, ...prev]);
     
-    // Show immediate feedback
-    setRemindersStatus("Adding reminder to Google Calendar...");
-    
-    // Try to sync with Google Calendar if user is signed in and time is provided
+    // If time is provided, generate Google Calendar link
     if (newTime) {
-      try {
-        // Build a timezone-agnostic local datetime string (YYYY-MM-DDTHH:mm:SS) and send the IANA timeZone separately.
-        const now = new Date();
-        const [hoursStr, minutesStr] = newTime.split(":");
-        const hours = parseInt(hoursStr, 10);
-        const minutes = parseInt(minutesStr, 10);
+      const now = new Date();
+      const [hoursStr, minutesStr] = newTime.split(":");
+      const hours = parseInt(hoursStr, 10);
+      const minutes = parseInt(minutesStr, 10);
 
-        // Determine target date (today or tomorrow) based on local wall-clock
-        const candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
-        let target = candidate;
-        if (candidate.getTime() <= now.getTime()) {
-          target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, hours, minutes, 0, 0);
-        }
-
-        const pad = (n: number) => String(n).padStart(2, "0");
-        const localDateStr = `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}`;
-        const localTimeStr = `${pad(hours)}:${pad(minutes)}:00`;
-        const localDateTime = `${localDateStr}T${localTimeStr}`; // No Z, no offset
-
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        console.log("Frontend reminder creation:", { localDateTime, tz });
-        
-        const response = await fetch('/api/reminders/calendar-sync', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            title: newReminder.trim(),
-            description: `Medical reminder created via MedScan`,
-            reminderLocal: localDateTime,
-            timeZone: tz,
-          }),
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-          setRemindersStatus(`✅ Reminder added to Google Calendar! Check your calendar app.`);
-        } else {
-          setRemindersStatus(`⚠️ Reminder saved locally. ${result.error || 'Calendar sync failed'}`);
-        }
-      } catch (error) {
-        console.error('Calendar sync error:', error);
-        setRemindersStatus("⚠️ Reminder saved locally. Calendar sync unavailable.");
+      // Determine target date (today or tomorrow) based on local wall-clock
+      const candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+      let target = candidate;
+      if (candidate.getTime() <= now.getTime()) {
+        target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, hours, minutes, 0, 0);
       }
+
+      // Generate Google Calendar "Add to Calendar" link
+      const endDateTime = new Date(target.getTime() + 15 * 60000); // 15 minutes duration
+      
+      const formatDateTime = (date: Date): string => {
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+        return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+      };
+      
+      const calendarUrl = new URL('https://calendar.google.com/calendar/render');
+      calendarUrl.searchParams.append('action', 'TEMPLATE');
+      calendarUrl.searchParams.append('text', `💊 ${newReminder.trim()}`);
+      calendarUrl.searchParams.append('dates', `${formatDateTime(target)}/${formatDateTime(endDateTime)}`);
+      calendarUrl.searchParams.append('details', `Medical reminder created via MedScan AI Healthcare Assistant`);
+      
+      // Open Google Calendar in new tab
+      window.open(calendarUrl.toString(), '_blank', 'noopener,noreferrer');
+      
+      setRemindersStatus(`✅ Reminder saved! Opening Google Calendar to add it...`);
     } else {
       setRemindersStatus("✅ Reminder added! Add a time to sync with Google Calendar.");
     }
@@ -734,7 +722,7 @@ export default function DashboardPage() {
     setNewTime("");
   };
 
-  const addAppointment = async () => {
+  const addAppointment = () => {
     if (!apptTitle.trim() || !apptDate || !apptTime) {
       setAppointmentsStatus("Please fill in all fields");
       setTimeout(() => setAppointmentsStatus(""), 3000);
@@ -750,49 +738,31 @@ export default function DashboardPage() {
     };
     setAppointments(prev => [appointment, ...prev]);
     
-    // Show immediate feedback
-    if (isSignedIn) {
-      setAppointmentsStatus("Adding appointment to Google Calendar...");
-    } else {
-      setAppointmentsStatus("Appointment saved locally. Sign in to sync with Google Calendar.");
-    }
+    // Generate Google Calendar "Add to Calendar" link
+    const appointmentDateTime = new Date(`${apptDate}T${apptTime}`);
+    const endDateTime = new Date(appointmentDateTime.getTime() + 30 * 60000); // 30 minutes duration
     
-    // Try to sync with Google Calendar if user is signed in
-    if (isSignedIn) {
-      try {
-      // Create a datetime for the appointment
-      const appointmentDateTime = new Date(`${apptDate}T${apptTime}`);
-      const endDateTime = new Date(appointmentDateTime.getTime() + 30 * 60000); // 30 minutes duration
-      
-      const response = await fetch('/api/reminders/calendar-sync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: `📅 ${apptTitle.trim()}`,
-          description: `Appointment: ${apptTitle.trim()}\n\nCreated by MedScan AI Healthcare Assistant`,
-          reminderTime: appointmentDateTime.toISOString(),
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        }),
-      });
-      
-      const result = await response.json();
-      
-      if (response.ok) {
-        setAppointmentsStatus(`✅ Appointment added to Google Calendar! Check your calendar app.`);
-      } else {
-        if (result.error?.includes("Unauthorized") || result.error?.includes("No Google access token")) {
-          setAppointmentsStatus(`⚠️ Please sign in with Google to sync appointments to your calendar.`);
-        } else {
-          setAppointmentsStatus(`⚠️ Appointment saved locally. Calendar sync failed: ${result.error || 'Unknown error'}`);
-        }
-      }
-      } catch (error) {
-        console.error('Appointment calendar sync error:', error);
-        setAppointmentsStatus(`⚠️ Appointment saved locally. Calendar sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    }
+    // Format dates to Google Calendar format: YYYYMMDDTHHmmssZ
+    const formatDateTime = (date: Date): string => {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+      return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+    };
+    
+    const calendarUrl = new URL('https://calendar.google.com/calendar/render');
+    calendarUrl.searchParams.append('action', 'TEMPLATE');
+    calendarUrl.searchParams.append('text', `📅 ${apptTitle.trim()}`);
+    calendarUrl.searchParams.append('dates', `${formatDateTime(appointmentDateTime)}/${formatDateTime(endDateTime)}`);
+    calendarUrl.searchParams.append('details', `Appointment: ${apptTitle.trim()}\n\nCreated by MedScan AI Healthcare Assistant`);
+    
+    // Open Google Calendar in new tab
+    window.open(calendarUrl.toString(), '_blank', 'noopener,noreferrer');
+    
+    setAppointmentsStatus(`✅ Appointment saved! Opening Google Calendar to add it...`);
     
     // Clear the status message after 5 seconds
     setTimeout(() => setAppointmentsStatus(""), 5000);
@@ -1453,12 +1423,43 @@ export default function DashboardPage() {
                               {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
                             </div>
                           </div>
-                          <button
-                            onClick={() => removeAppointment(appointment.id)}
-                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs"
-                          >
-                            Remove
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                const appointmentDateTime = new Date(`${appointment.date}T${appointment.time}`);
+                                const endDateTime = new Date(appointmentDateTime.getTime() + 30 * 60000);
+                                
+                                const formatDateTime = (date: Date): string => {
+                                  const year = date.getUTCFullYear();
+                                  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                                  const day = String(date.getUTCDate()).padStart(2, '0');
+                                  const hours = String(date.getUTCHours()).padStart(2, '0');
+                                  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                                  const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+                                  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+                                };
+                                
+                                const calendarUrl = new URL('https://calendar.google.com/calendar/render');
+                                calendarUrl.searchParams.append('action', 'TEMPLATE');
+                                calendarUrl.searchParams.append('text', `📅 ${appointment.title}`);
+                                calendarUrl.searchParams.append('dates', `${formatDateTime(appointmentDateTime)}/${formatDateTime(endDateTime)}`);
+                                calendarUrl.searchParams.append('details', `Appointment: ${appointment.title}\n\nCreated by MedScan AI Healthcare Assistant`);
+                                
+                                window.open(calendarUrl.toString(), '_blank', 'noopener,noreferrer');
+                              }}
+                              className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                              title="Add to Google Calendar"
+                            >
+                              📅
+                            </button>
+                            <button
+                              onClick={() => removeAppointment(appointment.id)}
+                              className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                              title="Remove appointment"
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </div>
                       ))
                     )}
