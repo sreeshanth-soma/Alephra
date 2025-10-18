@@ -1112,9 +1112,18 @@ export default function DashboardPage() {
       <div className="w-full px-6 py-10 relative z-10">
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-black dark:text-white"><span className="bg-gradient-to-r from-cyan-500 to-emerald-500 bg-clip-text text-transparent">MedScan</span> Dashboard</h1>
-              <p className="text-gray-600 dark:text-gray-400">Overview of vitals, labs, meds, and care timeline</p>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg">
+                <img 
+                  src="/med.jpg" 
+                  alt="MedScan Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-black dark:text-white"><span className="bg-gradient-to-r from-cyan-500 to-emerald-500 bg-clip-text text-transparent">MedScan</span> Dashboard</h1>
+                <p className="text-gray-600 dark:text-gray-400">Overview of vitals, labs, meds, and care timeline</p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <button

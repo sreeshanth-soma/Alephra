@@ -25,6 +25,18 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "MedScan",
   description: "AI-powered medical report analysis and insights",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", sizes: "32x32", type: "image/png" },
+      { url: "/med.jpg", sizes: "16x16", type: "image/jpeg" },
+    ],
+    apple: [
+      { url: "/icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

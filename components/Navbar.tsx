@@ -64,10 +64,13 @@ const Navbar = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group" onClick={closeMenu}>
             <div className="relative">
-              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg shadow-black/25 group-hover:shadow-black/40 transition-all duration-300 group-hover:scale-105">
-                <span className="text-white font-bold text-lg">M</span>
+              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-black/25 group-hover:shadow-black/40 transition-all duration-300 group-hover:scale-105">
+                <img 
+                  src="/med.jpg" 
+                  alt="MedScan Logo" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-              {/* <div className="absolute -inset-1 bg-gradient-to-br from-blue-600 to-black rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div> */}
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-300 bg-clip-text text-transparent">

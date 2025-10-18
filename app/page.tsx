@@ -13,6 +13,7 @@ import { GlowingEffectDemoSecond } from "@/components/GlowingEffectDemoSecond";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
+import { HoverButton } from "@/components/ui/hover-button";
 
 // Dynamic import to prevent SSR issues with Three.js/WebGL
 const Dither = dynamic(() => import("@/components/Dither"), { ssr: false });
@@ -76,10 +77,38 @@ export default function Home() {
             >
               RAG-driven healthcare intelligence with a conversational voice interface
             </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 1.1,
+                duration: 0.8,
+              }}
+              className="mt-8"
+            >
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link href="/analysis">
+                  <HoverButton className="px-10 py-4 text-lg">
+                    Get Started
+                  </HoverButton>
+                </Link>
+                <button 
+                  onClick={() => {
+                    document.getElementById('features')?.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }}
+                  className="px-10 py-4 rounded-3xl text-lg font-medium leading-6 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl bg-white dark:bg-black text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
+                >
+                  Learn More
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
 
-        <div className="flex flex-col overflow-hidden pb-24 pt-0 relative z-10">
+        <div id="features" className="flex flex-col overflow-hidden pb-24 pt-0 relative z-10">
           <ContainerScroll
           titleComponent={
             <>
@@ -173,7 +202,7 @@ export default function Home() {
             <h3 className="text-2xl font-bold text-black dark:text-white mb-4">
               Ready to Experience AI-Powered Healthcare?
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+            <p className="text-gray-800 dark:text-gray-200 mb-8 max-w-2xl mx-auto">
               Start a conversation with your intelligent medical assistant. Ask questions about your health, 
               get insights from your reports, and receive personalized guidance in your preferred language.
             </p>
