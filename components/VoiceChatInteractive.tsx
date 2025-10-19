@@ -169,10 +169,14 @@ export function VoiceChatInteractive({
   const handleToggleListening = () => {
     if (demoMode) return;
     
+    console.log('Button clicked, actualIsListening:', actualIsListening);
+    
     if (actualIsListening) {
+      console.log('Calling onStop');
       onStop?.(duration);
       setDuration(0);
     } else {
+      console.log('Calling onStart');
       onStart?.();
     }
   };

@@ -28,6 +28,7 @@ export default function Home() {
         <Waves
           lineColor={theme === "dark" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.25)"}
           backgroundColor="transparent"
+          cursorDotColor={theme === "dark" ? "#000000" : "#ffffff"}
           waveSpeedX={0.02}
           waveSpeedY={0.01}
           waveAmpX={40}
@@ -65,7 +66,9 @@ export default function Home() {
               }}
               className="text-2xl md:text-4xl lg:text-5xl text-black dark:text-gray-200 font-medium tracking-wide max-w-5xl mx-auto"
             >
-              Where care meets technology
+              <span className="px-4 py-2 rounded-full bg-white/70 dark:bg-black/70 backdrop-blur-md border-2 border-blue-300/30 dark:border-blue-500/30 shadow-xl shadow-blue-500/10">
+                Where care meets technology
+              </span>
             </motion.p>
             <motion.p
               initial={{ opacity: 0 }}

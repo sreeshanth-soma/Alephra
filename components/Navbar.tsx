@@ -65,14 +65,21 @@ const Navbar = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group" onClick={closeMenu}>
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-black/25 group-hover:shadow-black/40 transition-all duration-300 group-hover:scale-105">
-                <Image 
-                  src="/med.jpg" 
-                  alt="MedScan Logo" 
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-10 h-10 rounded-xl bg-black dark:bg-white flex items-center justify-center shadow-lg shadow-black/25 dark:shadow-white/25 group-hover:shadow-black/40 dark:group-hover:shadow-white/40 transition-all duration-300 group-hover:scale-105">
+                <svg 
+                  className="w-6 h-6 text-white dark:text-black" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                >
+                  {/* Heartbeat line */}
+                  <path d="M3 12h3l2-4 4 8 2-4h3" />
+                  {/* Medical cross overlay */}
+                  <path d="M17 8v8M21 12h-8" />
+                </svg>
               </div>
             </div>
             <div className="flex flex-col">
@@ -84,31 +91,26 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-2">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <HoverBorderGradient
+                <Link
                   key={item.name}
-                  containerClassName="rounded-full"
-                  as={Link}
                   href={item.href}
-                  className={`dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 ${
-                    isActive ? 'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 border border-gray-200 dark:border-gray-600 shadow-sm dark:shadow-gray-900/10' : ''
-                  }`}
-                  duration={0.5}
-                  clockwise={false}
+                  className="relative group"
                 >
-                  <div className="flex items-center space-x-2">
-                    <span className={`font-semibold transition-colors duration-300 ${
-                      isActive 
-                        ? 'text-gray-900 dark:text-white font-bold tracking-wide' 
-                        : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
-                    }`}>
+                  {isActive ? (
+                    <div className="relative px-5 py-2.5 rounded-xl font-semibold bg-gradient-to-r from-gray-900 via-black to-gray-900 dark:from-white dark:via-gray-100 dark:to-white text-white dark:text-black shadow-lg shadow-black/30 dark:shadow-white/20 transition-all duration-300">
                       {item.name}
-                    </span>
-                  </div>
-                </HoverBorderGradient>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-gray-700 via-black to-gray-700 dark:from-gray-300 dark:via-white dark:to-gray-300 opacity-20 blur-xl animate-pulse"></div>
+                    </div>
+                  ) : (
+                    <div className="relative px-5 py-2.5 rounded-xl font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white hover:shadow-md transition-all duration-300">
+                      {item.name}
+                    </div>
+                  )}
+                </Link>
               );
             })}
             <div className="ml-4 pl-4 border-l border-gray-200 dark:border-gray-700 flex items-center space-x-3">
@@ -133,15 +135,11 @@ const Navbar = () => {
                   </Button>
                 </div>
               ) : (
-                <Link href="/signin">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
-                  >
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Sign In
-                  </Button>
+                <Link href="/signin" className="relative group">
+                  <div className="px-5 py-2.5 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl flex items-center space-x-2 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:shadow-md">
+                    <LogIn className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Sign In</span>
+                  </div>
                 </Link>
               )}
             </div>
@@ -186,36 +184,36 @@ const Navbar = () => {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     transition={{ delay: index * 0.1, duration: 0.4, ease: 'easeOut' }}
                   >
-                    <HoverBorderGradient
-                      containerClassName="rounded-2xl"
-                      as={Link}
+                    <Link
                       href={item.href}
                       onClick={closeMenu}
-                      className={`dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-3 py-2 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-lg ${
-                        isActive 
-                          ? 'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 border border-gray-200 dark:border-gray-600 shadow-md dark:shadow-gray-900/10' 
-                          : 'hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-700'
-                      }`}
-                      duration={0.5}
-                      clockwise={false}
+                      className="block group relative"
                     >
-                      <div className="flex-1">
-                        <div className={`font-bold text-lg transition-colors duration-300 ${
-                          isActive 
-                            ? 'text-gray-900 dark:text-white tracking-wide' 
-                            : 'text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200'
-                        }`}>
-                          {item.name}
+                      {isActive ? (
+                        <div className="relative px-4 py-4 rounded-2xl bg-gradient-to-r from-gray-900 via-black to-gray-900 dark:from-white dark:via-gray-100 dark:to-white shadow-lg shadow-black/30 dark:shadow-white/20 transition-all duration-300">
+                          <div className="flex-1">
+                            <div className="font-bold text-lg text-white dark:text-black tracking-wide">
+                              {item.name}
+                            </div>
+                            <div className="text-sm text-white/90 dark:text-black/80">
+                              {item.description}
+                            </div>
+                          </div>
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-gray-700 via-black to-gray-700 dark:from-gray-300 dark:via-white dark:to-gray-300 opacity-20 blur-xl"></div>
                         </div>
-                        <div className={`text-sm transition-colors duration-300 ${
-                          isActive 
-                            ? 'text-gray-600 dark:text-gray-300' 
-                            : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'
-                        }`}>
-                          {item.description}
+                      ) : (
+                        <div className="relative px-4 py-4 rounded-2xl bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-300 dark:group-hover:bg-gray-600 group-hover:shadow-md transition-all duration-300">
+                          <div className="flex-1">
+                            <div className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">
+                              {item.name}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-300">
+                              {item.description}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </HoverBorderGradient>
+                      )}
+                    </Link>
                   </motion.div>
                 );
               })}
@@ -249,11 +247,11 @@ const Navbar = () => {
                     </Button>
                   </div>
                 ) : (
-                  <Link href="/signin" onClick={closeMenu}>
-                    <Button className="w-full h-12 bg-gradient-to-r from-gray-800 to-black hover:from-gray-700 hover:to-gray-900 text-white">
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Sign In with Google
-                    </Button>
+                  <Link href="/signin" onClick={closeMenu} className="block">
+                    <div className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center space-x-2 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:shadow-md">
+                      <LogIn className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                      <span className="font-medium text-gray-700 dark:text-gray-300 text-base">Sign In with Google</span>
+                    </div>
                   </Link>
                 )}
               </div>

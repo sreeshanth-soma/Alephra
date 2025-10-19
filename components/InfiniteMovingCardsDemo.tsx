@@ -24,7 +24,7 @@ const medicalStepsData = [
     title: "Verify Results",
   },
   {
-    quote: "Set reminders, talk to the voice agent, or share a summary with your clinician for follow-up care.",
+    quote: "Set reminders in the dashboard, speak with the voice assistant, or share a summary with your clinician for follow-up care.",
     name: "Step 5",
     title: "Take Action",
   },

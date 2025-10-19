@@ -11,11 +11,14 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { VoiceChatInteractive } from '@/components/VoiceChatInteractive';
 import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ui/conversation';
+import { VoiceVisualizer } from '@/components/VoiceVisualizer';
+import { FloatingParticles } from '@/components/FloatingParticles';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import BasicModal from '@/components/ui/modal';
 import { prescriptionStorage, PrescriptionRecord } from '@/lib/prescription-storage';
 import { CustomSelect } from '@/components/ui/custom-select';
+import { FloatingSelectModal } from '@/components/ui/floating-select-modal';
 
 const isProd = process.env.NODE_ENV === 'production';
 const log = (...args: any[]) => { if (!isProd) console.log(...args); };
@@ -102,10 +105,15 @@ export default function VoiceAgentPage() {
   const [speechMethod, setSpeechMethod] = useState<'browser' | 'sarvam' | 'unknown'>('unknown');
   const [availableReports, setAvailableReports] = useState<PrescriptionRecord[]>([]);
   const [selectedReportId, setSelectedReportId] = useState<string>('all');
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showSpeakerModal, setShowSpeakerModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showParticles, setShowParticles] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const languages = [
     { code: 'en-IN', name: 'English (India)', browserCode: 'en-IN', fallbackCode: 'en-US' },
@@ -209,11 +217,20 @@ export default function VoiceAgentPage() {
 
   const startRecording = async () => {
     log('startRecording called');
+    
+    // Prevent starting if already recording
+    if (isRecording) {
+      log('Already recording, ignoring start request');
+      return;
+    }
+    
+    setShowParticles(true);
     try {
       // Try browser's built-in speech recognition first (more reliable)
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
+        recognitionRef.current = recognition;
         
         recognition.continuous = false;
         recognition.interimResults = false;
@@ -253,7 +270,10 @@ export default function VoiceAgentPage() {
         };
 
         recognition.onend = () => {
+          log('Browser speech recognition ended');
           setIsRecording(false);
+          setShowParticles(false);
+          recognitionRef.current = null;
         };
 
         recognition.start();
@@ -337,10 +357,32 @@ export default function VoiceAgentPage() {
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+    log('stopRecording called, isRecording:', isRecording);
+    
+    // Stop browser speech recognition if it's running
+    if (recognitionRef.current) {
+      try {
+        log('Stopping browser speech recognition');
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      } catch (error) {
+        console.log('Recognition already stopped:', error);
+      }
     }
+    
+    // Stop MediaRecorder if it's running
+    if (mediaRecorderRef.current) {
+      try {
+        log('Stopping MediaRecorder');
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current = null;
+      } catch (error) {
+        console.log('MediaRecorder already stopped:', error);
+      }
+    }
+    
+    setIsRecording(false);
+    setShowParticles(false);
   };
 
   const processSpeechToText = async (audioBlob: Blob) => {
@@ -456,19 +498,28 @@ export default function VoiceAgentPage() {
         responseText = `You said: "${safeUser}". I’m having trouble reaching the medical AI right now. ${hasReport ? 'I do have your latest report context saved, and we can still discuss general guidance.' : 'We can still talk through general guidance.'} If you want, re-ask your question or specify symptoms, medicines, or lab values, and I’ll help.`;
       }
 
-      const assistantMessage: VoiceMessage = {
-        id: (Date.now() + 1).toString(),
-        text: responseText,
-        timestamp: new Date(),
-        type: 'assistant'
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-
-      // Convert response to speech (start immediately, don't wait)
-      textToSpeech(responseText).catch(error => {
+      // Convert response to speech first, then show message when audio starts
+      textToSpeech(responseText, () => {
+        // Show message when audio starts playing
+        const assistantMessage: VoiceMessage = {
+          id: (Date.now() + 1).toString(),
+          text: responseText,
+          timestamp: new Date(),
+          type: 'assistant'
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      }).catch(error => {
         console.error('TTS error:', error);
-        // Fallback to browser TTS if Sarvam fails
-        fallbackToBrowserTTS(responseText);
+        // Fallback to browser TTS if Sarvam fails, pass the callback
+        const assistantMessage: VoiceMessage = {
+          id: (Date.now() + 1).toString(),
+          text: responseText,
+          timestamp: new Date(),
+          type: 'assistant'
+        };
+        fallbackToBrowserTTS(responseText, () => {
+          setMessages(prev => [...prev, assistantMessage]);
+        });
       });
     } catch (error) {
       console.error('Response generation error:', error);
@@ -479,18 +530,28 @@ export default function VoiceAgentPage() {
       // Context-preserving fallback response
       const safeUser = (currentText || '').trim().slice(0, 300);
       const hasReport = false; // unknown here; avoid extra reads in catch
-      const fallbackText = `You said: "${safeUser}". I’m having trouble reaching the medical AI right now. ${hasReport ? 'I still have your report context, and we can continue.' : 'We can still continue.'} Try again in a moment or share more details (symptoms, meds, labs), and I’ll assist.`;
-      const assistantMessage: VoiceMessage = {
-        id: (Date.now() + 1).toString(),
-        text: fallbackText,
-        timestamp: new Date(),
-        type: 'assistant'
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+      const fallbackText = `You said: "${safeUser}". I'm having trouble reaching the medical AI right now. ${hasReport ? 'I still have your report context, and we can continue.' : 'We can still continue.'} Try again in a moment or share more details (symptoms, meds, labs), and I'll assist.`;
+      
       // Start TTS immediately for fallback too
-      textToSpeech(fallbackText).catch(error => {
+      textToSpeech(fallbackText, () => {
+        const assistantMessage: VoiceMessage = {
+          id: (Date.now() + 1).toString(),
+          text: fallbackText,
+          timestamp: new Date(),
+          type: 'assistant'
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      }).catch(error => {
         console.error('Fallback TTS error:', error);
-        fallbackToBrowserTTS(fallbackText);
+        const assistantMessage: VoiceMessage = {
+          id: (Date.now() + 1).toString(),
+          text: fallbackText,
+          timestamp: new Date(),
+          type: 'assistant'
+        };
+        fallbackToBrowserTTS(fallbackText, () => {
+          setMessages(prev => [...prev, assistantMessage]);
+        });
       });
     }
   };
@@ -621,7 +682,7 @@ export default function VoiceAgentPage() {
     return null;
   };
 
-  const textToSpeech = async (text: string) => {
+  const textToSpeech = async (text: string, onAudioStart?: () => void) => {
     log('textToSpeech called with text:', text.substring(0, 50) + '...');
     log('textToSpeech called from:', new Error().stack);
     
@@ -662,7 +723,10 @@ export default function VoiceAgentPage() {
           // Create audio element and play
           const audio = new Audio(audioUrl);
           audioRef.current = audio; // Store reference for stopping
-          audio.onplay = () => setIsPlaying(true);
+          audio.onplay = () => {
+            setIsPlaying(true);
+            onAudioStart?.(); // Call callback when audio starts
+          };
           audio.onended = () => {
             setIsPlaying(false);
             URL.revokeObjectURL(audioUrl);
@@ -675,7 +739,7 @@ export default function VoiceAgentPage() {
             URL.revokeObjectURL(audioUrl);
             audioRef.current = null;
             // Fallback to browser TTS
-            fallbackToBrowserTTS(text);
+            fallbackToBrowserTTS(text, onAudioStart);
           };
           
           await audio.play();
@@ -684,7 +748,7 @@ export default function VoiceAgentPage() {
         } catch (audioError) {
           console.error('Audio processing error:', audioError);
           // Fallback to browser TTS
-          fallbackToBrowserTTS(text);
+          fallbackToBrowserTTS(text, onAudioStart);
         }
       } else {
         // Sarvam TTS failed, use browser TTS
@@ -695,16 +759,16 @@ export default function VoiceAgentPage() {
           log('Sarvam API subscription issue - using browser TTS with improved voice selection');
         }
         
-        fallbackToBrowserTTS(text);
+        fallbackToBrowserTTS(text, onAudioStart);
       }
     } catch (error) {
       console.error('Text-to-speech error:', error);
       // Fallback to browser TTS
-      fallbackToBrowserTTS(text);
+      fallbackToBrowserTTS(text, onAudioStart);
     }
   };
 
-  const fallbackToBrowserTTS = (text: string) => {
+  const fallbackToBrowserTTS = (text: string, onAudioStart?: () => void) => {
     log('fallbackToBrowserTTS called with text:', text.substring(0, 50) + '...');
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
@@ -735,7 +799,10 @@ export default function VoiceAgentPage() {
         selectedLanguage: selectedLanguage
       });
       
-      utterance.onstart = () => setIsPlaying(true);
+      utterance.onstart = () => {
+        setIsPlaying(true);
+        onAudioStart?.(); // Call callback when speech starts
+      };
       utterance.onend = () => setIsPlaying(false);
       speechSynthesis.speak(utterance);
     }
@@ -783,6 +850,7 @@ export default function VoiceAgentPage() {
   };
 
   return (
+    <>
     <div className="h-screen bg-gray-50 dark:bg-black p-2 overflow-hidden relative pt-20">
       <div className="w-full h-full flex flex-col">
         {/* Header - Enhanced */}
@@ -801,29 +869,23 @@ export default function VoiceAgentPage() {
               {availableReports.length > 0 && (
                 <div className="pb-4 border-b border-gray-200 dark:border-gray-700 relative z-[70]">
                   <div className="flex items-center gap-3">
-                    <CustomSelect
-                      label="Active Medical Report Context"
-                      icon={<FileText className="h-3.5 w-3.5" />}
-                      value={selectedReportId}
-                      onChange={setSelectedReportId}
-                      options={[
-                        {
-                          value: 'all',
-                          label: `All Reports (${availableReports.length} total)`,
-                          icon: '🌐',
-                          description: 'Search across all your medical reports'
-                        },
-                        ...availableReports.map(report => ({
-                          value: report.id,
-                          label: report.fileName,
-                          icon: '📄',
-                          description: prescriptionStorage.formatDate(report.uploadedAt)
-                        }))
-                      ]}
-                      className="flex-1"
-                    />
+                    <button
+                      onClick={() => setShowReportModal(true)}
+                      className="flex-1 h-10 px-4 flex items-center justify-between gap-2 rounded-lg border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
+                    >
+                      <div className="flex items-center gap-2 flex-1 text-left">
+                        <FileText className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400" />
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {selectedReportId === 'all' 
+                            ? `All Reports (${availableReports.length} total)`
+                            : availableReports.find(r => r.id === selectedReportId)?.fileName || 'Select Report'
+                          }
+                        </span>
+                      </div>
+                      <Languages className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    </button>
                     {selectedReportId !== 'all' && (
-                      <Badge variant="outline" className="text-xs whitespace-nowrap mt-6">
+                      <Badge variant="outline" className="text-xs whitespace-nowrap">
                         Single Report
                       </Badge>
                     )}
@@ -833,41 +895,38 @@ export default function VoiceAgentPage() {
               
               {/* Language and Voice Controls Row */}
               <div className="flex items-start gap-4">
-                <CustomSelect
-                  label="Response Language"
-                  icon={<Languages className="h-3.5 w-3.5" />}
-                  value={selectedLanguage}
-                  onChange={setSelectedLanguage}
-                  options={languages.map(lang => ({
-                    value: lang.code,
-                    label: lang.name,
-                    icon: getLanguageFlag(lang.code)
-                  }))}
-                  className="flex-1"
-                />
+                <button
+                  onClick={() => setShowLanguageModal(true)}
+                  className="flex-1 h-10 px-4 flex items-center justify-between gap-2 rounded-lg border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
+                >
+                  <div className="flex items-center gap-2 flex-1 text-left">
+                    <Languages className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {languages.find(lang => lang.code === selectedLanguage)?.name || 'Select Language'}
+                    </span>
+                  </div>
+                  <Languages className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                </button>
                 
-                <CustomSelect
-                  label="Voice Speaker"
-                  icon={<UserCircle className="h-3.5 w-3.5" />}
-                  value={selectedSpeaker}
-                  onChange={setSelectedSpeaker}
-                  options={sarvamSpeakers.map(speaker => ({
-                    value: speaker.code,
-                    label: speaker.name.split(' (')[0],
-                    icon: speaker.gender === 'female' ? 
-                      <Image src="/woman.svg" alt="Female" width={16} height={16} className="w-4 h-4" /> : 
-                      <Image src="/man.svg" alt="Male" width={16} height={16} className="w-4 h-4" />,
-                    description: speaker.gender === 'female' ? 'Female Voice' : 'Male Voice'
-                  }))}
-                  className="flex-1"
-                />
+                <button
+                  onClick={() => setShowSpeakerModal(true)}
+                  className="flex-1 h-10 px-4 flex items-center justify-between gap-2 rounded-lg border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
+                >
+                  <div className="flex items-center gap-2 flex-1 text-left">
+                    <UserCircle className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {sarvamSpeakers.find(speaker => speaker.code === selectedSpeaker)?.name.split(' (')[0] || 'Select Speaker'}
+                    </span>
+                  </div>
+                  <UserCircle className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                </button>
                 
                 <div className="flex items-end gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setIsMuted(!isMuted)}
-                    className="flex items-center gap-1 text-xs px-3 h-10 border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-blue-400 dark:hover:border-blue-500 transition-all"
+                    className="flex items-center gap-1 text-xs px-3 h-10 border-[3px] border-gray-900 dark:border-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all"
                   >
                     {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                     {isMuted ? 'Unmute' : 'Mute'}
@@ -876,7 +935,7 @@ export default function VoiceAgentPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowClearModal(true)}
-                    className="flex items-center gap-1 text-xs px-3 h-10 border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-red-400 dark:hover:border-red-500 transition-all"
+                    className="flex items-center gap-1 text-xs px-3 h-10 border-[3px] border-gray-900 dark:border-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all"
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
                     Clear
@@ -890,7 +949,20 @@ export default function VoiceAgentPage() {
         {/* Main Content Layout */}
         <div className="flex gap-4 flex-1 min-h-0">
           {/* Left Side - Voice Interface (30%) */}
-          <div className="w-[30%] border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+          <div className="w-[30%] border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden relative">
+            {/* Floating Particles */}
+            <FloatingParticles isActive={showParticles} count={15} />
+            
+            {/* Voice Visualizer */}
+            <div className="absolute inset-0 z-10">
+              <VoiceVisualizer
+                isRecording={isRecording}
+                isPlaying={isPlaying}
+                isProcessing={isProcessing}
+                className="w-full h-full"
+              />
+            </div>
+            
             <VoiceChatInteractive
               onStart={startRecording}
               onStop={stopRecording}
@@ -900,7 +972,7 @@ export default function VoiceAgentPage() {
               isRecording={isRecording}
               isProcessing={isProcessing}
               isPlaying={isPlaying}
-              className="h-full"
+              className="h-full relative z-20"
             />
           </div>
 
@@ -987,5 +1059,61 @@ export default function VoiceAgentPage() {
         </div>
       </BasicModal>
     </div>
+
+    {/* Floating Modals - Rendered outside main container to avoid overflow issues */}
+    <FloatingSelectModal
+      isOpen={showLanguageModal}
+      onClose={() => setShowLanguageModal(false)}
+      title="Select Response Language"
+      options={languages.map(lang => ({
+        value: lang.code,
+        label: lang.name,
+        icon: getLanguageFlag(lang.code),
+        description: `Speak in ${lang.name}`
+      }))}
+      value={selectedLanguage}
+      onChange={setSelectedLanguage}
+    />
+
+    <FloatingSelectModal
+      isOpen={showSpeakerModal}
+      onClose={() => setShowSpeakerModal(false)}
+      title="Select Voice Speaker"
+      options={sarvamSpeakers.map(speaker => ({
+        value: speaker.code,
+        label: speaker.name.split(' (')[0],
+        icon: speaker.gender === 'female' ? 
+          <Image src="/woman.svg" alt="Female" width={24} height={24} className="w-6 h-6" /> : 
+          <Image src="/man.svg" alt="Male" width={24} height={24} className="w-6 h-6" />,
+        description: speaker.gender === 'female' ? 'Female Voice' : 'Male Voice'
+      }))}
+      value={selectedSpeaker}
+      onChange={setSelectedSpeaker}
+    />
+
+    {availableReports.length > 0 && (
+      <FloatingSelectModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        title="Select Medical Report Context"
+        options={[
+          {
+            value: 'all',
+            label: `All Reports (${availableReports.length} total)`,
+            icon: '🌐',
+            description: 'Search across all your medical reports'
+          },
+          ...availableReports.map(report => ({
+            value: report.id,
+            label: report.fileName,
+            icon: '📄',
+            description: prescriptionStorage.formatDate(report.uploadedAt)
+          }))
+        ]}
+        value={selectedReportId}
+        onChange={setSelectedReportId}
+      />
+    )}
+    </>
   );
 }

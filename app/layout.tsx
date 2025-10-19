@@ -28,14 +28,14 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.png", sizes: "32x32", type: "image/png" },
-      { url: "/med.jpg", sizes: "16x16", type: "image/jpeg" },
+      { url: "/logo.jpg", sizes: "any" },
+      { url: "/logo.jpg", sizes: "32x32", type: "image/jpeg" },
+      { url: "/logo.jpg", sizes: "16x16", type: "image/jpeg" },
     ],
     apple: [
-      { url: "/icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/logo.jpg", sizes: "180x180", type: "image/jpeg" },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: "/logo.jpg",
   },
 };
 
