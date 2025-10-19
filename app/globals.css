@@ -34,6 +34,23 @@
 .rotatingGradient:hover::after {
   opacity: 0.95;
 }
+
+/* Infinite moving cards animation - GPU accelerated */
+@keyframes scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(calc(-50% - 0.5rem), 0, 0);
+  }
+}
+
+.animate-scroll {
+  animation: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

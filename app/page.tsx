@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
+import React from "react";
 import Image from "next/image";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import Link from "next/link";
@@ -7,41 +8,62 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Mic, Brain } from "lucide-react";
-import RadialOrbitalTimelineDemo from "@/components/RadialOrbitalTimelineDemo";
+import { InfiniteMovingCardsDemo } from "@/components/InfiniteMovingCardsDemo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GlowingEffectDemoSecond } from "@/components/GlowingEffectDemoSecond";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { HoverButton } from "@/components/ui/hover-button";
+import { useSession } from "next-auth/react";
 
 // Dynamic import to prevent SSR issues with Three.js/WebGL
-const Dither = dynamic(() => import("@/components/Dither"), { ssr: false });
+const Dither = dynamic(() => import("@/components/Dither"), { 
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-white dark:bg-black" />
+});
 
 export default function Home() {
   const { theme } = useTheme();
+  const { data: session, status } = useSession();
+  const [enableHeavyEffects, setEnableHeavyEffects] = React.useState(false);
+  
+  // Detect performance and enable heavy effects only on capable systems
+  React.useEffect(() => {
+    // Check if device has good performance capabilities
+    const hasGoodPerformance = 
+      navigator.hardwareConcurrency >= 4 && // At least 4 CPU cores
+      window.devicePixelRatio <= 2 && // Not too high DPI
+      !(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)); // Not mobile
+    
+    setEnableHeavyEffects(hasGoodPerformance);
+  }, []);
   
   return (
     <>
       {/* Fixed background that covers entire viewport */}
       <div className="fixed inset-0 z-0 bg-white dark:bg-black">
-        <Dither
-          waveColor={theme === "dark" ? [0.5, 0.5, 0.5] : [0.2, 0.2, 0.2]}
-          backgroundColor={theme === "dark" ? [0, 0, 0] : [1, 1, 1]}
-          invertColors={false}
-          disableAnimation={false}
-          enableMouseInteraction={true}
-          mouseRadius={0.3}
-          colorNum={4}
-          waveAmplitude={0.3}
-          waveFrequency={3}
-          waveSpeed={0.05}
-        />
+        {enableHeavyEffects ? (
+          <Dither
+            waveColor={theme === "dark" ? [0.5, 0.5, 0.5] : [0.2, 0.2, 0.2]}
+            backgroundColor={theme === "dark" ? [0, 0, 0] : [1, 1, 1]}
+            invertColors={false}
+            disableAnimation={false}
+            enableMouseInteraction={false}
+            mouseRadius={0.3}
+            colorNum={4}
+            waveAmplitude={0.3}
+            waveFrequency={3}
+            waveSpeed={0.05}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-white via-gray-50 to-white dark:from-black dark:via-neutral-900 dark:to-black" />
+        )}
       </div>
       
       <div className="relative min-h-screen z-10">
         {/* Hero Section */}
-        <div className="relative flex min-h-screen flex-col items-center justify-center px-4">
+        <div className="relative flex min-h-screen flex-col items-center justify-center px-4 pb-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -84,14 +106,24 @@ export default function Home() {
                 delay: 1.1,
                 duration: 0.8,
               }}
-              className="mt-8"
+              className="mt-12"
             >
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <Link href="/analysis">
-                  <HoverButton className="px-10 py-4 text-lg">
-                    Get Started
-                  </HoverButton>
-                </Link>
+                {status === "loading" ? (
+                  <div className="px-10 py-4 text-lg">Loading...</div>
+                ) : session ? (
+                  <Link href="/analysis">
+                    <HoverButton className="px-10 py-4 text-lg">
+                      Get Started
+                    </HoverButton>
+                  </Link>
+                ) : (
+                  <Link href="/signin">
+                    <HoverButton className="px-10 py-4 text-lg">
+                      Sign In
+                    </HoverButton>
+                  </Link>
+                )}
                 <button 
                   onClick={() => {
                     document.getElementById('features')?.scrollIntoView({ 
@@ -108,14 +140,28 @@ export default function Home() {
           </motion.div>
         </div>
 
-        <div id="features" className="flex flex-col overflow-hidden pb-24 pt-0 relative z-10">
+        {/* Features Section with Medical Assistant */}
+        <div id="features" className="flex flex-col overflow-hidden pt-0 pb-16 relative z-10">
           <ContainerScroll
           titleComponent={
             <>
               <h1 className="text-5xl md:text-6xl font-bold text-black dark:text-white">
                 Your AI-Powered <br />
-                <span className="text-5xl md:text-7xl lg:text-8xl font-extrabold mt-2 leading-none text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-pink-400 dark:from-cyan-300 dark:to-pink-400 from-blue-600 to-purple-600 drop-shadow-lg">
-                  Medical Assistant
+                <span className="relative inline-block text-5xl md:text-7xl lg:text-8xl font-extrabold mt-2 leading-none">
+                  {/* Foreground text with gradient */}
+                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-pink-400 dark:from-cyan-300 dark:to-pink-400 from-blue-600 to-purple-600">
+                    Medical Assistant
+                  </span>
+                  {/* Shadow text below */}
+                  <span 
+                    className="absolute top-0 left-0 text-5xl md:text-7xl lg:text-8xl font-extrabold leading-none -z-10"
+                    style={{
+                      color: theme === 'dark' ? 'white' : 'black',
+                      transform: 'translate(1px, 3px)'
+                    }}
+                  >
+                    Medical Assistant
+                  </span>
                 </span>
               </h1>
               <p className="text-lg text-gray-800 dark:text-gray-200 mt-4 max-w-2xl mx-auto text-center">
@@ -160,67 +206,74 @@ export default function Home() {
         </ContainerScroll>
         </div>
 
-        {/* Interactive Features Timeline */}
-        <div className="py-24 px-4 relative z-30">
-        <div className="max-w-7xl mx-auto">
-          {/* Section Header - How MedScan Works */}
-          <div className="text-center mb-6">
-            <Badge variant="outline" className="mb-2 text-sm font-medium">
-              <Brain className="w-4 h-4 mr-2" />
-              How MedScan Works
-            </Badge>
-            <h2 className="text-4xl font-bold text-black dark:text-white mb-2">
-              A simple flow from report to recommendations
-            </h2>
-            <p className="text-xl text-gray-800 dark:text-gray-200 max-w-3xl mx-auto">
-              Follow the steps to see how uploads become structured data, AI insights, and actions you can take.
-            </p>
-          </div>
-
-          {/* Radial Orbital Timeline */}
-          <div className="mt-1">
-            <RadialOrbitalTimelineDemo.RadialOrbitalTimelineDemo />
-          </div>
-
-          {/* Features Subheader - What you can do */}
-          <div className="text-center mt-16 mb-6">
-            <Badge variant="outline" className="mb-2 text-sm font-medium">
-              What you can do
-            </Badge>
-            <h3 className="text-2xl font-bold text-black dark:text-white">
-              Explore MedScan's Capabilities
-                </h3>
+        {/* How MedScan Works Section */}
+        <div className="py-20 px-4 relative z-30">
+          <div className="max-w-7xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-12">
+              <Badge variant="outline" className="mb-4 text-sm font-medium">
+                <Brain className="w-4 h-4 mr-2" />
+                How MedScan Works
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
+                A simple flow from report to recommendations
+              </h2>
+              <p className="text-xl text-gray-800 dark:text-gray-200 max-w-3xl mx-auto leading-relaxed">
+                Follow the steps to see how uploads become structured data, AI insights, and actions you can take.
+              </p>
             </div>
 
-          {/* Feature Cards Grid - replaced with themed glowing cards */}
-          <div className="mb-16">
-            <GlowingEffectDemoSecond />
+            {/* Infinite Moving Cards Timeline */}
+            <div className="mt-16 mb-20">
+              <InfiniteMovingCardsDemo />
+            </div>
           </div>
+        </div>
 
-          {/* Call to Action */}
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-black dark:text-white mb-4">
+        {/* Capabilities Section */}
+        <div className="py-20 px-4 relative z-30 bg-gradient-to-b from-transparent via-gray-50/50 to-transparent dark:via-gray-900/30">
+          <div className="max-w-7xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-12">
+              <Badge variant="outline" className="mb-4 text-sm font-medium">
+                What you can do
+              </Badge>
+              <h3 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
+                Explore MedScan's Capabilities
+              </h3>
+            </div>
+
+            {/* Feature Cards Grid */}
+            <div className="mb-16">
+              <GlowingEffectDemoSecond />
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action Section */}
+        <div className="py-24 px-4 relative z-30">
+          <div className="max-w-4xl mx-auto text-center">
+            <h3 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-6">
               Ready to Experience AI-Powered Healthcare?
             </h3>
-            <p className="text-gray-800 dark:text-gray-200 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-800 dark:text-gray-200 mb-10 max-w-2xl mx-auto leading-relaxed">
               Start a conversation with your intelligent medical assistant. Ask questions about your health, 
               get insights from your reports, and receive personalized guidance in your preferred language.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link href="/voice">
-                <Button className="h-12 rounded-xl bg-black text-white dark:bg-white dark:text-black px-8 text-lg font-semibold">
+                <Button className="h-14 rounded-xl bg-black text-white dark:bg-white dark:text-black px-10 text-lg font-semibold hover:scale-105 transition-transform duration-200">
                   <Mic className="w-5 h-5 mr-2" />
                   Try Voice Assistant
                 </Button>
               </Link>
               <Link href="/analysis">
-                <Button variant="outline" className="h-12 rounded-xl px-8 text-lg font-semibold">
+                <Button variant="outline" className="h-14 rounded-xl px-10 text-lg font-semibold hover:scale-105 transition-transform duration-200">
                   Upload Medical Report
                 </Button>
               </Link>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </>
