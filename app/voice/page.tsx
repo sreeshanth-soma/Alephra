@@ -6,13 +6,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw, BarChart3, LayoutDashboard } from 'lucide-react';
+import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw, BarChart3, LayoutDashboard, FileText, Languages, UserCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { VoiceChatInteractive } from '@/components/VoiceChatInteractive';
 import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ui/conversation';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import BasicModal from '@/components/ui/modal';
+import { prescriptionStorage, PrescriptionRecord } from '@/lib/prescription-storage';
+import { CustomSelect } from '@/components/ui/custom-select';
 
 const isProd = process.env.NODE_ENV === 'production';
 const log = (...args: any[]) => { if (!isProd) console.log(...args); };
@@ -63,6 +65,28 @@ const MessageContent = ({ children }: { children: React.ReactNode }) => (
   <div>{children}</div>
 );
 
+// Helper function to get language flags
+const getLanguageFlag = (code: string): string => {
+  const flagMap: { [key: string]: string } = {
+    'en-IN': '🇮🇳',
+    'hi-IN': '🇮🇳',
+    'bn-IN': '🇮🇳',
+    'ta-IN': '🇮🇳',
+    'te-IN': '🇮🇳',
+    'mr-IN': '🇮🇳',
+    'gu-IN': '🇮🇳',
+    'kn-IN': '🇮🇳',
+    'ml-IN': '🇮🇳',
+    'pa-IN': '🇮🇳'
+  };
+  return flagMap[code] || '🌍';
+};
+
+// Helper function to get speaker icons
+const getSpeakerIcon = (speaker: string): string => {
+  return speaker.toLowerCase() === 'male' ? '/man.svg' : '/woman.svg';
+};
+
 export default function VoiceAgentPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -75,6 +99,8 @@ export default function VoiceAgentPage() {
   const [showClearModal, setShowClearModal] = useState(false);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechMethod, setSpeechMethod] = useState<'browser' | 'sarvam' | 'unknown'>('unknown');
+  const [availableReports, setAvailableReports] = useState<PrescriptionRecord[]>([]);
+  const [selectedReportId, setSelectedReportId] = useState<string>('all');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -104,6 +130,10 @@ export default function VoiceAgentPage() {
   ];
 
   useEffect(() => {
+    // Load available reports
+    const reports = prescriptionStorage.getAllPrescriptions();
+    setAvailableReports(reports);
+    
     // Load saved voice messages if available; otherwise initialize with welcome message
     try {
       const saved = localStorage.getItem('medscan-voice-messages');
@@ -114,7 +144,7 @@ export default function VoiceAgentPage() {
         } else {
           const welcomeMessage: VoiceMessage = {
             id: '1',
-            text: 'Hello! I am your AI medical voice assistant. I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?',
+            text: `Hello! I am your AI medical voice assistant. ${reports.length > 0 ? `I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. ` : ''}I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?`,
             timestamp: new Date(),
             type: 'assistant'
           };
@@ -123,7 +153,7 @@ export default function VoiceAgentPage() {
       } else {
         const welcomeMessage: VoiceMessage = {
           id: '1',
-          text: 'Hello! I am your AI medical voice assistant. I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?',
+          text: `Hello! I am your AI medical voice assistant. ${reports.length > 0 ? `I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. ` : ''}I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?`,
           timestamp: new Date(),
           type: 'assistant'
         };
@@ -132,7 +162,7 @@ export default function VoiceAgentPage() {
     } catch {
       const welcomeMessage: VoiceMessage = {
         id: '1',
-        text: 'Hello! I am your AI medical voice assistant. I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?',
+        text: `Hello! I am your AI medical voice assistant. ${reports.length > 0 ? `I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. ` : ''}I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?`,
         timestamp: new Date(),
         type: 'assistant'
       };
@@ -372,30 +402,28 @@ export default function VoiceAgentPage() {
       };
       setMessages(prev => [...prev, processingMessage]);
 
-      // Get report data from localStorage if available
+      // Get report data based on selection
       let reportData = '';
+      let reportIdToSend = selectedReportId !== 'all' ? selectedReportId : undefined;
+      
       try {
-        // Try to get from prescription storage first
-        const prescriptions = localStorage.getItem('medscan_prescriptions');
-        if (prescriptions) {
-          const parsedPrescriptions = JSON.parse(prescriptions);
-          if (parsedPrescriptions.length > 0) {
-            // Use the most recent prescription
-            const latestPrescription = parsedPrescriptions[parsedPrescriptions.length - 1];
-            reportData = latestPrescription.reportData || '';
+        if (selectedReportId === 'all') {
+          // Get all reports combined (for context)
+          const allReports = prescriptionStorage.getAllPrescriptions();
+          if (allReports.length > 0) {
+            reportData = allReports.map((report, idx) => 
+              `\n--- Report ${idx + 1} (${report.fileName}, uploaded: ${prescriptionStorage.formatDate(report.uploadedAt)}) ---\n${report.reportData || report.summary}`
+            ).join('\n\n');
           }
-        }
-        
-        // Fallback to extractedReport if no prescriptions found
-        if (!reportData) {
-          const storedReport = localStorage.getItem('extractedReport');
-          if (storedReport) {
-            const parsedReport = JSON.parse(storedReport);
-            reportData = parsedReport.text || '';
+        } else {
+          // Get specific report
+          const selectedReport = prescriptionStorage.getPrescriptionById(selectedReportId);
+          if (selectedReport) {
+            reportData = selectedReport.reportData || selectedReport.summary || '';
           }
         }
       } catch (error) {
-        console.log('No report data found in localStorage');
+        console.log('Error loading report data:', error);
       }
 
       // Call Gemini AI API for intelligent response with vector database
@@ -407,7 +435,8 @@ export default function VoiceAgentPage() {
         body: JSON.stringify({
           message: userText,
           language: selectedLanguage,
-          reportData: reportData
+          reportData: reportData,
+          reportId: reportIdToSend  // Pass reportId for vector search filtering
         }),
       });
 
@@ -764,56 +793,94 @@ export default function VoiceAgentPage() {
         </div>
 
         {/* Language / Voice Controls - Elevated & sticky */}
-        <Card className="mb-3 border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-zinc-900/80 backdrop-blur sticky top-20 z-20 shadow-lg">
+        <Card className="mb-3 border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-zinc-900/80 backdrop-blur sticky top-20 z-[60] shadow-lg">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1 mr-2">
-                <h3 className="text-[11px] uppercase tracking-wide font-semibold text-gray-700 dark:text-gray-300 mb-1">Response Language</h3>
-                <select
+            <div className="flex flex-col gap-4">
+              {/* Report Selector Row */}
+              {availableReports.length > 0 && (
+                <div className="pb-4 border-b border-gray-200 dark:border-gray-700 relative z-[70]">
+                  <div className="flex items-center gap-3">
+                    <CustomSelect
+                      label="Active Medical Report Context"
+                      icon={<FileText className="h-3.5 w-3.5" />}
+                      value={selectedReportId}
+                      onChange={setSelectedReportId}
+                      options={[
+                        {
+                          value: 'all',
+                          label: `All Reports (${availableReports.length} total)`,
+                          icon: '🌐',
+                          description: 'Search across all your medical reports'
+                        },
+                        ...availableReports.map(report => ({
+                          value: report.id,
+                          label: report.fileName,
+                          icon: '📄',
+                          description: prescriptionStorage.formatDate(report.uploadedAt)
+                        }))
+                      ]}
+                      className="flex-1"
+                    />
+                    {selectedReportId !== 'all' && (
+                      <Badge variant="outline" className="text-xs whitespace-nowrap mt-6">
+                        Single Report
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Language and Voice Controls Row */}
+              <div className="flex items-start gap-4">
+                <CustomSelect
+                  label="Response Language"
+                  icon={<Languages className="h-3.5 w-3.5" />}
                   value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
-                  className="h-9 px-3 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                >
-                  {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {lang.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-[11px] uppercase tracking-wide font-semibold text-gray-700 dark:text-gray-300 mb-1">Voice Speaker</h3>
-                <select
+                  onChange={setSelectedLanguage}
+                  options={languages.map(lang => ({
+                    value: lang.code,
+                    label: lang.name,
+                    icon: getLanguageFlag(lang.code)
+                  }))}
+                  className="flex-1"
+                />
+                
+                <CustomSelect
+                  label="Voice Speaker"
+                  icon={<UserCircle className="h-3.5 w-3.5" />}
                   value={selectedSpeaker}
-                  onChange={(e) => setSelectedSpeaker(e.target.value)}
-                  className="h-9 px-3 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                >
-                  {sarvamSpeakers.map((speaker) => (
-                    <option key={speaker.code} value={speaker.code}>
-                      {speaker.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2 ml-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsMuted(!isMuted)}
-                  className="flex items-center gap-1 text-xs px-3 h-9 border border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800"
-                >
-                  {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
-                  {isMuted ? 'Unmute' : 'Mute'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowClearModal(true)}
-                  className="flex items-center gap-1 text-xs px-3 h-9 border border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800"
-                >
-                  <RotateCcw className="h-3 w-3" />
-                  Clear
-                </Button>
+                  onChange={setSelectedSpeaker}
+                  options={sarvamSpeakers.map(speaker => ({
+                    value: speaker.code,
+                    label: speaker.name.split(' (')[0],
+                    icon: speaker.gender === 'female' ? 
+                      <img src="/woman.svg" alt="Female" className="w-4 h-4" /> : 
+                      <img src="/man.svg" alt="Male" className="w-4 h-4" />,
+                    description: speaker.gender === 'female' ? 'Female Voice' : 'Male Voice'
+                  }))}
+                  className="flex-1"
+                />
+                
+                <div className="flex items-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsMuted(!isMuted)}
+                    className="flex items-center gap-1 text-xs px-3 h-10 border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-blue-400 dark:hover:border-blue-500 transition-all"
+                  >
+                    {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                    {isMuted ? 'Unmute' : 'Mute'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowClearModal(true)}
+                    className="flex items-center gap-1 text-xs px-3 h-10 border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-red-400 dark:hover:border-red-500 transition-all"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Clear
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
