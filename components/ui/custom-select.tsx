@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 interface SelectOption {
   value: string;
   label: string;
-  icon?: string;
+  icon?: string | React.ReactNode;
   description?: string;
 }
 
@@ -95,7 +95,11 @@ export function CustomSelect({
         )}
       >
         <div className="flex items-center gap-2 flex-1 text-left">
-          {selectedOption?.icon && <span className="text-lg">{selectedOption.icon}</span>}
+          {selectedOption?.icon && (
+            <span className="text-lg">
+              {typeof selectedOption.icon === 'string' ? selectedOption.icon : selectedOption.icon}
+            </span>
+          )}
           <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
             {selectedOption?.label || placeholder}
           </span>
@@ -143,7 +147,11 @@ export function CustomSelect({
                   )}
                 >
                   <div className="flex items-center gap-2 flex-1 text-left">
-                    {option.icon && <span className="text-lg">{option.icon}</span>}
+                    {option.icon && (
+                      <span className="text-lg">
+                        {typeof option.icon === 'string' ? option.icon : option.icon}
+                      </span>
+                    )}
                     <div className="flex flex-col">
                       <span className={cn(
                         "text-sm font-medium",

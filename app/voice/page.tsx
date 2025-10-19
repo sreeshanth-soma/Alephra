@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw, BarChart3, LayoutDashboard, FileText, Languages, UserCircle } from 'lucide-react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { VoiceChatInteractive } from '@/components/VoiceChatInteractive';
 import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ui/conversation';
@@ -854,8 +855,8 @@ export default function VoiceAgentPage() {
                     value: speaker.code,
                     label: speaker.name.split(' (')[0],
                     icon: speaker.gender === 'female' ? 
-                      <img src="/woman.svg" alt="Female" className="w-4 h-4" /> : 
-                      <img src="/man.svg" alt="Male" className="w-4 h-4" />,
+                      <Image src="/woman.svg" alt="Female" width={16} height={16} className="w-4 h-4" /> : 
+                      <Image src="/man.svg" alt="Male" width={16} height={16} className="w-4 h-4" />,
                     description: speaker.gender === 'female' ? 'Female Voice' : 'Male Voice'
                   }))}
                   className="flex-1"
