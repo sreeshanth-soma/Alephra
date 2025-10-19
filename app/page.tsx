@@ -11,54 +11,33 @@ import { Mic, Brain } from "lucide-react";
 import { InfiniteMovingCardsDemo } from "@/components/InfiniteMovingCardsDemo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GlowingEffectDemoSecond } from "@/components/GlowingEffectDemoSecond";
-import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { HoverButton } from "@/components/ui/hover-button";
 import { useSession } from "next-auth/react";
-
-// Dynamic import to prevent SSR issues with Three.js/WebGL
-const Dither = dynamic(() => import("@/components/Dither"), { 
-  ssr: false,
-  loading: () => <div className="w-full h-full bg-white dark:bg-black" />
-});
+import Waves from "@/components/Waves";
 
 export default function Home() {
   const { theme } = useTheme();
   const { data: session, status } = useSession();
-  const [enableHeavyEffects, setEnableHeavyEffects] = React.useState(false);
-  
-  // Detect performance and enable heavy effects only on capable systems
-  React.useEffect(() => {
-    // Check if device has good performance capabilities
-    const hasGoodPerformance = 
-      navigator.hardwareConcurrency >= 4 && // At least 4 CPU cores
-      window.devicePixelRatio <= 2 && // Not too high DPI
-      !(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)); // Not mobile
-    
-    setEnableHeavyEffects(hasGoodPerformance);
-  }, []);
   
   return (
     <>
-      {/* Fixed background that covers entire viewport */}
+      {/* Fixed background with Waves animation */}
       <div className="fixed inset-0 z-0 bg-white dark:bg-black">
-        {enableHeavyEffects ? (
-          <Dither
-            waveColor={theme === "dark" ? [0.5, 0.5, 0.5] : [0.2, 0.2, 0.2]}
-            backgroundColor={theme === "dark" ? [0, 0, 0] : [1, 1, 1]}
-            invertColors={false}
-            disableAnimation={false}
-            enableMouseInteraction={false}
-            mouseRadius={0.3}
-            colorNum={4}
-            waveAmplitude={0.3}
-            waveFrequency={3}
-            waveSpeed={0.05}
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-white via-gray-50 to-white dark:from-black dark:via-neutral-900 dark:to-black" />
-        )}
+        <Waves
+          lineColor={theme === "dark" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.25)"}
+          backgroundColor="transparent"
+          waveSpeedX={0.02}
+          waveSpeedY={0.01}
+          waveAmpX={40}
+          waveAmpY={20}
+          friction={0.9}
+          tension={0.01}
+          maxCursorMove={100}
+          xGap={12}
+          yGap={36}
+        />
       </div>
       
       <div className="relative min-h-screen z-10">
@@ -131,7 +110,7 @@ export default function Home() {
                       block: 'start'
                     });
                   }}
-                  className="px-10 py-4 rounded-3xl text-lg font-medium leading-6 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl bg-white dark:bg-black text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
+                  className="px-10 py-4 rounded-3xl text-lg font-medium leading-6 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100"
                 >
                   Learn More
                 </button>
@@ -231,7 +210,7 @@ export default function Home() {
         </div>
 
         {/* Capabilities Section */}
-        <div className="py-20 px-4 relative z-30 bg-gradient-to-b from-transparent via-gray-50/50 to-transparent dark:via-gray-900/30">
+        <div className="py-20 px-4 relative z-30">
           <div className="max-w-7xl mx-auto">
             {/* Section Header */}
             <div className="text-center mb-12">
