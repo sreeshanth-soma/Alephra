@@ -18,6 +18,18 @@ import { useSession } from "next-auth/react";
 import { safeGetItem, safeSetItem, safeRemoveItem, clearAllAlephraData, isLocalStorageAvailable } from "@/lib/localStorage";
 import { toast } from "@/components/ui/use-toast";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { TimeRangeSelector, TimeRange, filterDataByRange } from "@/components/ui/time-range-selector";
+import { ExportButton } from "@/components/ui/export-button";
+import { HealthScoreDashboard, calculateHealthScore, getHealthMetrics } from "@/components/ui/health-score-dashboard";
+import { 
+  exportVitalsToCSV, 
+  exportLabsToCSV, 
+  exportRemindersToCSV, 
+  exportAppointmentsToCSV,
+  exportHealthSummary,
+  exportToPDF,
+  generateShareableLink 
+} from "@/lib/export-utils";
 // Removed dropdown menu in Appointments to keep a single add button
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string; bp?: { systolic: number; diastolic: number }; weight?: number; temperature?: number };
@@ -572,6 +584,10 @@ export default function DashboardPage() {
   const [showAllLabs, setShowAllLabs] = useState(false);
   // Lab chart filter
   const [selectedLabType, setSelectedLabType] = useState<'all' | 'HDL' | 'LDL' | 'Triglycerides' | 'Total Cholesterol'>('all');
+  // Time range filter for analytics
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+  // Export and health score state
+  const [healthScore, setHealthScore] = useState(95);
 
   useEffect(() => {
     // Clear any existing default/seeded data first
@@ -673,6 +689,14 @@ export default function DashboardPage() {
       }
     }
   }, [appointments, isInitialized]);
+
+  // Update health score when vitals or labs change
+  useEffect(() => {
+    if (vitals.length > 0) {
+      const score = calculateHealthScore(vitals);
+      setHealthScore(score);
+    }
+  }, [vitals, labData]);
 
   const addReminder = () => {
     if (!newReminder.trim()) return;
@@ -851,7 +875,7 @@ export default function DashboardPage() {
   };
 
   // Filter vitals data based on selected range
-  const filteredVitals = vitals.slice(-vitalsRangeDays);
+  const filteredVitals = filterDataByRange(vitals.map(v => ({ ...v, date: v.date || v.time })), timeRange);
 
   // Calculate health trends and scores
   const getHealthTrend = (values: number[], days: number = 7) => {
@@ -1175,6 +1199,36 @@ export default function DashboardPage() {
               <div className="mt-4 text-base md:text-lg text-gray-600 dark:text-gray-400">Track vitals, labs and care progress in one place.</div>
             </div>
           </div>
+        </div>
+
+        {/* Time Range Selector & Export Buttons */}
+        <div className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white dark:bg-gray-900 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700">
+          <TimeRangeSelector 
+            selected={timeRange} 
+            onChange={setTimeRange}
+          />
+          <ExportButton
+            variant="compact"
+            onExportPDF={() => exportToPDF('health-dashboard-content', 'MedScan-Health-Report.pdf')}
+            onExportCSV={() => exportHealthSummary(vitals, labData, meds)}
+            onShare={async () => {
+              const data = {
+                vitals: filterDataByRange(vitals, timeRange),
+                labs: filterDataByRange(labData, timeRange),
+                healthScore,
+                generatedAt: new Date().toISOString()
+              };
+              return await generateShareableLink(data, 7);
+            }}
+          />
+        </div>
+
+        {/* Health Score Dashboard */}
+        <div className="mb-8" id="health-dashboard-content">
+          <HealthScoreDashboard
+            overallScore={healthScore}
+            metrics={getHealthMetrics(vitals, labData)}
+          />
         </div>
 
         {/* Quick actions */}
@@ -1836,6 +1890,13 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="text-sm font-medium text-black dark:text-white">Lab Results</div>
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => exportLabsToCSV(labData)}
+                    className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition"
+                    title="Export labs to CSV"
+                  >
+                    Export
+                  </button>
                   {labData.length > 3 && (
                       <button
                       onClick={() => setShowAllLabs(!showAllLabs)}
