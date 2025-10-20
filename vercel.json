@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm ci --no-audit --prefer-online --legacy-peer-deps || npm install --no-audit --prefer-online --legacy-peer-deps",
+  "installCommand": "npm ci --no-audit --prefer-online --legacy-peer-deps || npm install --no-audit --prefer-online --legacy-peer-deps",
+  "framework": "nextjs",
+  "env": {
+    "NPM_CONFIG_FETCH_RETRIES": "5",
+    "NPM_CONFIG_FETCH_RETRY_FACTOR": "2",
+    "NPM_CONFIG_FETCH_RETRY_MINTIMEOUT": "5000",
+    "NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT": "60000",
+    "NPM_CONFIG_STRICT_SSL": "true",
+    "NPM_CONFIG_PREFER_ONLINE": "true",
+    "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+  }
+}
+
