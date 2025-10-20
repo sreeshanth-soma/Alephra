@@ -26,13 +26,15 @@ const PrescriptionHistory = ({ onSelectPrescription, selectedPrescriptionId, ref
     loadPrescriptions();
   }, [refreshTrigger]); // Refresh when refreshTrigger changes
 
-  const loadPrescriptions = () => {
-    const stored = prescriptionStorage.getAllPrescriptions();
+  const loadPrescriptions = async () => {
+    setIsLoading(true);
+    const stored = await prescriptionStorage.getAllPrescriptions();
     setPrescriptions(stored);
+    setIsLoading(false);
   };
 
-  const handleDelete = (id: string) => {
-    prescriptionStorage.deletePrescription(id);
+  const handleDelete = async (id: string) => {
+    await prescriptionStorage.deletePrescription(id);
     loadPrescriptions();
     toast({
       description: "Report deleted successfully",

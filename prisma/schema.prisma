@@ -47,6 +47,9 @@ model User {
   sessions      Session[]
   appointments  Appointment[]
   reminders     Reminder[]
+  vitals        Vital[]
+  labs          Lab[]
+  reports       MedicalReport[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -80,7 +83,64 @@ model Reminder {
   reminderTime DateTime
   isCompleted Boolean  @default(false)
   userId      String
+  googleEventId String?
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Vital {
+  id          String   @id @default(cuid())
+  date        DateTime
+  heartRate   Int
+  spo2        Int
+  bpSystolic  Int?
+  bpDiastolic Int?
+  weight      Float?
+  temperature Float?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, date])
+}
+
+model Lab {
+  id          String   @id @default(cuid())
+  name        String
+  value       Float
+  unit        String
+  date        DateTime
+  normalRangeMin Float?
+  normalRangeMax Float?
+  category    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, date])
+}
+
+model MedicalReport {
+  id              String   @id @default(cuid())
+  fileName        String
+  fileUrl         String?
+  fileType        String?
+  fileSize        Int?
+  reportText      String   @db.Text
+  summary         String?  @db.Text
+  extractedData   String?  @db.Text
+  uploadDate      DateTime @default(now())
+  reportDate      DateTime?
+  category        String?
+  status          String   @default("processed")
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, uploadDate])
+  @@index([userId, category])
 }

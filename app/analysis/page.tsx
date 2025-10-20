@@ -75,9 +75,12 @@ const AnalysisPage = () => {
 
   // Load prescriptions on component mount
   useEffect(() => {
-    const all = prescriptionStorage.getAllPrescriptions();
-    const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
-    setPrescriptions(sorted);
+    const loadPrescriptions = async () => {
+      const all = await prescriptionStorage.getAllPrescriptions();
+      const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+      setPrescriptions(sorted);
+    };
+    loadPrescriptions();
   }, [historyRefreshTrigger]);
 
   const onReportConfirmation = (data: string) => {
@@ -110,9 +113,9 @@ const AnalysisPage = () => {
     }
   }
 
-  const handleDelete = (id: string) => {
-    prescriptionStorage.deletePrescription(id);
-    const all = prescriptionStorage.getAllPrescriptions();
+  const handleDelete = async (id: string) => {
+    await prescriptionStorage.deletePrescription(id);
+    const all = await prescriptionStorage.getAllPrescriptions();
     const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
     setPrescriptions(sorted);
     if (selectedPrescriptionId === id) {

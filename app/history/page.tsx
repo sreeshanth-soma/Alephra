@@ -30,16 +30,19 @@ export default function HistoryPage() {
 
 
   useEffect(() => {
-    const all = prescriptionStorage.getAllPrescriptions();
-    const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
-    setPrescriptions(sorted);
-    if (sorted.length > 0) {
-      setSelected(sorted[0]);
-    }
+    const loadData = async () => {
+      const all = await prescriptionStorage.getAllPrescriptions();
+      const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+      setPrescriptions(sorted);
+      if (sorted.length > 0) {
+        setSelected(sorted[0]);
+      }
+    };
+    loadData();
   }, []);
 
-  const refreshData = () => {
-    const all = prescriptionStorage.getAllPrescriptions();
+  const refreshData = async () => {
+    const all = await prescriptionStorage.getAllPrescriptions();
     const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
     setPrescriptions(sorted);
     // If selected report was deleted, select the newest one
@@ -48,8 +51,8 @@ export default function HistoryPage() {
     }
   };
 
-  const handleDelete = (id: string) => {
-    prescriptionStorage.deletePrescription(id);
+  const handleDelete = async (id: string) => {
+    await prescriptionStorage.deletePrescription(id);
     refreshData();
   };
 

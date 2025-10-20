@@ -9,6 +9,8 @@ import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from 'lucide-react'
 import { prescriptionStorage } from '@/lib/prescription-storage'
 import { FileUpload } from '@/components/ui/file-upload'
+import { useSession } from 'next-auth/react'
+import { SignInPromptModal } from '@/components/ui/signin-prompt-modal'
 
 type Props = {
     onReportConfirmation: (data: string) => void
@@ -16,13 +18,21 @@ type Props = {
 }
 const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
     const { toast } = useToast()
+    const { data: session } = useSession()
 
     const [base64Data, setBase64Data] = useState('')
     const [isLoading, setIsLoading] = useState(false);
     const [reportData, setReportData] = useState("");
     const [uploadedFileName, setUploadedFileName] = useState("");
+    const [showSignInPrompt, setShowSignInPrompt] = useState(false);
     
     function handleSelectedFiles(files: File[]): void {
+        // Check if user is signed in before allowing upload
+        if (!session) {
+            setShowSignInPrompt(true);
+            return;
+        }
+
         const file = files[0];
         if (file) {
             setUploadedFileName(file.name);
@@ -180,7 +190,15 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
 
                 // Save prescription with distinct summary
                 if (uploadedFileName) {
-                    prescriptionStorage.savePrescription(reportText, summaryText, uploadedFileName);
+                    await prescriptionStorage.savePrescription(
+                        reportText, 
+                        summaryText, 
+                        uploadedFileName,
+                        base64Data, // fileUrl
+                        uploadedFileName.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg', // fileType
+                        base64Data.length, // approximate fileSize
+                        reportText // extractedData
+                    );
                 }
             } else {
                 const errorData = await response.json().catch(() => ({ error: "Unknown error occurred" }));
@@ -220,7 +238,13 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                 </div>
 
                 <Button 
-                    onClick={extractDetails}
+                    onClick={() => {
+                        if (!session) {
+                            setShowSignInPrompt(true);
+                            return;
+                        }
+                        extractDetails();
+                    }}
                     disabled={!base64Data || isLoading}
                     className="w-full bg-black hover:bg-zinc-900 disabled:bg-gray-300 dark:disabled:bg-zinc-700 transition-all duration-200 shadow-lg font-semibold text-white py-3"
                 >
@@ -256,6 +280,12 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
 
 
             </div>
+
+            {/* Sign-in Prompt Modal */}
+            <SignInPromptModal 
+                isOpen={showSignInPrompt} 
+                onClose={() => setShowSignInPrompt(false)} 
+            />
         </div>
     )
 }

@@ -19,6 +19,8 @@ import BasicModal from '@/components/ui/modal';
 import { prescriptionStorage, PrescriptionRecord } from '@/lib/prescription-storage';
 import { CustomSelect } from '@/components/ui/custom-select';
 import { FloatingSelectModal } from '@/components/ui/floating-select-modal';
+import { useSession } from 'next-auth/react';
+import { SignInPromptModal } from '@/components/ui/signin-prompt-modal';
 
 const isProd = process.env.NODE_ENV === 'production';
 const log = (...args: any[]) => { if (!isProd) console.log(...args); };
@@ -92,6 +94,7 @@ const getSpeakerIcon = (speaker: string): string => {
 };
 
 export default function VoiceAgentPage() {
+  const { data: session } = useSession();
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -109,6 +112,7 @@ export default function VoiceAgentPage() {
   const [showSpeakerModal, setShowSpeakerModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -233,12 +237,13 @@ export default function VoiceAgentPage() {
 
   useEffect(() => {
     // Load available reports
-    const reports = prescriptionStorage.getAllPrescriptions();
-    setAvailableReports(reports);
-    
-    // Load saved voice messages if available; otherwise initialize with welcome message
-    try {
-      const saved = localStorage.getItem('alephra-voice-messages');
+    const loadData = async () => {
+      const reports = await prescriptionStorage.getAllPrescriptions();
+      setAvailableReports(reports);
+      
+      // Load saved voice messages if available; otherwise initialize with welcome message
+      try {
+        const saved = localStorage.getItem('alephra-voice-messages');
       if (saved) {
         const parsed: VoiceMessage[] = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -276,6 +281,8 @@ export default function VoiceAgentPage() {
       };
       setMessages([welcomeMessage]);
     }
+    };
+    loadData();
 
     // Load available voices
     const loadVoices = () => {
@@ -316,6 +323,12 @@ export default function VoiceAgentPage() {
 
   const startRecording = async () => {
     log('startRecording called');
+    
+    // Check if user is signed in
+    if (!session) {
+      setShowSignInPrompt(true);
+      return;
+    }
     
     // Prevent starting if already recording
     if (isRecording) {
@@ -551,7 +564,7 @@ export default function VoiceAgentPage() {
       try {
         if (selectedReportId === 'all') {
           // Get all reports combined (for context)
-          const allReports = prescriptionStorage.getAllPrescriptions();
+          const allReports = await prescriptionStorage.getAllPrescriptions();
           if (allReports.length > 0) {
             reportData = allReports.map((report, idx) => 
               `\n--- Report ${idx + 1} (${report.fileName}, uploaded: ${prescriptionStorage.formatDate(report.uploadedAt)}) ---\n${report.reportData || report.summary}`
@@ -559,7 +572,7 @@ export default function VoiceAgentPage() {
           }
         } else {
           // Get specific report
-          const selectedReport = prescriptionStorage.getPrescriptionById(selectedReportId);
+          const selectedReport = await prescriptionStorage.getPrescriptionById(selectedReportId);
           if (selectedReport) {
             reportData = selectedReport.reportData || selectedReport.summary || '';
           }
@@ -1276,6 +1289,12 @@ export default function VoiceAgentPage() {
         onChange={setSelectedReportId}
       />
     )}
+
+    {/* Sign-in Prompt Modal */}
+    <SignInPromptModal 
+      isOpen={showSignInPrompt} 
+      onClose={() => setShowSignInPrompt(false)} 
+    />
     </>
   );
 }

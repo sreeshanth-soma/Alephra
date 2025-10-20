@@ -10,18 +10,23 @@ import Messages from './messages';
 import type { UIMessage as Message } from 'ai';
 import { prescriptionStorage } from '@/lib/prescription-storage';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
+import { useSession } from 'next-auth/react';
+import { SignInPromptModal } from '@/components/ui/signin-prompt-modal';
 
 type Props = {
   reportData?: string
 }
 
 const ChatComponent = ({ reportData }: Props) => {
+  const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [data, setData] = useState<any>(undefined);
   const [allReportsData, setAllReportsData] = useState<string>("");
   const [showClearModal, setShowClearModal] = useState<boolean>(false);
+  const [prescriptionCount, setPrescriptionCount] = useState<number>(0);
+  const [showSignInPrompt, setShowSignInPrompt] = useState<boolean>(false);
 
   // Load chat history from localStorage on component mount
   useEffect(() => {
@@ -55,17 +60,22 @@ const ChatComponent = ({ reportData }: Props) => {
 
   // Load all reports when no specific report is provided
   useEffect(() => {
-    if (!reportData) {
-      const allPrescriptions = prescriptionStorage.getAllPrescriptions();
-      if (allPrescriptions.length > 0) {
-        const combinedReports = allPrescriptions
-          .map((prescription, index) => 
-            `**Report ${index + 1} (${prescription.fileName} - ${prescriptionStorage.formatDate(prescription.uploadedAt)}):**\n${prescription.reportData}`
-          )
-          .join('\n\n---\n\n');
-        setAllReportsData(combinedReports);
+    const loadReports = async () => {
+      if (!reportData) {
+        const allPrescriptions = await prescriptionStorage.getAllPrescriptions();
+        const count = await prescriptionStorage.getPrescriptionsCount();
+        setPrescriptionCount(count);
+        if (allPrescriptions.length > 0) {
+          const combinedReports = allPrescriptions
+            .map((prescription, index) => 
+              `**Report ${index + 1} (${prescription.fileName} - ${prescriptionStorage.formatDate(prescription.uploadedAt)}):**\n${prescription.reportData}`
+            )
+            .join('\n\n---\n\n');
+          setAllReportsData(combinedReports);
+        }
       }
-    }
+    };
+    loadReports();
   }, [reportData]);
 
   // Preserve chat when a new report is selected
@@ -90,7 +100,7 @@ const ChatComponent = ({ reportData }: Props) => {
               : "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300 border-gray-200 dark:border-gray-700"
           }`}
         >
-          {reportData ? "✓ Report Loaded" : allReportsData ? `✓ ${prescriptionStorage.getPrescriptionsCount()} ${prescriptionStorage.getPrescriptionsCount() === 1 ? 'Report' : 'Reports'} Available` : "No Report"}
+          {reportData ? "✓ Report Loaded" : allReportsData ? `✓ ${prescriptionCount} ${prescriptionCount === 1 ? 'Report' : 'Reports'} Available` : "No Report"}
         </Badge>
       </div>
       
@@ -132,6 +142,13 @@ const ChatComponent = ({ reportData }: Props) => {
           }}
           onSubmit={(event) => {
             event.preventDefault();
+            
+            // Check if user is signed in
+            if (!session) {
+              setShowSignInPrompt(true);
+              return;
+            }
+            
             const msg = input.trim();
             if (!msg) return;
             const nextMessages: Message[] = [...messages, { id: crypto.randomUUID(), role: 'user', parts: [{ type: 'text', text: msg }] }];
@@ -188,6 +205,12 @@ const ChatComponent = ({ reportData }: Props) => {
           </div>
         </div>
       </BasicModal>
+
+      {/* Sign-in Prompt Modal */}
+      <SignInPromptModal 
+        isOpen={showSignInPrompt} 
+        onClose={() => setShowSignInPrompt(false)} 
+      />
     </div>
   )
 }

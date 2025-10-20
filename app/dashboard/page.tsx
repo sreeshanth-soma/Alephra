@@ -30,6 +30,13 @@ import {
   exportToPDF,
   generateShareableLink 
 } from "@/lib/export-utils";
+import { 
+  loadVitalsHybrid, 
+  loadLabsHybrid,
+  saveVitalToServer,
+  saveLabToServer,
+  deleteLabFromServer 
+} from "@/lib/data-sync";
 // Removed dropdown menu in Appointments to keep a single add button
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string; bp?: { systolic: number; diastolic: number }; weight?: number; temperature?: number };
@@ -590,40 +597,59 @@ export default function DashboardPage() {
   const [healthScore, setHealthScore] = useState(95);
 
   useEffect(() => {
-    // Clear any existing default/seeded data first
-    if (isLocalStorageAvailable()) {
-      // Clear old seeded vitals data
-      const rawVitals = safeGetItem("alephra.vitals", []);
-      if (Array.isArray(rawVitals) && rawVitals.length === 60) {
-        safeRemoveItem("alephra.vitals");
+    const loadData = async () => {
+      // Clear any existing default/seeded data first
+      if (isLocalStorageAvailable()) {
+        const rawVitals = safeGetItem("alephra.vitals", []);
+        if (Array.isArray(rawVitals) && rawVitals.length === 60) {
+          safeRemoveItem("alephra.vitals");
+        }
+        
+        const rawLabs = safeGetItem<LabData[]>("alephra.labs", []);
+        if (Array.isArray(rawLabs) && rawLabs.length === 4 && rawLabs[0]?.id === "1") {
+          safeRemoveItem("alephra.labs");
+        }
+      }
+
+      // Load vitals and labs with hybrid sync (server + localStorage)
+      if (session?.user?.email) {
+        // Logged in - load from server with auto-migration
+        try {
+          const serverVitals = await loadVitalsHybrid(session.user.email);
+          const serverLabs = await loadLabsHybrid(session.user.email);
+          
+          setVitals(serverVitals);
+          setLabData(serverLabs);
+          
+          console.log('✅ Data loaded from cloud:', { vitals: serverVitals.length, labs: serverLabs.length });
+        } catch (error) {
+          console.error('Failed to load from server, using localStorage:', error);
+          // Fallback to localStorage
+          setVitals(safeGetItem<VitalsPoint[]>("alephra.vitals", []));
+          setLabData(safeGetItem<LabData[]>("alephra.labs", []));
+        }
+      } else {
+        // Not logged in - use localStorage
+        setVitals(safeGetItem<VitalsPoint[]>("alephra.vitals", []));
+        setLabData(safeGetItem<LabData[]>("alephra.labs", []));
       }
       
-      // Clear old default lab data
-      const rawLabs = safeGetItem<LabData[]>("alephra.labs", []);
-      if (Array.isArray(rawLabs) && rawLabs.length === 4 && rawLabs[0]?.id === "1") {
-        safeRemoveItem("alephra.labs");
+      // Reminders and appointments still from localStorage (already have API)
+      if (isLocalStorageAvailable()) {
+        setReminders(safeGetItem<Reminder[]>("alephra.reminders", []));
+        setAppointments(safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("alephra.appointments", []));
+        setCartItems(safeGetItem<any[]>("alephra.cart", []));
+      } else {
+        setReminders([]);
+        setAppointments([]);
+        setCartItems([]);
       }
-    }
-
-    // Now load data (will be empty if no real data exists)
-    if (isLocalStorageAvailable()) {
-      setReminders(safeGetItem<Reminder[]>("alephra.reminders", []));
-      setVitals(safeGetItem<VitalsPoint[]>("alephra.vitals", []));
-      setCartItems(safeGetItem<any[]>("alephra.cart", []));
-      setLabData(safeGetItem<LabData[]>("alephra.labs", []));
-      setAppointments(safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("alephra.appointments", []));
-    } else {
-      // Fallback when localStorage is not available
-      setReminders([]);
-      setVitals([]);
-      setCartItems([]);
-      setLabData([]);
-      setAppointments([]);
-    }
+      
+      setIsInitialized(true);
+    };
     
-    // Mark as initialized after loading
-    setIsInitialized(true);
-  }, []);
+    loadData();
+  }, [session]);
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
@@ -638,18 +664,7 @@ export default function DashboardPage() {
     }
   }, [reminders, isInitialized]);
 
-  useEffect(() => {
-    if (isInitialized && isLocalStorageAvailable()) {
-      const success = safeSetItem("alephra.vitals", vitals);
-      if (!success) {
-        toast({
-          title: "Storage Warning", 
-          description: "Failed to save vitals. Your data may not persist.",
-          variant: "destructive",
-        });
-      }
-    }
-  }, [vitals, isInitialized]);
+  // Note: Vitals and Labs are now saved to database automatically, not localStorage
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
@@ -664,18 +679,7 @@ export default function DashboardPage() {
     }
   }, [cartItems, isInitialized]);
 
-  useEffect(() => {
-    if (isInitialized && isLocalStorageAvailable()) {
-      const success = safeSetItem("alephra.labs", labData);
-      if (!success) {
-        toast({
-          title: "Storage Warning",
-          description: "Failed to save lab data. Your data may not persist.",
-          variant: "destructive",
-        });
-      }
-    }
-  }, [labData, isInitialized]);
+  // Note: Labs data now in database, removed duplicate localStorage save
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
@@ -948,7 +952,7 @@ export default function DashboardPage() {
     }
   };
 
-  const addVitalsEntry = () => {
+  const addVitalsEntry = async () => {
     const hr = Number(newHrValue);
     const spo2 = Number(newSpO2Value) || 98;
     const systolic = Number(newBpSystolic);
@@ -966,8 +970,7 @@ export default function DashboardPage() {
       return;
     }
     
-    const point: VitalsPoint = {
-      time: newHrDate,
+    const vitalData = {
       date: newHrDate,
       hr,
       spo2,
@@ -976,7 +979,26 @@ export default function DashboardPage() {
       ...(temperature && { temperature })
     };
     
-    setVitals(prev => [...prev.filter(p => p.date !== newHrDate), point].sort((a, b) => a.date.localeCompare(b.date)));
+    // Save to server if logged in
+    if (session?.user?.email) {
+      try {
+        await saveVitalToServer(vitalData);
+        const updatedVitals = await loadVitalsHybrid(session.user.email);
+        setVitals(updatedVitals);
+        setRemindersStatus("✅ Vitals saved to cloud!");
+      } catch (error) {
+        console.error('Failed to save to server:', error);
+        setRemindersStatus("⚠️ Saved locally (will sync when online)");
+        // Fallback to localStorage
+        const point: VitalsPoint = { ...vitalData, time: newHrDate };
+        setVitals(prev => [...prev.filter(p => p.date !== newHrDate), point].sort((a, b) => a.date.localeCompare(b.date)));
+      }
+    } else {
+      // Not logged in - save to localStorage
+      const point: VitalsPoint = { ...vitalData, time: newHrDate };
+      setVitals(prev => [...prev.filter(p => p.date !== newHrDate), point].sort((a, b) => a.date.localeCompare(b.date)));
+      setRemindersStatus("📝 Vitals saved locally (sign in to sync across devices)");
+    }
     
     // Clear form
     setNewHrDate("");
@@ -988,8 +1010,7 @@ export default function DashboardPage() {
     setNewTemperature("");
     setShowVitalsForm(false);
     
-    setRemindersStatus("Vitals data added successfully!");
-    setTimeout(() => setRemindersStatus(""), 3000);
+    setTimeout(() => setRemindersStatus(""), 5000);
   };
 
   // Cart functions
@@ -1032,17 +1053,19 @@ export default function DashboardPage() {
     return acc;
   }, [] as any[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const addLabEntry = () => {
+  const addLabEntry = async () => {
     console.log("Adding lab entry:", { newLabName, newLabValue, newLabDate, newLabUnit });
     
     if (!newLabName.trim() || !newLabValue || !newLabDate) {
       setRemindersStatus("Please fill in all required fields");
+      setTimeout(() => setRemindersStatus(""), 3000);
       return;
     }
 
     const value = Number(newLabValue);
     if (!Number.isFinite(value) || value < 0) {
       setRemindersStatus("Please enter a valid lab value");
+      setTimeout(() => setRemindersStatus(""), 3000);
       return;
     }
 
@@ -1077,8 +1100,7 @@ export default function DashboardPage() {
         break;
     }
 
-    const newLab: LabData = {
-      id: crypto.randomUUID(),
+    const labData = {
       name: newLabName.trim(),
       value,
       unit: newLabUnit,
@@ -1087,12 +1109,28 @@ export default function DashboardPage() {
       category
     };
 
-    console.log("New lab data:", newLab);
-    setLabData(prev => {
-      const updated = [...prev, newLab].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      console.log("Updated lab data:", updated);
-      return updated;
-    });
+    console.log("New lab data:", labData);
+
+    // Save to server if logged in
+    if (session?.user?.email) {
+      try {
+        await saveLabToServer(labData);
+        const updatedLabs = await loadLabsHybrid(session.user.email);
+        setLabData(updatedLabs);
+        setRemindersStatus("✅ Lab result saved to cloud!");
+      } catch (error) {
+        console.error('Failed to save to server:', error);
+        setRemindersStatus("⚠️ Saved locally (will sync when online)");
+        // Fallback to localStorage
+        const newLab: LabData = { ...labData, id: crypto.randomUUID() };
+        setLabData(prev => [...prev, newLab].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      }
+    } else {
+      // Not logged in - save to localStorage
+      const newLab: LabData = { ...labData, id: crypto.randomUUID() };
+      setLabData(prev => [...prev, newLab].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      setRemindersStatus("📝 Lab result saved locally (sign in to sync across devices)");
+    }
     
     // Clear form
     setNewLabName("");
@@ -1101,12 +1139,22 @@ export default function DashboardPage() {
     setNewLabUnit("mg/dL");
     setShowLabForm(false);
     
-    setRemindersStatus("Lab data added successfully!");
-    setTimeout(() => setRemindersStatus(""), 3000);
+    setTimeout(() => setRemindersStatus(""), 5000);
   };
 
-  const removeLabEntry = (id: string) => {
-    setLabData(prev => prev.filter(lab => lab.id !== id));
+  const removeLabEntry = async (id: string) => {
+    if (session?.user?.email) {
+      try {
+        await deleteLabFromServer(id);
+        setLabData(prev => prev.filter(lab => lab.id !== id));
+      } catch (error) {
+        console.error('Failed to delete from server:', error);
+        // Fallback to local delete
+        setLabData(prev => prev.filter(lab => lab.id !== id));
+      }
+    } else {
+      setLabData(prev => prev.filter(lab => lab.id !== id));
+    }
   };
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black relative overflow-hidden pt-16">
