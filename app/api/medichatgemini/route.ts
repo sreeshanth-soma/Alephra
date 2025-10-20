@@ -5,7 +5,8 @@ import { indexName, namespace } from "@/app/config";
 
 // Allow streaming responses up to 60 seconds for vector search operations
 export const maxDuration = 60;
-// export const runtime = 'edge';
+export const runtime = 'edge';
+export const preferredRegion = 'bom1';
 
 const pinecone = new Pinecone({
     apiKey: process.env.PINECONE_API_KEY ?? "",

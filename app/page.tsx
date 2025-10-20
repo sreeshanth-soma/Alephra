@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
+// Static-friendly: avoid session fetch on first paint
 import React from "react";
 import Image from "next/image";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
@@ -14,12 +15,11 @@ import { GlowingEffectDemoSecond } from "@/components/GlowingEffectDemoSecond";
 import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { HoverButton } from "@/components/ui/hover-button";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import Waves from "@/components/Waves";
 
 export default function Home() {
   const { theme } = useTheme();
-  const { data: session, status } = useSession();
   
   return (
     <>
@@ -91,21 +91,11 @@ export default function Home() {
               className="mt-12"
             >
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                {status === "loading" ? (
-                  <div className="px-10 py-4 text-lg">Loading...</div>
-                ) : session ? (
-                  <Link href="/analysis">
-                    <HoverButton className="px-10 py-4 text-lg">
-                      Get Started
-                    </HoverButton>
-                  </Link>
-                ) : (
-                  <Link href="/signin">
-                    <HoverButton className="px-10 py-4 text-lg">
-                      Sign In
-                    </HoverButton>
-                  </Link>
-                )}
+                <Link href="/analysis">
+                  <HoverButton className="px-10 py-4 text-lg">
+                    Get Started
+                  </HoverButton>
+                </Link>
                 <button 
                   onClick={() => {
                     document.getElementById('features')?.scrollIntoView({ 
