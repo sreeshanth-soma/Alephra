@@ -84,7 +84,7 @@ export function generateMedicalReminderUrl(
   
   return generateGoogleCalendarUrl({
     title: `💊 ${title}`,
-    description: `Medical Reminder: ${description || title}\n\nCreated by MedScan AI Healthcare Assistant`,
+    description: `Medical Reminder: ${description || title}\n\nCreated by Alephra AI Healthcare Assistant`,
     startTime: reminderTime,
     endTime: endTime,
   });
@@ -109,7 +109,7 @@ export function generateAppointmentUrl(
   
   return generateGoogleCalendarUrl({
     title: `📅 ${title}`,
-    description: `Appointment: ${description || title}\n\nCreated by MedScan AI Healthcare Assistant`,
+    description: `Appointment: ${description || title}\n\nCreated by Alephra AI Healthcare Assistant`,
     startTime: startTime,
     endTime: endTime,
     location: location,
@@ -130,9 +130,9 @@ export function downloadICSFile(event: CalendarEventParams): void {
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//MedScan//Healthcare Assistant//EN',
+    'PRODID:-//Alephra//Healthcare Assistant//EN',
     'BEGIN:VEVENT',
-    `UID:${Date.now()}@medscan.app`,
+    `UID:${Date.now()}@alephra.app`,
     `DTSTAMP:${formatICSDate(new Date())}`,
     `DTSTART:${formatICSDate(startTime)}`,
     `DTEND:${formatICSDate(endTime)}`,

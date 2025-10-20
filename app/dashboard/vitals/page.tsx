@@ -46,14 +46,14 @@ export default function VitalsPage() {
   const [editText, setEditText] = useState<string>("");
 
   useEffect(() => {
-    const v = safeGetItem<VitalsPoint[]>("medscan.vitals", []);
+    const v = safeGetItem<VitalsPoint[]>("alephra.vitals", []);
     setVitals(Array.isArray(v) ? v : []);
-    const n = safeGetItem<Record<string, string>>("medscan.vitalsNotes", {});
+    const n = safeGetItem<Record<string, string>>("alephra.vitalsNotes", {});
     setNotesByDate(n || {});
   }, []);
 
   useEffect(() => {
-    safeSetItem("medscan.vitalsNotes", notesByDate);
+    safeSetItem("alephra.vitalsNotes", notesByDate);
   }, [notesByDate]);
 
   const daily = useMemo(() => {

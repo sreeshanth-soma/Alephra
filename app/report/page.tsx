@@ -38,7 +38,7 @@ const ReportPage = () => {
       <div className="container mx-auto px-4 py-12 relative z-10">
         <div className="text-center mb-12">
           <h1 className="text-6xl font-bold text-black dark:text-white mb-6 font-playfair">
-            MedScan
+            Alephra
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 font-medium">
             AI-powered medical report analysis

@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const hasReportData = reportData && reportData.trim().length > 0;
     
     const basePrompt = hasReportData 
-      ? `You are a medical voice assistant for MedScan. The user is speaking in ${languageName}.
+      ? `You are a medical voice assistant for Alephra. The user is speaking in ${languageName}.
 
 Here is a summary of a patient's clinical report, and a user query.
 Go through the clinical report and answer the user query SPECIFICALLY and DIRECTLY.
@@ -95,7 +95,7 @@ Provide a professional medical response that:
 Respond in a professional, medical tone that works well for voice output. Start directly with the medical information.
 
 **Answer:**`
-      : `You are a medical voice assistant for MedScan. The user is speaking in ${languageName}.
+      : `You are a medical voice assistant for Alephra. The user is speaking in ${languageName}.
 
 **IMPORTANT:** The user has NOT uploaded any medical reports yet.
 

@@ -191,7 +191,7 @@ const AnalysisPage = () => {
         
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-black dark:text-white mb-2 font-playfair">
-            MedScan
+            Alephra
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 font-medium">
             AI-powered medical report analysis

@@ -150,7 +150,7 @@ const Messages = ({ messages, isLoading, data }: Props) => {
             <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
             <span className="w-2 h-2 rounded-full bg-white animate-pulse [animation-delay:200ms]"></span>
             <span className="w-2 h-2 rounded-full bg-white animate-pulse [animation-delay:400ms]"></span>
-            <span className="ml-2">MedScan is thinking...</span>
+            <span className="ml-2">Alephra is thinking...</span>
           </div>
         </motion.div>
       )}

@@ -23,7 +23,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "MedScan",
+  title: "Alephra",
   description: "AI-powered medical report analysis and insights",
   manifest: "/manifest.json",
   icons: {

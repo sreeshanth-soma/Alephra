@@ -451,7 +451,7 @@ export function VoiceChat({
           }}
         >
           <Sparkles className="w-4 h-4" />
-          <span>MedScan voice assistant</span>
+          <span>Alephra voice assistant</span>
         </motion.div>
       </div>
     </div>

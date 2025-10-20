@@ -113,15 +113,15 @@ export const getStorageUsage = (): { used: number; available: number } | null =>
 };
 
 /**
- * Clear all MedScan data from localStorage
+ * Clear all Alephra data from localStorage
  */
-export const clearAllMedScanData = (): boolean => {
+export const clearAllAlephraData = (): boolean => {
   const keys = [
-    'medscan.vitals',
-    'medscan.labs', 
-    'medscan.reminders',
-    'medscan.cart',
-    'medscan.appointments'
+    'alephra.vitals',
+    'alephra.labs', 
+    'alephra.reminders',
+    'alephra.cart',
+    'alephra.appointments'
   ];
   
   let allSuccessful = true;

@@ -17,7 +17,7 @@ export function LampDemo() {
         className="mt-8 py-4 text-center text-6xl md:text-9xl font-extrabold tracking-tight text-neutral-900 dark:text-white"
       >
         <span className="block tracking-tight">
-          MedScan
+          Alephra
         </span>
         <br />
         <span className="block text-lg md:text-3xl mt-4 text-neutral-700 dark:text-slate-200 font-medium tracking-wide">

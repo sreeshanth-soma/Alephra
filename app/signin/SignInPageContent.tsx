@@ -62,7 +62,7 @@ export default function SignInPageContent() {
       {/* Full-width header above card */}
       <div className="pointer-events-none absolute top-40 left-0 right-0 z-20 flex items-center justify-center px-6">
         <WordPullUp
-          words="Welcome to MedScan"
+          words="Welcome to Alephra"
           className="whitespace-nowrap text-6xl md:text-7xl lg:text-8xl leading-none text-neutral-900 dark:text-white tracking-tight"
           wrapperFramerProps={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.12 } } }}
         />

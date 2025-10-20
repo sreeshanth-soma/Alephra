@@ -84,7 +84,7 @@ const Navbar = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                MedScan
+                Alephra
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">AI Healthcare</span>
             </div>

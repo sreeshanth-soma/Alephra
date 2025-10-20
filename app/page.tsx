@@ -55,7 +55,7 @@ export default function Home() {
             className="text-center"
           >
             <h1 className="text-8xl md:text-[12rem] lg:text-[14rem] font-extrabold tracking-tight text-black dark:text-white mb-8">
-              MedScan
+              Alephra
             </h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -156,7 +156,7 @@ export default function Home() {
           <div className="relative mx-auto rounded-2xl overflow-hidden z-10">
           <Image
             src={theme === "dark" ? "/landing-hero-dark1.jpg" : "/landing-hero-light.jpg"}
-              alt="MedScan AI Medical Assistant Dashboard"
+              alt="Alephra AI Medical Assistant Dashboard"
             height={720}
             width={1400}
             className="mx-auto rounded-2xl object-cover h-full object-left-top"
@@ -188,14 +188,14 @@ export default function Home() {
         </ContainerScroll>
         </div>
 
-        {/* How MedScan Works Section */}
+        {/* How Alephra Works Section */}
         <div className="py-20 px-4 relative z-30">
           <div className="max-w-7xl mx-auto">
             {/* Section Header */}
             <div className="text-center mb-12">
               <Badge variant="outline" className="mb-4 text-sm font-medium">
                 <Brain className="w-4 h-4 mr-2" />
-                How MedScan Works
+                How Alephra Works
               </Badge>
               <h2 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
                 A simple flow from report to recommendations
@@ -221,7 +221,7 @@ export default function Home() {
                 What you can do
               </Badge>
               <h3 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
-                Explore MedScan's Capabilities
+                Explore Alephra's Capabilities
               </h3>
             </div>
 

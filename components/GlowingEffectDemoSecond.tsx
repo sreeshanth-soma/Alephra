@@ -50,7 +50,7 @@ export function GlowingEffectDemoSecond() {
         area="md:[grid-area:2/7/3/13] xl:[grid-area:1/8/2/13]"
         icon={<Settings className="h-4 w-4 text-black dark:text-neutral-400" />}
         title="Voice Assistant"
-        description="Speak naturally — MedScan listens, understands, and acts across features."
+        description="Speak naturally — Alephra listens, understands, and acts across features."
         points={[
           "10+ languages with natural TTS",
           "Dictate symptoms, commands, and questions",

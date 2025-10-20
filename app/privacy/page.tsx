@@ -83,7 +83,7 @@ export default function PrivacyPolicy() {
               <div>
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Google Calendar Integration</h4>
                 <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
-                  <li>Calendar events you create through MedScan</li>
+                  <li>Calendar events you create through Alephra</li>
                   <li>Access tokens for calendar synchronization</li>
                   <li>Appointment scheduling preferences</li>
                 </ul>
@@ -309,7 +309,7 @@ export default function PrivacyPolicy() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                MedScan operates globally and may transfer your data across borders to provide our services. 
+                Alephra operates globally and may transfer your data across borders to provide our services. 
                 We ensure appropriate safeguards are in place for international transfers:
               </p>
               <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
@@ -335,7 +335,7 @@ export default function PrivacyPolicy() {
                   Age Restriction: 18+
                 </p>
                 <p className="text-pink-700 dark:text-pink-300 text-sm">
-                  MedScan is intended for adults aged 18 and older. We do not knowingly collect personal information from children under 18.
+                  Alephra is intended for adults aged 18 and older. We do not knowingly collect personal information from children under 18.
                 </p>
               </div>
               <p className="text-gray-700 dark:text-gray-300">
@@ -361,11 +361,11 @@ export default function PrivacyPolicy() {
               </p>
               <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
                 <li>Sending an email notification to your registered email address</li>
-                <li>Displaying a prominent notice in the MedScan application</li>
+                <li>Displaying a prominent notice in the Alephra application</li>
                 <li>Updating the "Last updated" date at the top of this policy</li>
               </ul>
               <p className="text-gray-700 dark:text-gray-300">
-                Continued use of MedScan after changes constitutes acceptance of the updated Privacy Policy.
+                Continued use of Alephra after changes constitutes acceptance of the updated Privacy Policy.
               </p>
             </CardContent>
           </Card>
@@ -383,12 +383,12 @@ export default function PrivacyPolicy() {
                 If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
               </p>
               <div className="space-y-2 text-blue-700 dark:text-blue-300">
-                <p><strong>Privacy Officer:</strong> privacy@medscan.ai</p>
-                <p><strong>Data Protection:</strong> dpo@medscan.ai</p>
-                <p><strong>General Support:</strong> support@medscan.ai</p>
+                <p><strong>Privacy Officer:</strong> privacy@alephra.ai</p>
+                <p><strong>Data Protection:</strong> dpo@alephra.ai</p>
+                <p><strong>General Support:</strong> support@alephra.ai</p>
                 <p><strong>Mailing Address:</strong></p>
                 <div className="ml-4">
-                  <p>MedScan Privacy Team</p>
+                  <p>Alephra Privacy Team</p>
                   <p>Data Protection Office</p>
                   <p>[Your Company Address]</p>
                 </div>

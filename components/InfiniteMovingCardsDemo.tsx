@@ -29,7 +29,7 @@ const medicalStepsData = [
     title: "Take Action",
   },
   {
-    quote: "Over time MedScan learns your health baselines to reduce noise and surface what matters most to you.",
+    quote: "Over time Alephra learns your health baselines to reduce noise and surface what matters most to you.",
     name: "Step 6",
     title: "Learn & Improve",
   },

@@ -32,7 +32,7 @@ export default function TermsOfService() {
                   Important Medical Disclaimer
                 </h3>
                 <p className="text-orange-700 dark:text-orange-300 text-sm">
-                  MedScan is an AI-powered healthcare assistant designed to provide information and insights. 
+                  Alephra is an AI-powered healthcare assistant designed to provide information and insights. 
                   It is NOT a substitute for professional medical advice, diagnosis, or treatment. 
                   Always consult with qualified healthcare professionals for medical decisions.
                 </p>
@@ -52,11 +52,11 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                By accessing and using MedScan ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. 
+                By accessing and using Alephra ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. 
                 If you do not agree to abide by the above, please do not use this service.
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                These Terms of Service constitute a legally binding agreement between you and MedScan regarding your use of the Service.
+                These Terms of Service constitute a legally binding agreement between you and Alephra regarding your use of the Service.
               </p>
             </CardContent>
           </Card>
@@ -71,7 +71,7 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                MedScan is an AI-powered healthcare platform that provides:
+                Alephra is an AI-powered healthcare platform that provides:
               </p>
               <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
                 <li>Medical report analysis and interpretation using artificial intelligence</li>
@@ -100,13 +100,13 @@ export default function TermsOfService() {
                   NOT A MEDICAL DEVICE OR PROFESSIONAL MEDICAL ADVICE
                 </p>
                 <p className="text-red-700 dark:text-red-300 text-sm">
-                  MedScan is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease. 
+                  Alephra is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease. 
                   The information provided is for educational and informational purposes only.
                 </p>
               </div>
               <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
                 <li>Always consult with qualified healthcare professionals for medical advice</li>
-                <li>Do not disregard professional medical advice based on information from MedScan</li>
+                <li>Do not disregard professional medical advice based on information from Alephra</li>
                 <li>In case of medical emergencies, contact emergency services immediately</li>
                 <li>AI-generated insights may contain errors or inaccuracies</li>
               </ul>
@@ -127,7 +127,7 @@ export default function TermsOfService() {
                 <li>Provide accurate and truthful information when using the Service</li>
                 <li>Use the Service only for lawful purposes</li>
                 <li>Not attempt to reverse engineer or compromise the security of the Service</li>
-                <li>Respect the intellectual property rights of MedScan and third parties</li>
+                <li>Respect the intellectual property rights of Alephra and third parties</li>
                 <li>Not share your account credentials with others</li>
                 <li>Report any security vulnerabilities or inappropriate content</li>
               </ul>
@@ -172,7 +172,7 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                The Service and its original content, features, and functionality are and will remain the exclusive property of MedScan and its licensors. 
+                The Service and its original content, features, and functionality are and will remain the exclusive property of Alephra and its licensors. 
                 The Service is protected by copyright, trademark, and other laws.
               </p>
               <p className="text-gray-700 dark:text-gray-300">
@@ -195,7 +195,7 @@ export default function TermsOfService() {
                   IMPORTANT LIMITATION
                 </p>
                 <p className="text-yellow-700 dark:text-yellow-300 text-sm">
-                  To the fullest extent permitted by law, MedScan shall not be liable for any indirect, incidental, 
+                  To the fullest extent permitted by law, Alephra shall not be liable for any indirect, incidental, 
                   special, consequential, or punitive damages, including but not limited to loss of profits, data, 
                   or other intangible losses resulting from your use of the Service.
                 </p>
@@ -254,9 +254,9 @@ export default function TermsOfService() {
                 If you have any questions about these Terms of Service, please contact us at:
               </p>
               <div className="mt-4 space-y-2 text-blue-700 dark:text-blue-300">
-                <p><strong>Email:</strong> legal@medscan.ai</p>
-                <p><strong>Support:</strong> support@medscan.ai</p>
-                <p><strong>Address:</strong> MedScan Legal Department</p>
+                <p><strong>Email:</strong> legal@alephra.ai</p>
+                <p><strong>Support:</strong> support@alephra.ai</p>
+                <p><strong>Address:</strong> Alephra Legal Department</p>
               </div>
             </CardContent>
           </Card>

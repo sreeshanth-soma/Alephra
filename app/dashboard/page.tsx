@@ -15,7 +15,7 @@ import { Heart, Activity, Calendar, Filter, CalendarDays, AlertTriangle, Trash2 
 import BasicModal from "@/components/ui/modal";
 import { Noise } from "@/components/ui/noise";
 import { useSession } from "next-auth/react";
-import { safeGetItem, safeSetItem, safeRemoveItem, clearAllMedScanData, isLocalStorageAvailable } from "@/lib/localStorage";
+import { safeGetItem, safeSetItem, safeRemoveItem, clearAllAlephraData, isLocalStorageAvailable } from "@/lib/localStorage";
 import { toast } from "@/components/ui/use-toast";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 // Removed dropdown menu in Appointments to keep a single add button
@@ -577,25 +577,25 @@ export default function DashboardPage() {
     // Clear any existing default/seeded data first
     if (isLocalStorageAvailable()) {
       // Clear old seeded vitals data
-      const rawVitals = safeGetItem("medscan.vitals", []);
+      const rawVitals = safeGetItem("alephra.vitals", []);
       if (Array.isArray(rawVitals) && rawVitals.length === 60) {
-        safeRemoveItem("medscan.vitals");
+        safeRemoveItem("alephra.vitals");
       }
       
       // Clear old default lab data
-      const rawLabs = safeGetItem<LabData[]>("medscan.labs", []);
+      const rawLabs = safeGetItem<LabData[]>("alephra.labs", []);
       if (Array.isArray(rawLabs) && rawLabs.length === 4 && rawLabs[0]?.id === "1") {
-        safeRemoveItem("medscan.labs");
+        safeRemoveItem("alephra.labs");
       }
     }
 
     // Now load data (will be empty if no real data exists)
     if (isLocalStorageAvailable()) {
-      setReminders(safeGetItem<Reminder[]>("medscan.reminders", []));
-      setVitals(safeGetItem<VitalsPoint[]>("medscan.vitals", []));
-      setCartItems(safeGetItem<any[]>("medscan.cart", []));
-      setLabData(safeGetItem<LabData[]>("medscan.labs", []));
-      setAppointments(safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("medscan.appointments", []));
+      setReminders(safeGetItem<Reminder[]>("alephra.reminders", []));
+      setVitals(safeGetItem<VitalsPoint[]>("alephra.vitals", []));
+      setCartItems(safeGetItem<any[]>("alephra.cart", []));
+      setLabData(safeGetItem<LabData[]>("alephra.labs", []));
+      setAppointments(safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("alephra.appointments", []));
     } else {
       // Fallback when localStorage is not available
       setReminders([]);
@@ -611,7 +611,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
-      const success = safeSetItem("medscan.reminders", reminders);
+      const success = safeSetItem("alephra.reminders", reminders);
       if (!success) {
         toast({
           title: "Storage Warning",
@@ -624,7 +624,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
-      const success = safeSetItem("medscan.vitals", vitals);
+      const success = safeSetItem("alephra.vitals", vitals);
       if (!success) {
         toast({
           title: "Storage Warning", 
@@ -637,7 +637,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
-      const success = safeSetItem("medscan.cart", cartItems);
+      const success = safeSetItem("alephra.cart", cartItems);
       if (!success) {
         toast({
           title: "Storage Warning",
@@ -650,7 +650,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
-      const success = safeSetItem("medscan.labs", labData);
+      const success = safeSetItem("alephra.labs", labData);
       if (!success) {
         toast({
           title: "Storage Warning",
@@ -663,7 +663,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
-      const success = safeSetItem("medscan.appointments", appointments);
+      const success = safeSetItem("alephra.appointments", appointments);
       if (!success) {
         toast({
           title: "Storage Warning",
@@ -712,7 +712,7 @@ export default function DashboardPage() {
       calendarUrl.searchParams.append('action', 'TEMPLATE');
       calendarUrl.searchParams.append('text', `💊 ${newReminder.trim()}`);
       calendarUrl.searchParams.append('dates', `${formatDateTime(target)}/${formatDateTime(endDateTime)}`);
-      calendarUrl.searchParams.append('details', `Medical reminder created via MedScan AI Healthcare Assistant`);
+      calendarUrl.searchParams.append('details', `Medical reminder created via Alephra AI Healthcare Assistant`);
       
       // Open Google Calendar in new tab
       window.open(calendarUrl.toString(), '_blank', 'noopener,noreferrer');
@@ -764,7 +764,7 @@ export default function DashboardPage() {
     calendarUrl.searchParams.append('action', 'TEMPLATE');
     calendarUrl.searchParams.append('text', `📅 ${apptTitle.trim()}`);
     calendarUrl.searchParams.append('dates', `${formatDateTime(appointmentDateTime)}/${formatDateTime(endDateTime)}`);
-    calendarUrl.searchParams.append('details', `Appointment: ${apptTitle.trim()}\n\nCreated by MedScan AI Healthcare Assistant`);
+    calendarUrl.searchParams.append('details', `Appointment: ${apptTitle.trim()}\n\nCreated by Alephra AI Healthcare Assistant`);
     
     // Open Google Calendar in new tab
     window.open(calendarUrl.toString(), '_blank', 'noopener,noreferrer');
@@ -1131,14 +1131,14 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-black dark:text-white"><span className="bg-gradient-to-r from-gray-600 to-black dark:from-gray-300 dark:to-white bg-clip-text text-transparent">MedScan</span> Dashboard</h1>
+                <h1 className="text-3xl font-bold text-black dark:text-white"><span className="bg-gradient-to-r from-gray-600 to-black dark:from-gray-300 dark:to-white bg-clip-text text-transparent">Alephra</span> Dashboard</h1>
                 <p className="text-gray-600 dark:text-gray-400">Overview of vitals, labs, meds, and care timeline</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
-                  const success = clearAllMedScanData();
+                  const success = clearAllAlephraData();
                   if (success) {
                     toast({
                       title: "Data Cleared",
@@ -1484,7 +1484,7 @@ export default function DashboardPage() {
                                 calendarUrl.searchParams.append('action', 'TEMPLATE');
                                 calendarUrl.searchParams.append('text', `📅 ${appointment.title}`);
                                 calendarUrl.searchParams.append('dates', `${formatDateTime(appointmentDateTime)}/${formatDateTime(endDateTime)}`);
-                                calendarUrl.searchParams.append('details', `Appointment: ${appointment.title}\n\nCreated by MedScan AI Healthcare Assistant`);
+                                calendarUrl.searchParams.append('details', `Appointment: ${appointment.title}\n\nCreated by Alephra AI Healthcare Assistant`);
                                 
                                 window.open(calendarUrl.toString(), '_blank', 'noopener,noreferrer');
                               }}

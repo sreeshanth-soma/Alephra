@@ -238,7 +238,7 @@ export default function VoiceAgentPage() {
     
     // Load saved voice messages if available; otherwise initialize with welcome message
     try {
-      const saved = localStorage.getItem('medscan-voice-messages');
+      const saved = localStorage.getItem('alephra-voice-messages');
       if (saved) {
         const parsed: VoiceMessage[] = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -309,7 +309,7 @@ export default function VoiceAgentPage() {
   useEffect(() => {
     if (messages && messages.length > 0) {
       try {
-        localStorage.setItem('medscan-voice-messages', JSON.stringify(messages));
+        localStorage.setItem('alephra-voice-messages', JSON.stringify(messages));
       } catch {}
     }
   }, [messages]);
@@ -571,7 +571,7 @@ export default function VoiceAgentPage() {
       // Get dashboard vitals data
       let vitalsData = '';
       try {
-        const vitals = JSON.parse(localStorage.getItem('medscan.vitals') || '[]');
+        const vitals = JSON.parse(localStorage.getItem('alephra.vitals') || '[]');
         console.log('Vitals from localStorage:', vitals);
         if (vitals && vitals.length > 0) {
           const latestVitals = vitals[vitals.length - 1];
@@ -601,7 +601,7 @@ export default function VoiceAgentPage() {
             weight: 70,
             temperature: 36.5
           }];
-          localStorage.setItem('medscan.vitals', JSON.stringify(sampleVitals));
+          localStorage.setItem('alephra.vitals', JSON.stringify(sampleVitals));
           console.log('Created sample vitals data for testing');
           
           // Now process the sample data
@@ -1004,7 +1004,7 @@ export default function VoiceAgentPage() {
     }]);
     setCurrentText('');
     try {
-      localStorage.removeItem('medscan-voice-messages');
+      localStorage.removeItem('alephra-voice-messages');
     } catch {}
     setShowClearModal(false);
   };

@@ -25,7 +25,7 @@ const ChatComponent = ({ reportData }: Props) => {
 
   // Load chat history from localStorage on component mount
   useEffect(() => {
-    const savedMessages = localStorage.getItem('medscan-chat-messages');
+    const savedMessages = localStorage.getItem('alephra-chat-messages');
     if (savedMessages) {
       try {
         const parsedMessages = JSON.parse(savedMessages);
@@ -49,7 +49,7 @@ const ChatComponent = ({ reportData }: Props) => {
   // Save messages to localStorage whenever messages change
   useEffect(() => {
     if (messages.length > 0) {
-      localStorage.setItem('medscan-chat-messages', JSON.stringify(messages));
+      localStorage.setItem('alephra-chat-messages', JSON.stringify(messages));
     }
   }, [messages]);
 
@@ -75,7 +75,7 @@ const ChatComponent = ({ reportData }: Props) => {
   const clearChat = () => {
     const welcome = { id: crypto.randomUUID(), role: 'assistant', parts: [{ type: 'text', text: 'Hello, how can I help you?' }] } as Message;
     setMessages([welcome]);
-    localStorage.removeItem('medscan-chat-messages');
+    localStorage.removeItem('alephra-chat-messages');
     setShowClearModal(false);
   };
     

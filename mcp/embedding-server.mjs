@@ -1,4 +1,4 @@
-// Lightweight embedding server for MedScan (MCP-like local service)
+// Lightweight embedding server for Alephra (MCP-like local service)
 // - POST /embed { texts: string[] }
 // - GET /health
 // - Uses @xenova/transformers locally with batching, mean pooling, normalization

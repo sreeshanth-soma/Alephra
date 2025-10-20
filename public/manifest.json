@@ -1,6 +1,6 @@
 {
-  "name": "MedScan - AI Healthcare Assistant",
-  "short_name": "MedScan",
+  "name": "Alephra - AI Healthcare Assistant",
+  "short_name": "Alephra",
   "description": "AI-powered medical report analysis and insights",
   "start_url": "/",
   "display": "standalone",

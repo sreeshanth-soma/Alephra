@@ -7,7 +7,7 @@ export interface PrescriptionRecord {
 }
 
 class PrescriptionStorage {
-  private readonly STORAGE_KEY = 'medscan_prescriptions';
+  private readonly STORAGE_KEY = 'alephra_prescriptions';
 
   // Save prescription to localStorage
   savePrescription(reportData: string, summary: string, fileName: string): void {
