@@ -117,15 +117,15 @@ export default function VoiceAgentPage() {
 
   const languages = [
     { code: 'en-IN', name: 'English (India)', browserCode: 'en-IN', fallbackCode: 'en-US' },
-    { code: 'hi-IN', name: 'Hindi (India)', browserCode: 'hi-IN', fallbackCode: 'hi' },
-    { code: 'bn-IN', name: 'Bengali (India)', browserCode: 'bn-IN', fallbackCode: 'bn' },
-    { code: 'ta-IN', name: 'Tamil (India)', browserCode: 'ta-IN', fallbackCode: 'ta' },
-    { code: 'te-IN', name: 'Telugu (India)', browserCode: 'te-IN', fallbackCode: 'te' },
-    { code: 'mr-IN', name: 'Marathi (India)', browserCode: 'mr-IN', fallbackCode: 'mr' },
-    { code: 'gu-IN', name: 'Gujarati (India)', browserCode: 'gu-IN', fallbackCode: 'gu' },
-    { code: 'kn-IN', name: 'Kannada (India)', browserCode: 'kn-IN', fallbackCode: 'kn' },
-    { code: 'ml-IN', name: 'Malayalam (India)', browserCode: 'ml-IN', fallbackCode: 'ml' },
-    { code: 'pa-IN', name: 'Punjabi (India)', browserCode: 'pa-IN', fallbackCode: 'pa' }
+    { code: 'hi-IN', name: 'Hindi (India) - हिन्दी', browserCode: 'hi-IN', fallbackCode: 'hi' },
+    { code: 'bn-IN', name: 'Bengali (India) - বাংলা', browserCode: 'bn-IN', fallbackCode: 'bn' },
+    { code: 'ta-IN', name: 'Tamil (India) - தமிழ்', browserCode: 'ta-IN', fallbackCode: 'ta' },
+    { code: 'te-IN', name: 'Telugu (India) - తెలుగు', browserCode: 'te-IN', fallbackCode: 'te' },
+    { code: 'mr-IN', name: 'Marathi (India) - मराठी', browserCode: 'mr-IN', fallbackCode: 'mr' },
+    { code: 'gu-IN', name: 'Gujarati (India) - ગુજરાતી', browserCode: 'gu-IN', fallbackCode: 'gu' },
+    { code: 'kn-IN', name: 'Kannada (India) - ಕನ್ನಡ', browserCode: 'kn-IN', fallbackCode: 'kn' },
+    { code: 'ml-IN', name: 'Malayalam (India) - മലയാളം', browserCode: 'ml-IN', fallbackCode: 'ml' },
+    { code: 'pa-IN', name: 'Punjabi (India) - ਪੰਜਾਬੀ', browserCode: 'pa-IN', fallbackCode: 'pa' }
   ];
 
   const sarvamSpeakers = [
@@ -137,6 +137,99 @@ export default function VoiceAgentPage() {
     { code: 'karun', name: 'Karun (Male)', gender: 'male' },
     { code: 'hitesh', name: 'Hitesh (Male)', gender: 'male' }
   ];
+
+  // Function to get speaker name with native script
+  const getSpeakerNameWithNativeScript = (speaker: any, languageCode: string) => {
+    const nativeScripts: { [key: string]: { [key: string]: string } } = {
+      'hi-IN': {
+        'anushka': 'अनुष्का',
+        'manisha': 'मनीषा',
+        'vidya': 'विद्या',
+        'arya': 'आर्या',
+        'abhilash': 'अभिलाष',
+        'karun': 'करुण',
+        'hitesh': 'हितेश'
+      },
+      'bn-IN': {
+        'anushka': 'অনুষ্কা',
+        'manisha': 'মনীষা',
+        'vidya': 'বিদ্যা',
+        'arya': 'আর্যা',
+        'abhilash': 'অভিলাষ',
+        'karun': 'করুণ',
+        'hitesh': 'হিতেশ'
+      },
+      'ta-IN': {
+        'anushka': 'அனுஷ்கா',
+        'manisha': 'மனிஷா',
+        'vidya': 'வித்யா',
+        'arya': 'ஆர்யா',
+        'abhilash': 'அபிலாஷ்',
+        'karun': 'கருண்',
+        'hitesh': 'ஹிதேஷ்'
+      },
+      'te-IN': {
+        'anushka': 'అనుష్కా',
+        'manisha': 'మనీషా',
+        'vidya': 'విద్యా',
+        'arya': 'ఆర్యా',
+        'abhilash': 'అభిలాష్',
+        'karun': 'కరుణ్',
+        'hitesh': 'హితేష్'
+      },
+      'mr-IN': {
+        'anushka': 'अनुष्का',
+        'manisha': 'मनीषा',
+        'vidya': 'विद्या',
+        'arya': 'आर्या',
+        'abhilash': 'अभिलाष',
+        'karun': 'करुण',
+        'hitesh': 'हितेश'
+      },
+      'gu-IN': {
+        'anushka': 'અનુષ્કા',
+        'manisha': 'મનીષા',
+        'vidya': 'વિદ્યા',
+        'arya': 'આર્યા',
+        'abhilash': 'અભિલાષ',
+        'karun': 'કરુણ',
+        'hitesh': 'હિતેષ'
+      },
+      'kn-IN': {
+        'anushka': 'ಅನುಷ್ಕಾ',
+        'manisha': 'ಮನೀಷಾ',
+        'vidya': 'ವಿದ್ಯಾ',
+        'arya': 'ಆರ್ಯಾ',
+        'abhilash': 'ಅಭಿಲಾಷ್',
+        'karun': 'ಕರುಣ್',
+        'hitesh': 'ಹಿತೇಷ್'
+      },
+      'ml-IN': {
+        'anushka': 'അനുഷ്കാ',
+        'manisha': 'മനീഷാ',
+        'vidya': 'വിദ്യാ',
+        'arya': 'ആര്യാ',
+        'abhilash': 'അഭിലാഷ്',
+        'karun': 'കരുണ്',
+        'hitesh': 'ഹിതേഷ്'
+      },
+      'pa-IN': {
+        'anushka': 'ਅਨੁਸ਼ਕਾ',
+        'manisha': 'ਮਨੀਸ਼ਾ',
+        'vidya': 'ਵਿਦਿਆ',
+        'arya': 'ਆਰਿਆ',
+        'abhilash': 'ਅਭਿਲਾਸ਼',
+        'karun': 'ਕਰੁਣ',
+        'hitesh': 'ਹਿਤੇਸ਼'
+      }
+    };
+
+    const nativeScript = nativeScripts[languageCode]?.[speaker.code];
+    if (nativeScript && languageCode !== 'en-IN') {
+      return `${speaker.name.split(' (')[0]} (${nativeScript})`;
+    }
+    return speaker.name;
+  };
 
   useEffect(() => {
     // Load available reports
@@ -153,7 +246,9 @@ export default function VoiceAgentPage() {
         } else {
           const welcomeMessage: VoiceMessage = {
             id: '1',
-            text: `Hello! I am your AI medical voice assistant. ${reports.length > 0 ? `I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. ` : ''}I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?`,
+            text: reports.length > 0 
+              ? `Hello! I am your AI medical voice assistant. I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. I can help you understand your reports, answer health questions, schedule appointments, and provide medical guidance. You can speak to me in any Indian language. How can I assist you today?`
+              : `Hello! I am your AI medical voice assistant. I can help you with general health questions, appointment scheduling, and medical guidance. You can speak to me in any Indian language.\n\n📋 To get personalized insights about your medical reports:\n1. Go to the Analysis page (use the navigation menu)\n2. Upload your medical reports (lab results, blood tests, etc.)\n3. Come back here and I'll be able to answer specific questions about your health data!\n\nFor now, feel free to ask me any general health questions. How can I help you?`,
             timestamp: new Date(),
             type: 'assistant'
           };
@@ -162,7 +257,9 @@ export default function VoiceAgentPage() {
       } else {
         const welcomeMessage: VoiceMessage = {
           id: '1',
-          text: `Hello! I am your AI medical voice assistant. ${reports.length > 0 ? `I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. ` : ''}I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?`,
+          text: reports.length > 0 
+            ? `Hello! I am your AI medical voice assistant. I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. I can help you understand your reports, answer health questions, schedule appointments, and provide medical guidance. You can speak to me in any Indian language. How can I assist you today?`
+            : `Hello! I am your AI medical voice assistant. I can help you with general health questions, appointment scheduling, and medical guidance. You can speak to me in any Indian language.\n\n📋 To get personalized insights about your medical reports:\n1. Go to the Analysis page (use the navigation menu)\n2. Upload your medical reports (lab results, blood tests, etc.)\n3. Come back here and I'll be able to answer specific questions about your health data!\n\nFor now, feel free to ask me any general health questions. How can I help you?`,
           timestamp: new Date(),
           type: 'assistant'
         };
@@ -171,7 +268,9 @@ export default function VoiceAgentPage() {
     } catch {
       const welcomeMessage: VoiceMessage = {
         id: '1',
-        text: `Hello! I am your AI medical voice assistant. ${reports.length > 0 ? `I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. ` : ''}I can help you with health questions, appointment scheduling, medicine information, and general medical guidance. You can speak to me in any Indian language. How can I assist you today?`,
+        text: reports.length > 0 
+          ? `Hello! I am your AI medical voice assistant. I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. I can help you understand your reports, answer health questions, schedule appointments, and provide medical guidance. You can speak to me in any Indian language. How can I assist you today?`
+          : `Hello! I am your AI medical voice assistant. I can help you with general health questions, appointment scheduling, and medical guidance. You can speak to me in any Indian language.\n\n📋 To get personalized insights about your medical reports:\n1. Go to the Analysis page (use the navigation menu)\n2. Upload your medical reports (lab results, blood tests, etc.)\n3. Come back here and I'll be able to answer specific questions about your health data!\n\nFor now, feel free to ask me any general health questions. How can I help you?`,
         timestamp: new Date(),
         type: 'assistant'
       };
@@ -469,7 +568,68 @@ export default function VoiceAgentPage() {
         console.log('Error loading report data:', error);
       }
 
+      // Get dashboard vitals data
+      let vitalsData = '';
+      try {
+        const vitals = JSON.parse(localStorage.getItem('medscan.vitals') || '[]');
+        console.log('Vitals from localStorage:', vitals);
+        if (vitals && vitals.length > 0) {
+          const latestVitals = vitals[vitals.length - 1];
+          console.log('Latest vitals:', latestVitals);
+          const vitalsSummary = [];
+          
+          if (latestVitals.hr) vitalsSummary.push(`Heart Rate: ${latestVitals.hr} bpm`);
+          if (latestVitals.spo2) vitalsSummary.push(`SpO2: ${latestVitals.spo2}%`);
+          if (latestVitals.bp?.systolic && latestVitals.bp?.diastolic) {
+            vitalsSummary.push(`Blood Pressure: ${latestVitals.bp.systolic}/${latestVitals.bp.diastolic} mmHg`);
+          }
+          if (latestVitals.weight) vitalsSummary.push(`Weight: ${latestVitals.weight} kg`);
+          if (latestVitals.temperature) vitalsSummary.push(`Temperature: ${latestVitals.temperature}°C`);
+          
+          if (vitalsSummary.length > 0) {
+            vitalsData = `\n--- Latest Vitals (${latestVitals.date}) ---\n${vitalsSummary.join(', ')}`;
+            console.log('Generated vitals data:', vitalsData);
+          }
+        } else {
+          console.log('No vitals data found in localStorage');
+          // Create sample vitals data for testing if none exists
+          const sampleVitals = [{
+            date: new Date().toISOString(),
+            hr: 78,
+            spo2: 98,
+            bp: { systolic: 120, diastolic: 80 },
+            weight: 70,
+            temperature: 36.5
+          }];
+          localStorage.setItem('medscan.vitals', JSON.stringify(sampleVitals));
+          console.log('Created sample vitals data for testing');
+          
+          // Now process the sample data
+          const latestVitals = sampleVitals[0];
+          const vitalsSummary = [];
+          
+          if (latestVitals.hr) vitalsSummary.push(`Heart Rate: ${latestVitals.hr} bpm`);
+          if (latestVitals.spo2) vitalsSummary.push(`SpO2: ${latestVitals.spo2}%`);
+          if (latestVitals.bp?.systolic && latestVitals.bp?.diastolic) {
+            vitalsSummary.push(`Blood Pressure: ${latestVitals.bp.systolic}/${latestVitals.bp.diastolic} mmHg`);
+          }
+          if (latestVitals.weight) vitalsSummary.push(`Weight: ${latestVitals.weight} kg`);
+          if (latestVitals.temperature) vitalsSummary.push(`Temperature: ${latestVitals.temperature}°C`);
+          
+          if (vitalsSummary.length > 0) {
+            vitalsData = `\n--- Latest Vitals (${latestVitals.date}) ---\n${vitalsSummary.join(', ')}`;
+            console.log('Generated sample vitals data:', vitalsData);
+          }
+        }
+      } catch (error) {
+        console.log('Error loading vitals data:', error);
+      }
+
       // Call Gemini AI API for intelligent response with vector database
+      const finalReportData = reportData + vitalsData;
+      console.log('Final report data being sent:', finalReportData);
+      console.log('Report data length:', finalReportData.length);
+      
       const response = await fetch('/api/voice/gemini-chat', {
         method: 'POST',
         headers: {
@@ -478,7 +638,7 @@ export default function VoiceAgentPage() {
         body: JSON.stringify({
           message: userText,
           language: selectedLanguage,
-          reportData: reportData,
+          reportData: finalReportData, // Include both report and vitals data
           reportId: reportIdToSend  // Pass reportId for vector search filtering
         }),
       });
@@ -915,7 +1075,9 @@ export default function VoiceAgentPage() {
                   <div className="flex items-center gap-2 flex-1 text-left">
                     <UserCircle className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400" />
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {sarvamSpeakers.find(speaker => speaker.code === selectedSpeaker)?.name.split(' (')[0] || 'Select Speaker'}
+                      {sarvamSpeakers.find(speaker => speaker.code === selectedSpeaker) ? 
+                        getSpeakerNameWithNativeScript(sarvamSpeakers.find(speaker => speaker.code === selectedSpeaker)!, selectedLanguage) : 
+                        'Select Speaker'}
                     </span>
                   </div>
                   <UserCircle className="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -1081,7 +1243,7 @@ export default function VoiceAgentPage() {
       title="Select Voice Speaker"
       options={sarvamSpeakers.map(speaker => ({
         value: speaker.code,
-        label: speaker.name.split(' (')[0],
+        label: getSpeakerNameWithNativeScript(speaker, selectedLanguage),
         icon: speaker.gender === 'female' ? 
           <Image src="/woman.svg" alt="Female" width={24} height={24} className="w-6 h-6" /> : 
           <Image src="/man.svg" alt="Male" width={24} height={24} className="w-6 h-6" />,

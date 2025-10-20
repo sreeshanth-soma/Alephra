@@ -96,7 +96,7 @@ export function FloatingSelectModal({
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-[99998] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[99998] bg-black/50 dark:bg-white/10 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -114,7 +114,7 @@ export function FloatingSelectModal({
             <motion.div
               ref={modalRef}
               className={cn(
-                "relative w-full max-w-md bg-white dark:bg-black border-2 border-gray-300 dark:border-gray-700 rounded-2xl shadow-2xl pointer-events-auto",
+                "relative w-full max-w-xl bg-white dark:bg-black border-2 border-gray-300 dark:border-gray-700 rounded-2xl shadow-2xl pointer-events-auto",
                 className
               )}
               initial={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -124,7 +124,7 @@ export function FloatingSelectModal({
             >
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
-                <h3 className="text-xl font-bold text-black dark:text-white">
+                <h3 className="text-2xl font-bold text-black dark:text-white">
                   {title}
                 </h3>
                 <button
@@ -146,14 +146,14 @@ export function FloatingSelectModal({
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       placeholder="Search options..."
-                      className="w-full pl-10 pr-4 py-3 text-sm rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-gray-500 dark:focus:border-gray-400 transition-colors duration-200"
+                      className="w-full pl-10 pr-4 py-4 text-base rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-gray-500 dark:focus:border-gray-400 transition-colors duration-200"
                     />
                   </div>
                 </div>
               )}
 
               {/* Options List */}
-              <div className="max-h-80 overflow-y-auto">
+              <div className="max-h-[28rem] overflow-y-auto">
                 {filteredOptions.length > 0 ? (
                   filteredOptions.map((option, index) => (
                     <motion.button
@@ -161,9 +161,9 @@ export function FloatingSelectModal({
                       type="button"
                       onClick={() => handleSelect(option.value)}
                       className={cn(
-                        "w-full px-6 py-4 flex items-center justify-between gap-3 transition-all duration-200 border-b border-gray-100 dark:border-gray-800 last:border-b-0",
+                        "w-full px-6 py-5 flex items-center justify-between gap-3 transition-all duration-200 border-b border-gray-100 dark:border-gray-800 last:border-b-0",
                         option.value === value 
-                          ? "bg-gray-100 dark:bg-gray-800" 
+                          ? "bg-gray-200 dark:bg-gray-700" 
                           : "hover:bg-gray-50 dark:hover:bg-gray-900"
                       )}
                       initial={{ opacity: 0, x: -20 }}
@@ -184,7 +184,7 @@ export function FloatingSelectModal({
                         )}
                         <div className="flex flex-col flex-1">
                           <span className={cn(
-                            "text-sm font-semibold",
+                            "text-base font-semibold",
                             option.value === value 
                               ? "text-black dark:text-white" 
                               : "text-gray-700 dark:text-gray-300"
@@ -192,7 +192,7 @@ export function FloatingSelectModal({
                             {option.label}
                           </span>
                           {option.description && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            <span className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                               {option.description}
                             </span>
                           )}
@@ -214,7 +214,7 @@ export function FloatingSelectModal({
 
               {/* Footer */}
               <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-                <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
                   {filteredOptions.length} of {options.length} options
                 </div>
               </div>

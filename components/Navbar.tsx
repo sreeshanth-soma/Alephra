@@ -103,7 +103,6 @@ const Navbar = () => {
                   {isActive ? (
                     <div className="relative px-5 py-2.5 rounded-xl font-semibold bg-gradient-to-r from-gray-900 via-black to-gray-900 dark:from-white dark:via-gray-100 dark:to-white text-white dark:text-black shadow-lg shadow-black/30 dark:shadow-white/20 transition-all duration-300">
                       {item.name}
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-gray-700 via-black to-gray-700 dark:from-gray-300 dark:via-white dark:to-gray-300 opacity-20 blur-xl animate-pulse"></div>
                     </div>
                   ) : (
                     <div className="relative px-5 py-2.5 rounded-xl font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white hover:shadow-md transition-all duration-300">
@@ -114,7 +113,9 @@ const Navbar = () => {
               );
             })}
             <div className="ml-4 pl-4 border-l border-gray-200 dark:border-gray-700 flex items-center space-x-3">
-              <ThemeToggle className="relative" />
+              <div className="relative">
+                <ThemeToggle className="relative" />
+              </div>
               {user ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-800 to-black flex items-center justify-center">

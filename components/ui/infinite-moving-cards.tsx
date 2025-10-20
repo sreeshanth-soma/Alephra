@@ -109,8 +109,8 @@ export const InfiniteMovingCards = ({
                   
                   {/* Step number badge */}
                   <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-shadow duration-300
-                                  bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 dark:from-blue-500 dark:via-blue-600 dark:to-purple-600">
-                    <span className="text-white font-bold text-lg">{idx + 1}</span>
+                                  bg-black dark:bg-white">
+                    <span className="text-white dark:text-black font-bold text-lg">{idx + 1}</span>
                   </div>
                 </div>
               </blockquote>

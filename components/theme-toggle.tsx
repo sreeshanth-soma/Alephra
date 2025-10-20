@@ -20,7 +20,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       size="sm"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
       className={cn(
-        "w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-200",
+        "w-10 h-10 rounded-full bg-white dark:bg-black backdrop-blur-sm border border-gray-300 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-200",
         className
       )}
     >

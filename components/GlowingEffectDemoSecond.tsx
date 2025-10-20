@@ -113,7 +113,7 @@ const GridItem = ({ area, icon, title, description, points, center, tall, minH }
                 <ul className="mt-2 space-y-2">
                   {points.map((p, idx) => (
                     <li key={idx} className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                      <span className="mt-1 mr-2 inline-block h-1.5 w-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></span>
+                      <span className="mt-1 mr-2 inline-block h-1.5 w-1.5 rounded-full bg-black dark:bg-white"></span>
                       <span>{p}</span>
                     </li>
                   ))}

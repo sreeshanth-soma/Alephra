@@ -131,7 +131,7 @@ export default function Home() {
                 Your AI-Powered <br />
                 <span className="relative inline-block text-5xl md:text-7xl lg:text-8xl font-extrabold mt-2 leading-none">
                   {/* Foreground text with gradient */}
-                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-pink-400 dark:from-cyan-300 dark:to-pink-400 from-blue-600 to-purple-600">
+                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-gray-600 to-black dark:from-gray-300 dark:to-white">
                     Medical Assistant
                   </span>
                   {/* Shadow text below */}
