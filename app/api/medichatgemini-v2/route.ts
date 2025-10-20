@@ -6,7 +6,8 @@ import { indexName, namespace } from "@/app/config";
 
 // Allow streaming responses up to 60 seconds
 export const maxDuration = 60;
-export const runtime = 'edge';
+// Note: Using Node.js runtime because utils.ts requires crypto module
+// export const runtime = 'edge';
 export const preferredRegion = 'bom1';
 
 const pinecone = new Pinecone({
