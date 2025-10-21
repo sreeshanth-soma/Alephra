@@ -65,21 +65,14 @@ const Navbar = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group" onClick={closeMenu}>
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-black dark:bg-white flex items-center justify-center shadow-lg shadow-black/25 dark:shadow-white/25 group-hover:shadow-black/40 dark:group-hover:shadow-white/40 transition-all duration-300 group-hover:scale-105">
-                <svg 
-                  className="w-6 h-6 text-white dark:text-black" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                >
-                  {/* Heartbeat line */}
-                  <path d="M3 12h3l2-4 4 8 2-4h3" />
-                  {/* Medical cross overlay */}
-                  <path d="M17 8v8M21 12h-8" />
-                </svg>
+              <div className="w-10 h-10 rounded-xl bg-white dark:bg-white border-2 border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-lg shadow-black/10 dark:shadow-white/25 group-hover:shadow-black/20 dark:group-hover:shadow-white/40 transition-all duration-300 group-hover:scale-105">
+                <Image 
+                  src="/logo.jpg" 
+                  alt="Alephra Logo" 
+                  width={32} 
+                  height={32} 
+                  className="object-contain rounded-lg"
+                />
               </div>
             </div>
             <div className="flex flex-col">

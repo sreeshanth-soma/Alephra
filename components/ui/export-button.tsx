@@ -28,9 +28,16 @@ export function ExportButton({
     try {
       const link = await onShare();
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      
+      // Log success message
+      console.log('✅ Share link copied to clipboard:', link);
+      
+      setTimeout(() => setCopied(false), 3000);
     } catch (error) {
-      console.error('Share failed:', error);
+      console.error('❌ Share failed:', error);
+      if (typeof window !== 'undefined') {
+        alert('Failed to generate share link. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

@@ -52,32 +52,32 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Overall Health Score */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br ${getScoreBgColor(overallScore)} p-8 text-white shadow-2xl">
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${getScoreBgColor(overallScore)} p-8 text-white shadow-2xl`}>
         <div className="absolute inset-0 bg-black/10" />
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Heart className="w-6 h-6" />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                <Heart className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold opacity-90">Overall Health Score</h3>
-                <p className="text-sm opacity-75">Based on latest vitals & labs</p>
+                <h3 className="text-2xl font-bold text-white drop-shadow-lg">Overall Health Score</h3>
+                <p className="text-base text-white/90 mt-1">Based on latest vitals & labs</p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-6xl font-bold">{overallScore}</span>
-            <span className="text-2xl opacity-75">/100</span>
+          <div className="flex items-baseline gap-3 mb-6">
+            <span className="text-7xl font-bold drop-shadow-2xl">{overallScore}</span>
+            <span className="text-3xl font-semibold opacity-90">/100</span>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 text-sm opacity-90">
-            <Activity className="w-4 h-4" />
-            <span>
-              {overallScore >= 90 ? "Excellent health!" :
-               overallScore >= 70 ? "Good health, monitor trends" :
-               "Attention needed - consult your doctor"}
+          <div className="mt-6 flex items-center gap-3 text-base">
+            <Activity className="w-5 h-5" />
+            <span className="font-semibold drop-shadow-md">
+              {overallScore >= 90 ? "Excellent health! Keep up the great work!" :
+               overallScore >= 70 ? "Good health, continue monitoring trends" :
+               "Attention needed - please consult your doctor"}
             </span>
           </div>
         </div>
@@ -88,15 +88,15 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
         {metrics.map((metric, index) => (
           <div
             key={index}
-            className="p-5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+            className="p-6 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/90 hover:shadow-xl hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 hover:-translate-y-1"
           >
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                <p className="text-base font-semibold text-gray-700 dark:text-gray-200">
                   {metric.label}
                 </p>
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(metric.status)}`}>
+              <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${getStatusColor(metric.status)}`}>
                 {metric.status === "normal" ? "Normal" :
                  metric.status === "warning" ? "Elevated" :
                  "Critical"}
@@ -104,20 +104,20 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
             </div>
 
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-3xl font-bold text-gray-900 dark:text-white">
+              <span className="text-4xl font-bold text-gray-900 dark:text-white">
                 {metric.value}
               </span>
               {metric.unit && (
-                <span className="text-sm text-gray-500 dark:text-gray-400">
+                <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
                   {metric.unit}
                 </span>
               )}
             </div>
 
             {metric.trend && metric.change && (
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 {getTrendIcon(metric.trend)}
-                <span className="text-xs text-gray-600 dark:text-gray-400">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {metric.change}
                 </span>
               </div>

@@ -179,9 +179,29 @@ const generateSampleData = (): HealthData[] => {
 };
 
 // Custom tooltip component for chart points
-const CustomTooltip = ({ active, payload, label, coordinate }: any) => {
-  if (active && payload && payload.length && coordinate) {
-    return null; // We handle this with our custom click handler
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4">
+        <p className="font-semibold text-gray-900 dark:text-white mb-2">
+          {new Date(label).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          })}
+        </p>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center justify-between gap-4 mb-1">
+            <span className="text-sm font-medium" style={{ color: entry.color }}>
+              {entry.name === 'heartRate' ? 'Heart Rate' : 'SpO2'}:
+            </span>
+            <span className="text-sm font-bold" style={{ color: entry.color }}>
+              {entry.value} {entry.name === 'heartRate' ? 'bpm' : '%'}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
   }
   return null;
 };
@@ -441,18 +461,20 @@ const HealthMetricsChart: React.FC = () => {
             <YAxis 
               yAxisId="heartRate"
               orientation="left"
-              domain={[50, 120]}
+              domain={['dataMin - 10', 'dataMax + 10']}
               className="fill-gray-600 dark:fill-gray-400"
               hide={selectedMetric === 'spo2'}
               fontSize={10}
+              label={{ value: 'Heart Rate (bpm)', angle: -90, position: 'insideLeft', style: { fill: '#ef4444' } }}
             />
             <YAxis 
               yAxisId="spo2"
               orientation="right"
-              domain={[90, 100]}
+              domain={['dataMin - 5', 'dataMax + 2']}
               className="fill-gray-600 dark:fill-gray-400"
               hide={selectedMetric === 'heartRate'}
               fontSize={10}
+              label={{ value: 'SpO2 (%)', angle: 90, position: 'insideRight', style: { fill: '#3b82f6' } }}
             />
             <Tooltip content={<CustomTooltip />} />
             
@@ -473,10 +495,11 @@ const HealthMetricsChart: React.FC = () => {
                 yAxisId="heartRate"
                 type="monotone"
                 dataKey="heartRate"
+                name="heartRate"
                 stroke="#ef4444"
                 strokeWidth={2}
                 dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#ef4444', strokeWidth: 2 }}
+                activeDot={{ r: 8, stroke: '#ef4444', strokeWidth: 3, fill: '#ffffff' }}
               />
             )}
             
@@ -485,10 +508,11 @@ const HealthMetricsChart: React.FC = () => {
                 yAxisId="spo2"
                 type="monotone"
                 dataKey="spo2"
+                name="spo2"
                 stroke="#3b82f6"
                 strokeWidth={2}
                 dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                activeDot={{ r: 8, stroke: '#3b82f6', strokeWidth: 3, fill: '#ffffff' }}
               />
             )}
           </LineChart>
@@ -1249,36 +1273,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Time Range Selector & Export Buttons */}
-        <div className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white dark:bg-gray-900 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700">
-          <TimeRangeSelector 
-            selected={timeRange} 
-            onChange={setTimeRange}
-          />
-          <ExportButton
-            variant="compact"
-            onExportPDF={() => exportToPDF('health-dashboard-content', 'MedScan-Health-Report.pdf')}
-            onExportCSV={() => exportHealthSummary(vitals, labData, meds)}
-            onShare={async () => {
-              const data = {
-                vitals: filterDataByRange(vitals, timeRange),
-                labs: filterDataByRange(labData, timeRange),
-                healthScore,
-                generatedAt: new Date().toISOString()
-              };
-              return await generateShareableLink(data, 7);
-            }}
-          />
-        </div>
-
-        {/* Health Score Dashboard */}
-        <div className="mb-8" id="health-dashboard-content">
-          <HealthScoreDashboard
-            overallScore={healthScore}
-            metrics={getHealthMetrics(vitals, labData)}
-          />
-        </div>
-
         {/* Quick actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
@@ -1310,6 +1304,36 @@ export default function DashboardPage() {
               </motion.button>
             </a>
           ))}
+        </div>
+
+        {/* Time Range Selector & Export Buttons */}
+        <div className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white dark:bg-gray-900 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700">
+          <TimeRangeSelector 
+            selected={timeRange} 
+            onChange={setTimeRange}
+          />
+          <ExportButton
+            variant="compact"
+            onExportPDF={() => exportToPDF('health-dashboard-content', 'MedScan-Health-Report.pdf')}
+            onExportCSV={() => exportHealthSummary(vitals, labData, meds)}
+            onShare={async () => {
+              const data = {
+                vitals: filterDataByRange(vitals, timeRange),
+                labs: filterDataByRange(labData, timeRange),
+                healthScore,
+                generatedAt: new Date().toISOString()
+              };
+              return await generateShareableLink(data, 7);
+            }}
+          />
+        </div>
+
+        {/* Health Score Dashboard */}
+        <div className="mb-8" id="health-dashboard-content">
+          <HealthScoreDashboard
+            overallScore={healthScore}
+            metrics={getHealthMetrics(vitals, labData)}
+          />
         </div>
 
         {/* Medical Reminders */}

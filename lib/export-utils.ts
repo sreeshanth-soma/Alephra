@@ -197,27 +197,62 @@ function isLabNormal(lab: any): boolean {
   return lab.value >= lab.normalRange.min && lab.value <= lab.normalRange.max;
 }
 
-// Generate shareable link (requires backend API)
+// Helper function for safe base64 encoding (handles Unicode)
+function base64EncodeUnicode(str: string): string {
+  // First encode the string as UTF-8, then convert to base64
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+    return String.fromCharCode(parseInt(p1, 16));
+  }));
+}
+
+// Helper function for safe base64 decoding (handles Unicode)
+export function base64DecodeUnicode(str: string): string {
+  // Decode base64, then decode UTF-8
+  return decodeURIComponent(Array.prototype.map.call(atob(str), (c: string) => {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+}
+
+// Generate shareable link
 export async function generateShareableLink(data: any, expiresIn: number = 7): Promise<string> {
-  // This would typically call your backend API to store the data and return a link
-  // For now, we'll encode it in the URL (not recommended for production with sensitive data)
-  
-  const payload = {
-    data,
-    expiresAt: Date.now() + (expiresIn * 24 * 60 * 60 * 1000),
-    createdAt: Date.now()
-  };
-  
-  const encoded = btoa(JSON.stringify(payload));
-  const shareUrl = `${window.location.origin}/shared/${encoded}`;
-  
-  // Copy to clipboard
   try {
+    // Clean the data to remove any circular references or non-serializable data
+    const cleanData = {
+      vitals: (data.vitals || []).map((v: any) => ({
+        time: v.time || v.date,
+        hr: v.hr,
+        spo2: v.spo2,
+        date: v.date
+      })),
+      labs: (data.labs || []).map((l: any) => ({
+        name: l.name,
+        value: l.value,
+        unit: l.unit,
+        date: l.date,
+        normalRange: l.normalRange,
+        category: l.category
+      })),
+      healthScore: data.healthScore || 0,
+      generatedAt: data.generatedAt || new Date().toISOString()
+    };
+    
+    const payload = {
+      data: cleanData,
+      expiresAt: Date.now() + (expiresIn * 24 * 60 * 60 * 1000),
+      createdAt: Date.now()
+    };
+    
+    // Use safe encoding that handles Unicode
+    const jsonString = JSON.stringify(payload);
+    const encoded = base64EncodeUnicode(jsonString);
+    const shareUrl = `${window.location.origin}/shared/${encoded}`;
+    
+    // Copy to clipboard
     await navigator.clipboard.writeText(shareUrl);
     return shareUrl;
   } catch (err) {
-    console.error('Failed to copy to clipboard:', err);
-    return shareUrl;
+    console.error('Failed to generate shareable link:', err);
+    throw new Error('Failed to generate shareable link. Please try again.');
   }
 }
 
