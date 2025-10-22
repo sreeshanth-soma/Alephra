@@ -221,7 +221,69 @@ export default function CarePlanPage() {
               </Button>
             </div>
 
+            {showMedicationForm && (
+              <div className="p-5 rounded-lg bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 mb-4">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Add New Medication</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const times = formData.get('time') as string;
+                  const newMedication: Medication = {
+                    id: Date.now().toString(),
+                    name: formData.get('name') as string,
+                    dosage: formData.get('dosage') as string,
+                    frequency: formData.get('frequency') as string,
+                    time: times.split(',').map(t => t.trim()),
+                    startDate: formData.get('startDate') as string,
+                    endDate: formData.get('endDate') as string || undefined,
+                    taken: false,
+                  };
+                  setMedications([...medications, newMedication]);
+                  setShowMedicationForm(false);
+                  e.currentTarget.reset();
+                }} className="space-y-3">
+                  <div>
+                    <Label htmlFor="name" className="text-sm text-gray-700 dark:text-gray-300">Medication Name</Label>
+                    <Input id="name" name="name" required className="mt-1" placeholder="e.g., Metformin" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="dosage" className="text-sm text-gray-700 dark:text-gray-300">Dosage</Label>
+                      <Input id="dosage" name="dosage" required className="mt-1" placeholder="e.g., 500mg" />
+                    </div>
+                    <div>
+                      <Label htmlFor="frequency" className="text-sm text-gray-700 dark:text-gray-300">Frequency</Label>
+                      <Input id="frequency" name="frequency" required className="mt-1" placeholder="e.g., Twice daily" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="time" className="text-sm text-gray-700 dark:text-gray-300">Time(s) - comma separated</Label>
+                    <Input id="time" name="time" required className="mt-1" placeholder="e.g., 08:00, 20:00" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="startDate" className="text-sm text-gray-700 dark:text-gray-300">Start Date</Label>
+                      <Input id="startDate" name="startDate" type="date" required className="mt-1" />
+                    </div>
+                    <div>
+                      <Label htmlFor="endDate" className="text-sm text-gray-700 dark:text-gray-300">End Date (optional)</Label>
+                      <Input id="endDate" name="endDate" type="date" className="mt-1" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button type="submit" className="flex-1">Add Medication</Button>
+                    <Button type="button" variant="outline" onClick={() => setShowMedicationForm(false)}>Cancel</Button>
+                  </div>
+                </form>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {medications.length === 0 && !showMedicationForm && (
+                <div className="col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
+                  No medications added yet. Click &quot;Add New&quot; to add one.
+                </div>
+              )}
               {medications.map((med) => (
                 <div
                   key={med.id}
@@ -287,7 +349,78 @@ export default function CarePlanPage() {
                   </Button>
                 </div>
 
+                {showGoalForm && (
+                  <div className="p-5 rounded-lg bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 mb-4">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Add New Health Goal</h3>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+                      const current = parseFloat(formData.get('current') as string);
+                      const target = parseFloat(formData.get('target') as string);
+                      const progress = Math.round(((current - target) / current) * 100);
+                      
+                      const newGoal: HealthGoal = {
+                        id: Date.now().toString(),
+                        title: formData.get('title') as string,
+                        target: formData.get('target') as string,
+                        current: formData.get('current') as string,
+                        progress: Math.max(0, Math.min(100, progress)),
+                        deadline: formData.get('deadline') as string,
+                        category: formData.get('category') as 'weight' | 'exercise' | 'diet' | 'vitals' | 'other',
+                      };
+                      setHealthGoals([...healthGoals, newGoal]);
+                      setShowGoalForm(false);
+                      e.currentTarget.reset();
+                    }} className="space-y-3">
+                      <div>
+                        <Label htmlFor="title" className="text-sm text-gray-700 dark:text-gray-300">Goal Title</Label>
+                        <Input id="title" name="title" required className="mt-1" placeholder="e.g., Reduce Blood Pressure" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label htmlFor="current" className="text-sm text-gray-700 dark:text-gray-300">Current Value</Label>
+                          <Input id="current" name="current" required className="mt-1" placeholder="e.g., 135/85 mmHg" />
+                        </div>
+                        <div>
+                          <Label htmlFor="target" className="text-sm text-gray-700 dark:text-gray-300">Target Value</Label>
+                          <Input id="target" name="target" required className="mt-1" placeholder="e.g., 120/80 mmHg" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label htmlFor="category" className="text-sm text-gray-700 dark:text-gray-300">Category</Label>
+                          <select 
+                            id="category" 
+                            name="category" 
+                            required 
+                            className="mt-1 w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          >
+                            <option value="vitals">Vitals</option>
+                            <option value="weight">Weight</option>
+                            <option value="exercise">Exercise</option>
+                            <option value="diet">Diet</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label htmlFor="deadline" className="text-sm text-gray-700 dark:text-gray-300">Deadline</Label>
+                          <Input id="deadline" name="deadline" type="date" required className="mt-1" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button type="submit" className="flex-1">Add Goal</Button>
+                        <Button type="button" variant="outline" onClick={() => setShowGoalForm(false)}>Cancel</Button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
                 <div className="space-y-4">
+                  {healthGoals.length === 0 && !showGoalForm && (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      No health goals set yet. Click &quot;Add Goal&quot; to create one.
+                    </div>
+                  )}
                   {healthGoals.map((goal) => (
                     <div
                       key={goal.id}
