@@ -27,8 +27,7 @@ import {
   exportRemindersToCSV, 
   exportAppointmentsToCSV,
   exportHealthSummary,
-  exportToPDF,
-  generateShareableLink 
+  exportToPDF
 } from "@/lib/export-utils";
 import { 
   loadVitalsHybrid, 
@@ -1227,7 +1226,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-black dark:text-white"><span className="bg-gradient-to-r from-gray-600 to-black dark:from-gray-300 dark:to-white bg-clip-text text-transparent">Alephra</span> Dashboard</h1>
+                <h1 className="text-3xl font-bold text-black dark:text-white"><span className="bg-gradient-to-r from-gray-600 to-black dark:from-gray-300 dark:to-white bg-clip-text text-transparent">Alephra</span> My Health Space</h1>
                 <p className="text-gray-600 dark:text-gray-400">Overview of vitals, labs, meds, and care timeline</p>
               </div>
             </div>
@@ -1279,7 +1278,7 @@ export default function DashboardPage() {
             { label: "Upload Report", description: "Simple upload & chat", classes: "text-white bg-[#26A69A] hover:bg-[#219187] dark:text-white dark:bg-[#1E88E5] dark:hover:bg-[#1976D2]", href: "/report" },
             { label: "Health Analytics", description: "View health insights", classes: "text-black bg-[#B0BEC5] hover:bg-[#9aa8b0] dark:text-white dark:bg-[#43A047] dark:hover:bg-[#388E3C]", href: "/history" },
             { label: "Voice Assistant", description: "Talk to AI assistant", classes: "text-white bg-[#3F51B5] hover:bg-[#3546a6] dark:text-white dark:bg-[#7B1FA2] dark:hover:bg-[#6A1B9A]", href: "/voice" },
-            { label: "Advanced Analysis", description: "Full analytics & history", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-white dark:bg-[#F57C00] dark:hover:bg-[#EF6C00]", href: "/analysis" },
+            { label: "My Health Space", description: "Medications & appointments", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-white dark:bg-[#F57C00] dark:hover:bg-[#EF6C00]", href: "/care-plan" },
           ].map((b, i) => (
             <a key={i} href={b.href} className="block relative group">
               <motion.button 
@@ -1316,15 +1315,6 @@ export default function DashboardPage() {
             variant="compact"
             onExportPDF={() => exportToPDF('health-dashboard-content', 'MedScan-Health-Report.pdf')}
             onExportCSV={() => exportHealthSummary(vitals, labData, meds)}
-            onShare={async () => {
-              const data = {
-                vitals: filterDataByRange(vitals, timeRange),
-                labs: filterDataByRange(labData, timeRange),
-                healthScore,
-                generatedAt: new Date().toISOString()
-              };
-              return await generateShareableLink(data, 7);
-            }}
           />
         </div>
 
