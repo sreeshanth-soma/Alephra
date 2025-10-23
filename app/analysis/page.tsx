@@ -10,10 +10,13 @@ import EnhancedHistoryList from "@/components/EnhancedHistory";
 import { PrescriptionRecord, prescriptionStorage } from "@/lib/prescription-storage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Info, Upload, BarChart3 } from "lucide-react";
+import { Info, Upload, BarChart3, Share2, FileStack, Calendar } from "lucide-react";
 import Link from "next/link";
 import { Squares } from "@/components/ui/squares-background";
 import { MultiStepLoader as Loader } from "@/components/ui/multi-step-loader";
+import { ReportTimeline } from "@/components/ui/report-timeline";
+import { ReportCategories, ReportTemplate } from "@/components/ui/report-categories";
+import { CollaborativeSharing } from "@/components/ui/collaborative-sharing";
 import { 
   extractMetricsFromReport, 
   calculateHealthScore, 
@@ -34,6 +37,12 @@ const AnalysisPage = () => {
   const [loading, setLoading] = useState(false);
   const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // New states for enhanced features
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showSharing, setShowSharing] = useState(false);
+  const [reportToShare, setReportToShare] = useState<PrescriptionRecord | null>(null);
 
   // Memoized analytics data
   const analytics = useMemo(() => {
@@ -202,7 +211,57 @@ const AnalysisPage = () => {
         </div>
         
         {/* History control pinned to top-right below navbar */}
-        <div className="absolute top-16 right-6 z-30">
+        <div className="absolute top-16 right-6 z-30 flex items-center gap-2">
+          <button
+            onClick={() => {
+              setShowTimeline(!showTimeline);
+              if (!showTimeline) setShowTemplates(false); // Close templates when opening timeline
+            }}
+            className={`inline-flex items-center px-4 py-2 text-sm font-semibold backdrop-blur-sm rounded-full shadow-lg border transition-all duration-200 ${
+              showTimeline
+                ? 'bg-red-500 hover:bg-red-600 text-white border-red-600'
+                : 'text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+            }`}
+          >
+            {showTimeline ? (
+              <>
+                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Close Timeline
+              </>
+            ) : (
+              <>
+                <Calendar className="h-4 w-4 mr-2" />
+                Timeline
+              </>
+            )}
+          </button>
+          <button
+            onClick={() => {
+              setShowTemplates(!showTemplates);
+              if (!showTemplates) setShowTimeline(false); // Close timeline when opening templates
+            }}
+            className={`inline-flex items-center px-4 py-2 text-sm font-semibold backdrop-blur-sm rounded-full shadow-lg border transition-all duration-200 ${
+              showTemplates
+                ? 'bg-red-500 hover:bg-red-600 text-white border-red-600'
+                : 'text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+            }`}
+          >
+            {showTemplates ? (
+              <>
+                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Close Templates
+              </>
+            ) : (
+              <>
+                <FileStack className="h-4 w-4 mr-2" />
+                Templates
+              </>
+            )}
+          </button>
           <a 
             href="#history" 
             className="inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
@@ -213,6 +272,51 @@ const AnalysisPage = () => {
         </div>
         
         <div className="max-w-7xl mx-auto space-y-6">
+          {/* Timeline Section */}
+          {showTimeline && (
+            <div className="mb-8">
+              <ReportTimeline 
+                prescriptions={prescriptions} 
+                onReportSelect={(prescription) => {
+                  // Toggle: if clicking the same report, deselect it
+                  if (selectedPrescriptionId === prescription.id) {
+                    setreportData("");
+                    setSelectedPrescriptionId("");
+                    toast({
+                      description: "Report deselected"
+                    });
+                  } else {
+                    // Select new report
+                    setreportData(prescription.reportData);
+                    setSelectedPrescriptionId(prescription.id);
+                    toast({
+                      description: `Loaded: ${prescription.fileName}`
+                    });
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {/* Templates Section */}
+          {showTemplates && (
+            <div className="mb-8">
+              <ReportCategories
+                onSelectTemplate={(template: ReportTemplate) => {
+                  toast({
+                    description: `Selected template: ${template.name}`,
+                  });
+                  setShowTemplates(false);
+                }}
+                onCreateCustom={() => {
+                  toast({
+                    description: "Custom template creation coming soon!",
+                  });
+                }}
+              />
+            </div>
+          )}
+
           <div id="upload" className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[calc(100vh-220px)]">
             <div className="space-y-4 h-full">
               <ReportComponent onReportConfirmation={onReportConfirmation} onLoadingChange={handleLoadingChange} />
@@ -311,6 +415,17 @@ const AnalysisPage = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  setReportToShare(prescription);
+                                  setShowSharing(true);
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-cyan-600 transition-colors"
+                                title="Share report"
+                              >
+                                <Share2 className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   handleExport(prescription);
                                 }}
                                 className="p-1.5 text-gray-400 hover:text-primary transition-colors"
@@ -353,6 +468,17 @@ const AnalysisPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Collaborative Sharing Modal */}
+      {showSharing && reportToShare && (
+        <CollaborativeSharing
+          prescription={reportToShare}
+          onClose={() => {
+            setShowSharing(false);
+            setReportToShare(null);
+          }}
+        />
+      )}
     </div>
   );
 };

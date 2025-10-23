@@ -15,6 +15,7 @@ import { Heart, Activity, Calendar, Filter, CalendarDays, AlertTriangle, Trash2 
 import BasicModal from "@/components/ui/modal";
 import { Noise } from "@/components/ui/noise";
 import { useSession } from "next-auth/react";
+import { SignInPromptModal } from "@/components/ui/signin-prompt-modal";
 import { safeGetItem, safeSetItem, safeRemoveItem, clearAllAlephraData, isLocalStorageAvailable } from "@/lib/localStorage";
 import { toast } from "@/components/ui/use-toast";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
@@ -600,6 +601,7 @@ export default function DashboardPage() {
   const [newWeight, setNewWeight] = useState<string>("");
   const [newTemperature, setNewTemperature] = useState<string>("");
   const [showVitalsForm, setShowVitalsForm] = useState<boolean>(false);
+  const [showSignInPrompt, setShowSignInPrompt] = useState<boolean>(false);
   // Lab data state
   const [labData, setLabData] = useState<LabData[]>([]);
   const [showLabForm, setShowLabForm] = useState<boolean>(false);
@@ -1077,15 +1079,6 @@ export default function DashboardPage() {
           safeSetItem("alephra.vitals", updatedVitals);
         }
       }
-    } else {
-      // Not logged in - save to localStorage
-      const point: VitalsPoint = { ...vitalData, time: newHrDate };
-      const updatedVitals = [...vitals.filter(p => p.date !== newHrDate), point].sort((a, b) => a.date.localeCompare(b.date));
-      setVitals(updatedVitals);
-      if (isLocalStorageAvailable()) {
-        safeSetItem("alephra.vitals", updatedVitals);
-      }
-      setRemindersStatus("📝 Vitals saved locally (sign in to sync across devices)");
     }
     
     // Clear form
@@ -1142,8 +1135,6 @@ export default function DashboardPage() {
   }, [] as any[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const addLabEntry = async () => {
-    console.log("Adding lab entry:", { newLabName, newLabValue, newLabDate, newLabUnit });
-    
     if (!newLabName.trim() || !newLabValue || !newLabDate) {
       setRemindersStatus("Please fill in all required fields");
       setTimeout(() => setRemindersStatus(""), 3000);
@@ -1772,6 +1763,12 @@ export default function DashboardPage() {
                 </div>
                 <button
                   onClick={() => {
+                    // Check if user is signed in before showing form
+                    if (!session?.user?.email && !showVitalsForm) {
+                      setShowSignInPrompt(true);
+                      return;
+                    }
+                    
                     setShowVitalsForm(!showVitalsForm);
                     if (!showVitalsForm) {
                       setNewHrDate(new Date().toISOString().split('T')[0]);
@@ -2026,6 +2023,12 @@ export default function DashboardPage() {
               <div className="flex justify-center mt-6">
                           <button
                             onClick={() => {
+                    // Check if user is signed in before showing form
+                    if (!session?.user?.email && !showLabForm) {
+                      setShowSignInPrompt(true);
+                      return;
+                    }
+                    
                     setShowLabForm(!showLabForm);
                     if (!showLabForm) {
                       setNewLabDate(new Date().toISOString().split('T')[0]);
@@ -2644,6 +2647,12 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Sign In Prompt Modal */}
+      <SignInPromptModal 
+        isOpen={showSignInPrompt}
+        onClose={() => setShowSignInPrompt(false)}
+      />
     </div>
   );
 }
