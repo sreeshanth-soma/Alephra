@@ -62,56 +62,9 @@ export default function CarePlanPage() {
   const { data: session } = useSession();
   const [showSignInModal, setShowSignInModal] = useState(false);
   
-  const [medications, setMedications] = useState<Medication[]>([
-    {
-      id: '1',
-      name: 'Metformin',
-      dosage: '500mg',
-      frequency: 'Twice daily',
-      time: ['08:00', '20:00'],
-      startDate: '2025-10-01',
-      taken: false
-    },
-    {
-      id: '2',
-      name: 'Lisinopril',
-      dosage: '10mg',
-      frequency: 'Once daily',
-      time: ['09:00'],
-      startDate: '2025-10-01',
-      taken: true
-    }
-  ]);
+  const [medications, setMedications] = useState<Medication[]>([]);
 
-  const [healthGoals, setHealthGoals] = useState<HealthGoal[]>([
-    {
-      id: '1',
-      title: 'Reduce Blood Pressure',
-      target: '120/80 mmHg',
-      current: '135/85 mmHg',
-      progress: 60,
-      deadline: '2025-12-31',
-      category: 'vitals'
-    },
-    {
-      id: '2',
-      title: 'Weight Loss',
-      target: '75 kg',
-      current: '82 kg',
-      progress: 45,
-      deadline: '2025-11-30',
-      category: 'weight'
-    },
-    {
-      id: '3',
-      title: 'Daily Walking',
-      target: '10,000 steps',
-      current: '6,500 steps',
-      progress: 65,
-      deadline: '2025-10-31',
-      category: 'exercise'
-    }
-  ]);
+  const [healthGoals, setHealthGoals] = useState<HealthGoal[]>([]);
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
@@ -123,6 +76,35 @@ export default function CarePlanPage() {
     setMedications(medications.map(med => 
       med.id === id ? { ...med, taken: !med.taken } : med
     ));
+  };
+
+  const deleteMedication = (id: string) => {
+    setMedications(medications.filter(med => med.id !== id));
+  };
+
+  const deleteHealthGoal = (id: string) => {
+    setHealthGoals(healthGoals.filter(goal => goal.id !== id));
+  };
+
+  const calculateProgress = (current: string, target: string): number => {
+    // Extract numbers from strings
+    const currentNum = parseFloat(current.replace(/[^\d.]/g, ''));
+    const targetNum = parseFloat(target.replace(/[^\d.]/g, ''));
+    
+    if (isNaN(currentNum) || isNaN(targetNum) || targetNum === 0) {
+      return 0;
+    }
+    
+    // For weight loss or reduction goals (current > target)
+    if (currentNum > targetNum) {
+      const totalToLose = currentNum - targetNum;
+      const progress = ((currentNum - targetNum) / currentNum) * 100;
+      return Math.max(0, Math.min(100, 100 - progress));
+    }
+    
+    // For increase goals (target > current)
+    const progress = (currentNum / targetNum) * 100;
+    return Math.max(0, Math.min(100, progress));
   };
 
   const getNextDose = (medication: Medication) => {
@@ -300,18 +282,28 @@ export default function CarePlanPage() {
                         <span>{med.frequency}</span>
                       </div>
                     </div>
-                    <Button
-                      onClick={() => toggleMedicationTaken(med.id)}
-                      size="sm"
-                      variant={med.taken ? "default" : "ghost"}
-                      className={med.taken ? "bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200" : "text-gray-500 hover:text-black dark:hover:text-white"}
-                    >
-                      {med.taken ? (
-                        <CheckCircle2 className="w-5 h-5" />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-700 group-hover:border-black dark:group-hover:border-white" />
-                      )}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => toggleMedicationTaken(med.id)}
+                        size="sm"
+                        variant={med.taken ? "default" : "ghost"}
+                        className={med.taken ? "bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200" : "text-gray-500 hover:text-black dark:hover:text-white"}
+                      >
+                        {med.taken ? (
+                          <CheckCircle2 className="w-5 h-5" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-700 group-hover:border-black dark:group-hover:border-white" />
+                        )}
+                      </Button>
+                      <Button
+                        onClick={() => deleteMedication(med.id)}
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-500 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
@@ -355,16 +347,16 @@ export default function CarePlanPage() {
                     <form onSubmit={(e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
-                      const current = parseFloat(formData.get('current') as string);
-                      const target = parseFloat(formData.get('target') as string);
-                      const progress = Math.round(((current - target) / current) * 100);
+                      const current = formData.get('current') as string;
+                      const target = formData.get('target') as string;
+                      const progress = calculateProgress(current, target);
                       
                       const newGoal: HealthGoal = {
                         id: Date.now().toString(),
                         title: formData.get('title') as string,
-                        target: formData.get('target') as string,
-                        current: formData.get('current') as string,
-                        progress: Math.max(0, Math.min(100, progress)),
+                        target: target,
+                        current: current,
+                        progress: progress,
                         deadline: formData.get('deadline') as string,
                         category: formData.get('category') as 'weight' | 'exercise' | 'diet' | 'vitals' | 'other',
                       };
@@ -442,13 +434,23 @@ export default function CarePlanPage() {
                             <span>Target: <strong>{goal.target}</strong></span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                            {goal.progress}%
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                              {Math.round(calculateProgress(goal.current, goal.target))}%
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {getDaysUntil(goal.deadline)} days left
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {getDaysUntil(goal.deadline)} days left
-                          </div>
+                          <Button
+                            onClick={() => deleteHealthGoal(goal.id)}
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                       
@@ -456,7 +458,7 @@ export default function CarePlanPage() {
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
                         <div
                           className="bg-green-500 dark:bg-green-400 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${goal.progress}%` }}
+                          style={{ width: `${Math.round(calculateProgress(goal.current, goal.target))}%` }}
                         />
                       </div>
                     </div>

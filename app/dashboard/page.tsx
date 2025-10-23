@@ -40,20 +40,6 @@ import {
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string; bp?: { systolic: number; diastolic: number }; weight?: number; temperature?: number };
 
-function seedVitals(): VitalsPoint[] {
-  const points: VitalsPoint[] = [];
-  const today = new Date();
-  for (let i = 59; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const label = d.toISOString().slice(0, 10);
-    const hr = 72 + Math.round((Math.sin(i / 5) + Math.random() * 0.8) * 6);
-    const spo2 = 97 + (Math.random() > 0.8 ? -1 : 0);
-    points.push({ time: label, hr, spo2, date: label });
-  }
-  return points;
-}
-
 type LabData = { 
   id: string; 
   name: string; 
@@ -63,13 +49,6 @@ type LabData = {
   normalRange: { min: number; max: number }; 
   category: string;
 };
-
-const initialLabsData: LabData[] = [
-  { id: "1", name: "Glucose", value: 110, unit: "mg/dL", date: new Date().toISOString().split('T')[0], normalRange: { min: 70, max: 100 }, category: "Metabolic" },
-  { id: "2", name: "HDL", value: 45, unit: "mg/dL", date: new Date().toISOString().split('T')[0], normalRange: { min: 40, max: 200 }, category: "Lipid" },
-  { id: "3", name: "LDL", value: 120, unit: "mg/dL", date: new Date().toISOString().split('T')[0], normalRange: { min: 0, max: 100 }, category: "Lipid" },
-  { id: "4", name: "Triglycerides", value: 160, unit: "mg/dL", date: new Date().toISOString().split('T')[0], normalRange: { min: 0, max: 150 }, category: "Lipid" },
-];
 
 const meds = [
   { name: "Abciximab", dose: "250 mg", freq: "OD" },
@@ -158,25 +137,6 @@ interface SelectedPoint {
 }
 
 // Generate sample data for every 15 days
-const generateSampleData = (): HealthData[] => {
-  const data: HealthData[] = [];
-  const startDate = new Date('2024-01-01');
-  
-  for (let i = 0; i < 24; i++) {
-    const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() + (i * 15));
-    
-    data.push({
-      date: currentDate.toISOString().split('T')[0],
-      heartRate: Math.floor(Math.random() * 40) + 60, // 60-100 bpm
-      spo2: Math.floor(Math.random() * 5) + 95, // 95-100%
-      timestamp: currentDate.getTime()
-    });
-  }
-  
-  return data;
-};
-
 // Custom tooltip component for chart points
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -286,14 +246,30 @@ const DetailCard: React.FC<{
 };
 
 // Functional Health Metrics Chart Component
-const HealthMetricsChart: React.FC = () => {
-  const [data, setData] = useState<HealthData[]>(generateSampleData());
+interface HealthMetricsChartProps {
+  vitalsData: VitalsPoint[];
+}
+
+const HealthMetricsChart: React.FC<HealthMetricsChartProps> = ({ vitalsData }) => {
+  const [data, setData] = useState<HealthData[]>([]);
   const [selectedMetric, setSelectedMetric] = useState<'both' | 'heartRate' | 'spo2'>('both');
   const [selectedPoint, setSelectedPoint] = useState<SelectedPoint | null>(null);
-  const [newHeartRate, setNewHeartRate] = useState('');
-  const [newSpo2, setNewSpo2] = useState('');
-  const [newDate, setNewDate] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [realData, setRealData] = useState<HealthData[]>([]);
+
+  // Convert vitals data to chart format
+  useEffect(() => {
+    if (!isDemoMode) {
+      const chartData: HealthData[] = vitalsData.map((vital) => ({
+        date: vital.date || vital.time,
+        heartRate: vital.hr,
+        spo2: vital.spo2,
+        timestamp: new Date(vital.date || vital.time).getTime()
+      })).sort((a, b) => a.timestamp - b.timestamp);
+      
+      setData(chartData);
+    }
+  }, [vitalsData, isDemoMode]);
 
   const handleChartClick = (event: any) => {
     if (event && event.activePayload && event.activePayload.length > 0) {
@@ -308,40 +284,53 @@ const HealthMetricsChart: React.FC = () => {
     }
   };
 
-  const addDataPoint = () => {
-    if (newDate && newHeartRate && newSpo2) {
-      const heartRate = parseInt(newHeartRate);
-      const spo2 = parseInt(newSpo2);
+  const loadDemoData = () => {
+    if (isDemoMode) {
+      // Switch back to real data
+      setData(realData);
+      setIsDemoMode(false);
+    } else {
+      // Save real data and load demo
+      setRealData(data);
       
-      if (heartRate >= 30 && heartRate <= 200 && spo2 >= 80 && spo2 <= 100) {
-        const newDataPoint: HealthData = {
-          date: newDate,
-          heartRate: heartRate,
-          spo2: spo2,
-          timestamp: new Date(newDate).getTime()
-        };
+      const demoData: HealthData[] = [];
+      const today = new Date();
+      
+      // Generate 15 sample points over the last 30 days
+      for (let i = 0; i < 15; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - (i * 2));
         
-        // Add new data point and sort by date
-        const updatedData = [...data, newDataPoint].sort((a, b) => 
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-        
-        setData(updatedData);
-        setNewDate('');
-        setNewHeartRate('');
-        setNewSpo2('');
-        setShowAddForm(false);
-      } else {
-        alert('Please enter valid values: Heart Rate (30-200 bpm), SpO2 (80-100%)');
+        demoData.push({
+          date: date.toISOString().split('T')[0],
+          heartRate: Math.floor(Math.random() * 30) + 65, // 65-95 bpm
+          spo2: Math.floor(Math.random() * 4) + 96, // 96-99%
+          timestamp: date.getTime()
+        });
       }
+      
+      setData(demoData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+      setIsDemoMode(true);
     }
   };
 
   return (
     <div className="space-y-4">
+      {/* Mode Indicator */}
+      {isDemoMode && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
+          <svg className="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+            Demo Mode Active - Showing sample data
+          </span>
+        </div>
+      )}
+      
       {/* Controls */}
       <div className="flex flex-wrap gap-2 items-center justify-between">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant={selectedMetric === 'both' ? 'default' : 'outline'}
             onClick={() => setSelectedMetric('both')}
@@ -372,127 +361,141 @@ const HealthMetricsChart: React.FC = () => {
           </Button>
         </div>
         
-        <Button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-2 text-xs bg-emerald-600 hover:bg-emerald-700"
-          size="sm"
-        >
-          <Calendar className="h-3 w-3" />
-          Add Data
-        </Button>
-      </div>
-
-      {/* Add Data Form */}
-      {showAddForm && (
-        <div className="p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800">
-          <div className="text-sm font-medium text-black dark:text-white mb-3">Add New Health Data</div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div>
-              <Label htmlFor="date" className="text-xs">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-                onClick={() => {
-                  const input = document.getElementById('date') as HTMLInputElement;
-                  if (input && input.showPicker) {
-                    input.showPicker();
-                  }
-                }}
-                className="h-8 text-xs cursor-pointer"
-              />
-            </div>
-            <div>
-              <Label htmlFor="heartRate" className="text-xs">Heart Rate (bpm)</Label>
-              <Input
-                id="heartRate"
-                type="number"
-                placeholder="70"
-                min="30"
-                max="200"
-                value={newHeartRate}
-                onChange={(e) => setNewHeartRate(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div>
-              <Label htmlFor="spo2" className="text-xs">SpO2 (%)</Label>
-              <Input
-                id="spo2"
-                type="number"
-                placeholder="98"
-                min="80"
-                max="100"
-                value={newSpo2}
-                onChange={(e) => setNewSpo2(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="flex items-end">
-              <Button 
-                onClick={addDataPoint} 
-                className="h-8 w-full bg-cyan-600 hover:bg-cyan-700 text-xs"
-                size="sm"
-              >
-                Add Point
-              </Button>
+        <div className="flex gap-2 items-center">
+          {/* Export Button */}
+          {data.length > 0 && (
+            <Button
+              onClick={() => {
+                // Export chart data to CSV
+                const csvContent = [
+                  ['Date', 'Heart Rate (bpm)', 'SpO2 (%)'].join(','),
+                  ...data.map(d => [
+                    new Date(d.date).toLocaleDateString(),
+                    d.heartRate,
+                    d.spo2
+                  ].join(','))
+                ].join('\n');
+                
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `health-metrics-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              variant="outline"
+              className="flex items-center gap-2 text-xs bg-green-600 hover:bg-green-700 text-white border-green-600"
+              size="sm"
+            >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export CSV
+            </Button>
+          )}
+          
+          {/* Demo Mode Toggle */}
+          <div className="relative group">
+            <Button
+              variant={isDemoMode ? 'default' : 'outline'}
+              onClick={loadDemoData}
+              className={`flex items-center gap-2 text-xs ${
+                isDemoMode 
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                  : 'border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-950'
+              }`}
+              size="sm"
+            >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              {isDemoMode ? 'Exit Demo' : 'Demo'}
+            </Button>
+            {/* Tooltip */}
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-4 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl min-w-max">
+              <div className="text-sm font-medium mb-1">
+                {isDemoMode 
+                  ? '🔄 Click to return to your real data' 
+                  : '⚡ Preview with sample health data'}
+              </div>
+              <div className="text-xs text-gray-300 dark:text-gray-400">
+                {isDemoMode 
+                  ? 'Your real data is safely preserved' 
+                  : 'Your real data will be preserved'}
+              </div>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
+                <div className="border-[6px] border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Chart */}
       <div className="relative h-80 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={data}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            onClick={handleChartClick}
-          >
-            <CartesianGrid strokeDasharray="3 3" className="stroke-gray-300 dark:stroke-gray-700" />
-            <XAxis 
-              dataKey="date" 
-              className="fill-gray-600 dark:fill-gray-400"
-              tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              fontSize={10}
-            />
-            <YAxis 
-              yAxisId="heartRate"
-              orientation="left"
-              domain={['dataMin - 10', 'dataMax + 10']}
-              className="fill-gray-600 dark:fill-gray-400"
-              hide={selectedMetric === 'spo2'}
-              fontSize={10}
-              label={{ value: 'Heart Rate (bpm)', angle: -90, position: 'insideLeft', style: { fill: '#ef4444' } }}
-            />
-            <YAxis 
-              yAxisId="spo2"
-              orientation="right"
-              domain={['dataMin - 5', 'dataMax + 2']}
-              className="fill-gray-600 dark:fill-gray-400"
-              hide={selectedMetric === 'heartRate'}
-              fontSize={10}
-              label={{ value: 'SpO2 (%)', angle: 90, position: 'insideRight', style: { fill: '#3b82f6' } }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            
-            {/* Reference lines for normal ranges */}
-            {(selectedMetric === 'both' || selectedMetric === 'heartRate') && (
-              <>
-                <ReferenceLine yAxisId="heartRate" y={60} stroke="#ef4444" strokeDasharray="2 2" />
-                <ReferenceLine yAxisId="heartRate" y={100} stroke="#ef4444" strokeDasharray="2 2" />
-              </>
-            )}
-            
-            {(selectedMetric === 'both' || selectedMetric === 'spo2') && (
-              <ReferenceLine yAxisId="spo2" y={95} stroke="#3b82f6" strokeDasharray="2 2" />
-            )}
-            
-            {(selectedMetric === 'both' || selectedMetric === 'heartRate') && (
-              <Line
+        {data.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="w-20 h-20 mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <Heart className="w-10 h-10 text-gray-400" />
+            </div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              No health data yet
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Add vitals data below to start tracking your heart rate and SpO2
+            </div>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={data}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              onClick={handleChartClick}
+            >
+              <CartesianGrid strokeDasharray="3 3" className="stroke-gray-300 dark:stroke-gray-700" />
+              <XAxis 
+                dataKey="date" 
+                className="fill-gray-600 dark:fill-gray-400"
+                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                fontSize={10}
+              />
+              <YAxis 
                 yAxisId="heartRate"
-                type="monotone"
+                orientation="left"
+                domain={['dataMin - 10', 'dataMax + 10']}
+                className="fill-gray-600 dark:fill-gray-400"
+                hide={selectedMetric === 'spo2'}
+                fontSize={10}
+                label={{ value: 'Heart Rate (bpm)', angle: -90, position: 'insideLeft', style: { fill: '#ef4444' } }}
+              />
+              <YAxis 
+                yAxisId="spo2"
+                orientation="right"
+                domain={['dataMin - 5', 'dataMax + 2']}
+                className="fill-gray-600 dark:fill-gray-400"
+                hide={selectedMetric === 'heartRate'}
+                fontSize={10}
+                label={{ value: 'SpO2 (%)', angle: 90, position: 'insideRight', style: { fill: '#3b82f6' } }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              
+              {/* Reference lines for normal ranges */}
+              {(selectedMetric === 'both' || selectedMetric === 'heartRate') && (
+                <>
+                  <ReferenceLine yAxisId="heartRate" y={60} stroke="#ef4444" strokeDasharray="2 2" />
+                  <ReferenceLine yAxisId="heartRate" y={100} stroke="#ef4444" strokeDasharray="2 2" />
+                </>
+              )}
+              
+              {(selectedMetric === 'both' || selectedMetric === 'spo2') && (
+                <ReferenceLine yAxisId="spo2" y={95} stroke="#3b82f6" strokeDasharray="2 2" />
+              )}
+              
+              {(selectedMetric === 'both' || selectedMetric === 'heartRate') && (
+                <Line
+                  yAxisId="heartRate"
+                  type="monotone"
                 dataKey="heartRate"
                 name="heartRate"
                 stroke="#ef4444"
@@ -516,6 +519,7 @@ const HealthMetricsChart: React.FC = () => {
             )}
           </LineChart>
         </ResponsiveContainer>
+        )}
         
         {/* Detail Card Overlay */}
         {selectedPoint && (
@@ -617,20 +621,42 @@ export default function DashboardPage() {
   // Time range filter for analytics
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   // Export and health score state
-  const [healthScore, setHealthScore] = useState(95);
+  const [healthScore, setHealthScore] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
-      // Clear any existing default/seeded data first
+      // Clear ALL existing data - remove any old/demo data
       if (isLocalStorageAvailable()) {
+        // Check and clear any vitals data that has dates before 2025
         const rawVitals = safeGetItem("alephra.vitals", []);
-        if (Array.isArray(rawVitals) && rawVitals.length === 60) {
-          safeRemoveItem("alephra.vitals");
+        if (Array.isArray(rawVitals)) {
+          const oldData = rawVitals.filter((v: any) => {
+            const year = new Date(v.date || v.time).getFullYear();
+            return year < 2025;
+          });
+          if (oldData.length > 0) {
+            // Remove all old data
+            const newVitals = rawVitals.filter((v: any) => {
+              const year = new Date(v.date || v.time).getFullYear();
+              return year >= 2025;
+            });
+            safeSetItem("alephra.vitals", newVitals);
+          }
         }
         
         const rawLabs = safeGetItem<LabData[]>("alephra.labs", []);
-        if (Array.isArray(rawLabs) && rawLabs.length === 4 && rawLabs[0]?.id === "1") {
-          safeRemoveItem("alephra.labs");
+        if (Array.isArray(rawLabs)) {
+          const oldLabs = rawLabs.filter((l: any) => {
+            const year = new Date(l.date).getFullYear();
+            return year < 2025;
+          });
+          if (oldLabs.length > 0) {
+            const newLabs = rawLabs.filter((l: any) => {
+              const year = new Date(l.date).getFullYear();
+              return year >= 2025;
+            });
+            safeSetItem("alephra.labs", newLabs);
+          }
         }
       }
 
@@ -641,20 +667,43 @@ export default function DashboardPage() {
           const serverVitals = await loadVitalsHybrid(session.user.email);
           const serverLabs = await loadLabsHybrid(session.user.email);
           
-          setVitals(serverVitals);
-          setLabData(serverLabs);
+          // Filter out any data from before 2025
+          const filteredVitals = serverVitals.filter((v: VitalsPoint) => {
+            const year = new Date(v.date || v.time).getFullYear();
+            return year >= 2025;
+          });
           
-          console.log('✅ Data loaded from cloud:', { vitals: serverVitals.length, labs: serverLabs.length });
+          const filteredLabs = serverLabs.filter((l: LabData) => {
+            const year = new Date(l.date).getFullYear();
+            return year >= 2025;
+          });
+          
+          setVitals(filteredVitals);
+          setLabData(filteredLabs);
+          
+          // Also save to localStorage as backup
+          if (isLocalStorageAvailable()) {
+            safeSetItem("alephra.vitals", filteredVitals);
+            safeSetItem("alephra.labs", filteredLabs);
+          }
+          
+          console.log('✅ Data loaded from cloud:', { vitals: filteredVitals.length, labs: filteredLabs.length });
         } catch (error) {
           console.error('Failed to load from server, using localStorage:', error);
           // Fallback to localStorage
-          setVitals(safeGetItem<VitalsPoint[]>("alephra.vitals", []));
-          setLabData(safeGetItem<LabData[]>("alephra.labs", []));
+          const localVitals = safeGetItem<VitalsPoint[]>("alephra.vitals", []);
+          const localLabs = safeGetItem<LabData[]>("alephra.labs", []);
+          
+          setVitals(localVitals.filter((v: VitalsPoint) => new Date(v.date || v.time).getFullYear() >= 2025));
+          setLabData(localLabs.filter((l: LabData) => new Date(l.date).getFullYear() >= 2025));
         }
       } else {
         // Not logged in - use localStorage
-        setVitals(safeGetItem<VitalsPoint[]>("alephra.vitals", []));
-        setLabData(safeGetItem<LabData[]>("alephra.labs", []));
+        const localVitals = safeGetItem<VitalsPoint[]>("alephra.vitals", []);
+        const localLabs = safeGetItem<LabData[]>("alephra.labs", []);
+        
+        setVitals(localVitals.filter((v: VitalsPoint) => new Date(v.date || v.time).getFullYear() >= 2025));
+        setLabData(localLabs.filter((l: LabData) => new Date(l.date).getFullYear() >= 2025));
       }
       
       // Reminders and appointments still from localStorage (already have API)
@@ -722,6 +771,8 @@ export default function DashboardPage() {
     if (vitals.length > 0) {
       const score = calculateHealthScore(vitals);
       setHealthScore(score);
+    } else {
+      setHealthScore(0);
     }
   }, [vitals, labData]);
 
@@ -1008,18 +1059,32 @@ export default function DashboardPage() {
         await saveVitalToServer(vitalData);
         const updatedVitals = await loadVitalsHybrid(session.user.email);
         setVitals(updatedVitals);
+        
+        // Also save to localStorage for offline access
+        if (isLocalStorageAvailable()) {
+          safeSetItem("alephra.vitals", updatedVitals);
+        }
+        
         setRemindersStatus("✅ Vitals saved to cloud!");
       } catch (error) {
         console.error('Failed to save to server:', error);
         setRemindersStatus("⚠️ Saved locally (will sync when online)");
         // Fallback to localStorage
         const point: VitalsPoint = { ...vitalData, time: newHrDate };
-        setVitals(prev => [...prev.filter(p => p.date !== newHrDate), point].sort((a, b) => a.date.localeCompare(b.date)));
+        const updatedVitals = [...vitals.filter(p => p.date !== newHrDate), point].sort((a, b) => a.date.localeCompare(b.date));
+        setVitals(updatedVitals);
+        if (isLocalStorageAvailable()) {
+          safeSetItem("alephra.vitals", updatedVitals);
+        }
       }
     } else {
       // Not logged in - save to localStorage
       const point: VitalsPoint = { ...vitalData, time: newHrDate };
-      setVitals(prev => [...prev.filter(p => p.date !== newHrDate), point].sort((a, b) => a.date.localeCompare(b.date)));
+      const updatedVitals = [...vitals.filter(p => p.date !== newHrDate), point].sort((a, b) => a.date.localeCompare(b.date));
+      setVitals(updatedVitals);
+      if (isLocalStorageAvailable()) {
+        safeSetItem("alephra.vitals", updatedVitals);
+      }
       setRemindersStatus("📝 Vitals saved locally (sign in to sync across devices)");
     }
     
@@ -1123,7 +1188,7 @@ export default function DashboardPage() {
         break;
     }
 
-    const labData = {
+    const newLabData = {
       name: newLabName.trim(),
       value,
       unit: newLabUnit,
@@ -1132,26 +1197,40 @@ export default function DashboardPage() {
       category
     };
 
-    console.log("New lab data:", labData);
+    console.log("New lab data:", newLabData);
 
     // Save to server if logged in
     if (session?.user?.email) {
       try {
-        await saveLabToServer(labData);
+        await saveLabToServer(newLabData);
         const updatedLabs = await loadLabsHybrid(session.user.email);
         setLabData(updatedLabs);
+        
+        // Also save to localStorage for offline access
+        if (isLocalStorageAvailable()) {
+          safeSetItem("alephra.labs", updatedLabs);
+        }
+        
         setRemindersStatus("✅ Lab result saved to cloud!");
       } catch (error) {
         console.error('Failed to save to server:', error);
         setRemindersStatus("⚠️ Saved locally (will sync when online)");
         // Fallback to localStorage
-        const newLab: LabData = { ...labData, id: crypto.randomUUID() };
-        setLabData(prev => [...prev, newLab].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        const newLab: LabData = { ...newLabData, id: crypto.randomUUID() };
+        const updatedLabs = [...labData, newLab].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setLabData(updatedLabs);
+        if (isLocalStorageAvailable()) {
+          safeSetItem("alephra.labs", updatedLabs);
+        }
       }
     } else {
       // Not logged in - save to localStorage
-      const newLab: LabData = { ...labData, id: crypto.randomUUID() };
-      setLabData(prev => [...prev, newLab].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      const newLab: LabData = { ...newLabData, id: crypto.randomUUID() };
+      const updatedLabs = [...labData, newLab].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setLabData(updatedLabs);
+      if (isLocalStorageAvailable()) {
+        safeSetItem("alephra.labs", updatedLabs);
+      }
       setRemindersStatus("📝 Lab result saved locally (sign in to sync across devices)");
     }
     
@@ -1682,7 +1761,15 @@ export default function DashboardPage() {
           <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <div className="text-lg font-semibold text-black dark:text-white">Record Vitals</div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-pink-500">
+                    <Heart className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold text-black dark:text-white">Record Vitals</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Track your health metrics</div>
+                  </div>
+                </div>
                 <button
                   onClick={() => {
                     setShowVitalsForm(!showVitalsForm);
@@ -1690,9 +1777,30 @@ export default function DashboardPage() {
                       setNewHrDate(new Date().toISOString().split('T')[0]);
                     }
                   }}
-                  className="px-4 py-2 bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black text-sm font-medium rounded-lg shadow-lg hover:shadow-xl transition"
+                  className={`
+                    px-5 py-2.5 text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105
+                    ${showVitalsForm 
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' 
+                      : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
+                    }
+                    flex items-center gap-2
+                  `}
                 >
-                  {showVitalsForm ? "Cancel" : "Add Vitals"}
+                  {showVitalsForm ? (
+                    <>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Vitals Data
+                    </>
+                  )}
                 </button>
               </div>
               
@@ -1943,7 +2051,7 @@ export default function DashboardPage() {
                   </div>
                   
               {/* Advanced Health Metrics Chart */}
-              <HealthMetricsChart />
+              <HealthMetricsChart vitalsData={vitals} />
             </CardContent>
           </Card>
 
