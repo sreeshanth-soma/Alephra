@@ -37,6 +37,8 @@ import {
   saveLabToServer,
   deleteLabFromServer 
 } from "@/lib/data-sync";
+import { OnboardingTour } from "@/components/ui/onboarding-tour";
+import { onboardingSteps } from "@/app/onboarding-config";
 // Removed dropdown menu in Appointments to keep a single add button
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string; bp?: { systolic: number; diastolic: number }; weight?: number; temperature?: number };
@@ -624,6 +626,8 @@ export default function DashboardPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   // Export and health score state
   const [healthScore, setHealthScore] = useState(0);
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -2652,6 +2656,26 @@ export default function DashboardPage() {
       <SignInPromptModal 
         isOpen={showSignInPrompt}
         onClose={() => setShowSignInPrompt(false)}
+      />
+      
+      {/* Onboarding Tour */}
+      <OnboardingTour
+        steps={onboardingSteps}
+        onComplete={() => {
+          setShowOnboarding(false);
+          toast({
+            title: "Welcome aboard! 🎉",
+            description: "You're all set to start using Alephra.",
+          });
+        }}
+        onSkip={() => {
+          setShowOnboarding(false);
+          toast({
+            title: "Skipped tutorial",
+            description: "You can always restart it from settings.",
+          });
+        }}
+        storageKey="alephra-onboarding-completed"
       />
     </div>
   );

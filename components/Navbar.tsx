@@ -139,120 +139,29 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile theme toggle only (bottom nav handles navigation) */}
           <div className="md:hidden flex items-center gap-4">
             <ThemeToggle className="relative" />
-            <button
-              onClick={toggleMenu}
-              className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-300 shadow-lg"
-              aria-label="Toggle menu"
-            >
-              <motion.div
-                animate={{ rotate: isOpen ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {isOpen ? <X className="w-5 h-5 text-gray-700 dark:text-gray-300" /> : <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />}
-              </motion.div>
-            </button>
+            {/* User profile on mobile */}
+            {user && (
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-800 to-black flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">
+                    {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
+              </div>
+            )}
+            {!user && (
+              <Link href="/signin" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white">
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Mobile Navigation Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, y: -20 }}
-            animate={{ opacity: 1, height: 'auto', y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -20 }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
-            className="md:hidden bg-white/95 dark:bg-black/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-800/50 shadow-xl"
-          >
-            <div className="px-6 py-8 space-y-3">
-              {navItems.map((item, index) => {
-                const isActive = pathname === item.href;
-                return (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, x: -30, scale: 0.9 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    transition={{ delay: index * 0.1, duration: 0.4, ease: 'easeOut' }}
-                  >
-                    <Link
-                      href={item.href}
-                      onClick={closeMenu}
-                      className="block group relative"
-                    >
-                      {isActive ? (
-                        <div className="relative px-4 py-4 rounded-2xl bg-gradient-to-r from-gray-900 via-black to-gray-900 dark:from-white dark:via-gray-100 dark:to-white shadow-lg shadow-black/30 dark:shadow-white/20 transition-all duration-300">
-                          <div className="flex-1">
-                            <div className="font-bold text-lg text-white dark:text-black tracking-wide">
-                              {item.name}
-                            </div>
-                            <div className="text-sm text-white/90 dark:text-black/80">
-                              {item.description}
-                            </div>
-                          </div>
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-gray-700 via-black to-gray-700 dark:from-gray-300 dark:via-white dark:to-gray-300 opacity-20 blur-xl"></div>
-                        </div>
-                      ) : (
-                        <div className="relative px-4 py-4 rounded-2xl bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-300 dark:group-hover:bg-gray-600 group-hover:shadow-md transition-all duration-300">
-                          <div className="flex-1">
-                            <div className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">
-                              {item.name}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-300">
-                              {item.description}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </Link>
-                  </motion.div>
-                );
-              })}
-              
-              {/* Mobile Auth Section */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                {user ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/20 dark:to-gray-700/20">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-gray-800 to-black flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">
-                          {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-bold text-lg text-gray-900 dark:text-white">
-                          {user.name || 'User'}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {user.email}
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleSignOut}
-                      variant="outline"
-                      className="w-full h-12 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </div>
-                ) : (
-                  <Link href="/signin" onClick={closeMenu} className="block">
-                    <div className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center space-x-2 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:shadow-md">
-                      <LogIn className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                      <span className="font-medium text-gray-700 dark:text-gray-300 text-base">Sign In with Google</span>
-                    </div>
-                  </Link>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mobile navigation removed - using bottom nav bar instead */}
     </nav>
   );
 };

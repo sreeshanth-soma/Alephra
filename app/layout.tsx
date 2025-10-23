@@ -10,6 +10,9 @@ import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/Navbar";
 import { Analytics } from "@vercel/analytics/next";
 import SessionWrapper from "@/components/SessionWrapper";
+import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
+import { OfflineIndicator } from "@/components/ui/offline-indicator";
+import { FEATURE_FLAGS } from "./feature-flags";
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -51,11 +54,13 @@ export default function RootLayout({
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
-            enableSystem={false}
-            disableTransitionOnChange
+            enableSystem={true}
+            disableTransitionOnChange={false}
           >
             <Navbar />
             <TooltipProvider>{children}</TooltipProvider>
+            {FEATURE_FLAGS.MOBILE_BOTTOM_NAV && <MobileBottomNav />}
+            {FEATURE_FLAGS.OFFLINE_INDICATOR && <OfflineIndicator />}
             <Toaster />
             <Analytics />
           </ThemeProvider>

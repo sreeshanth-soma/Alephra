@@ -178,6 +178,7 @@
 
   @layer base {
     :root {
+      /* Light mode - original colors (good contrast + vibrant) */
       --background: 0 0% 100%;
       --foreground: 0 0% 5%;
 
@@ -187,8 +188,8 @@
       --popover: 0 0% 100%;
       --popover-foreground: 0 0% 5%;
 
-  --primary: 0 0% 0%;
-  --primary-foreground: 0 0% 100%;
+      --primary: 0 0% 0%;
+      --primary-foreground: 0 0% 100%;
 
       --secondary: 0 0% 96%;
       --secondary-foreground: 0 0% 10%;
@@ -207,9 +208,14 @@
       --ring: 0 0% 0%;
 
       --radius: 0.5rem;
+      
+      /* Transition timing - subtle and fast */
+      --theme-transition-duration: 200ms;
+      --theme-transition-timing: ease-in-out;
     }
 
     .dark {
+      /* Dark mode - original colors (pure blacks, high contrast) */
       --background: 0 0% 0%;
       --foreground: 0 0% 98%;
 
@@ -237,6 +243,29 @@
       --border: 0 0% 18%;
       --input: 0 0% 18%;
       --ring: 0 0% 100%;
+    }
+    
+    /* Smooth theme transitions - selective and performant */
+    .theme-transition {
+      transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+                  border-color var(--theme-transition-duration) var(--theme-transition-timing),
+                  color var(--theme-transition-duration) var(--theme-transition-timing);
+    }
+    
+    /* Only apply to specific elements that benefit from transitions */
+    .theme-transition body,
+    .theme-transition nav,
+    .theme-transition header,
+    .theme-transition main,
+    .theme-transition aside,
+    .theme-transition footer,
+    .theme-transition [class*="card"],
+    .theme-transition [class*="bg-"],
+    .theme-transition button,
+    .theme-transition a {
+      transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+                  border-color var(--theme-transition-duration) var(--theme-transition-timing),
+                  color var(--theme-transition-duration) var(--theme-transition-timing);
     }
   }
 
