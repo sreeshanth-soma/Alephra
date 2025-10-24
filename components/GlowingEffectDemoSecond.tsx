@@ -90,11 +90,11 @@ const GridItem = ({ area, icon, title, description, points, center, tall, minH }
       <div className={`relative rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-2 md:rounded-3xl md:p-3 dark:border-white/10 dark:bg-black/50 dark:backdrop-blur-sm ${minH ? minH : tall ? "min-h-[28rem]" : ""}`}>
         <GlowingEffect
           blur={0}
-          borderWidth={4}
-          spread={120}
-          glow={true}
+          borderWidth={2}
+          spread={80}
+          glow={false}
           disabled={false}
-          proximity={80}
+          proximity={60}
           inactiveZone={0.005}
         />
         <div className={`border-0.75 relative z-[1] flex flex-col ${center ? "justify-center" : "justify-between"} gap-6 rounded-xl p-6 md:p-6 h-full ${minH ? minH : ""}`}>

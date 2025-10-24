@@ -236,6 +236,37 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                 <div className="relative">
                     <FileUpload onChange={handleSelectedFiles} />
                 </div>
+                
+                {/* Template Quick Access */}
+                <div className="flex items-center gap-3 p-4 bg-gray-100 dark:bg-zinc-800/70 rounded-2xl border border-gray-300 dark:border-gray-700 shadow-md">
+                  <div className="flex-shrink-0 w-10 h-10 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center text-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    💡
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      Use templates for common tests
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                      Auto-fill fields for CBC, Lipid Panel, and more
+                    </p>
+                  </div>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="bg-gray-800 hover:bg-gray-900 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black font-semibold shadow-sm"
+                    onClick={() => {
+                      // Scroll to templates section
+                      const templatesBtn = document.querySelector('[data-templates-button]');
+                      if (templatesBtn) {
+                        (templatesBtn as HTMLElement).click();
+                        // Smooth scroll to top
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    Open Templates
+                  </Button>
+                </div>
 
                 <Button 
                     onClick={() => {
@@ -259,13 +290,13 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                 </Button>
 
 
-                <div className="space-y-3 flex-1 min-h-0">
+                <div className="space-y-3">
                     <Label className="text-base font-semibold text-gray-800 dark:text-gray-100">Report Summary</Label>
                     <Textarea
                         value={reportData}
                         onChange={(e) => setReportData(e.target.value)}
                         placeholder="Summary will appear here (You can even add additional information to the summary for better insights)" 
-                        className="h-36 lg:h-[180px] resize-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-0 transition-all duration-200"
+                        className="h-32 resize-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-0 transition-all duration-200"
                     />
                 </div>
 

@@ -84,7 +84,7 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {metrics.map((metric, index) => (
           <div
             key={index}
@@ -203,6 +203,33 @@ export function getHealthMetrics(vitals: any[], labs: any[]): HealthMetric[] {
         value: `${systolic}/${diastolic}`,
         unit: "mmHg",
         status: (systolic <= 130 && diastolic <= 85) ? "normal" : (systolic <= 140 && diastolic <= 90) ? "warning" : "critical"
+      });
+    }
+    
+    // Weight
+    if (latest.weight) {
+      const weightTrend = previous && previous.weight ? 
+        (latest.weight > previous.weight ? "up" : latest.weight < previous.weight ? "down" : "stable") : undefined;
+      const weightChange = previous && previous.weight ? 
+        `${Math.abs(latest.weight - previous.weight).toFixed(1)} kg vs last reading` : undefined;
+      metrics.push({
+        label: "Weight",
+        value: latest.weight,
+        unit: "kg",
+        status: "normal", // Weight status is subjective, keeping it normal
+        trend: weightTrend,
+        change: weightChange
+      });
+    }
+    
+    // Temperature
+    if (latest.temperature) {
+      metrics.push({
+        label: "Temperature",
+        value: latest.temperature,
+        unit: "°C",
+        status: (latest.temperature >= 36.1 && latest.temperature <= 37.2) ? "normal" : 
+                latest.temperature > 37.5 ? "warning" : "critical"
       });
     }
   }

@@ -238,6 +238,7 @@ const AnalysisPage = () => {
             )}
           </button>
           <button
+            data-templates-button
             onClick={() => {
               setShowTemplates(!showTemplates);
               if (!showTemplates) setShowTimeline(false); // Close timeline when opening templates

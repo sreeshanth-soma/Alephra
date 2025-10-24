@@ -208,10 +208,6 @@
       --ring: 0 0% 0%;
 
       --radius: 0.5rem;
-      
-      /* Transition timing - subtle and fast */
-      --theme-transition-duration: 200ms;
-      --theme-transition-timing: ease-in-out;
     }
 
     .dark {
@@ -245,27 +241,9 @@
       --ring: 0 0% 100%;
     }
     
-    /* Smooth theme transitions - selective and performant */
-    .theme-transition {
-      transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
-                  border-color var(--theme-transition-duration) var(--theme-transition-timing),
-                  color var(--theme-transition-duration) var(--theme-transition-timing);
-    }
-    
-    /* Only apply to specific elements that benefit from transitions */
-    .theme-transition body,
-    .theme-transition nav,
-    .theme-transition header,
-    .theme-transition main,
-    .theme-transition aside,
-    .theme-transition footer,
-    .theme-transition [class*="card"],
-    .theme-transition [class*="bg-"],
-    .theme-transition button,
-    .theme-transition a {
-      transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
-                  border-color var(--theme-transition-duration) var(--theme-transition-timing),
-                  color var(--theme-transition-duration) var(--theme-transition-timing);
+    /* Instant theme switching - remove transitions for better performance */
+    * {
+      transition: none !important;
     }
   }
 

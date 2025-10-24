@@ -630,45 +630,30 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
+    // Only load if not already initialized
+    if (isInitialized) return;
+    
     const loadData = async () => {
-      // Clear ALL existing data - remove any old/demo data
+      // Load vitals and labs from localStorage first (instant)
       if (isLocalStorageAvailable()) {
-        // Check and clear any vitals data that has dates before 2025
-        const rawVitals = safeGetItem("alephra.vitals", []);
-        if (Array.isArray(rawVitals)) {
-          const oldData = rawVitals.filter((v: any) => {
-            const year = new Date(v.date || v.time).getFullYear();
-            return year < 2025;
-          });
-          if (oldData.length > 0) {
-            // Remove all old data
-            const newVitals = rawVitals.filter((v: any) => {
-              const year = new Date(v.date || v.time).getFullYear();
-              return year >= 2025;
-            });
-            safeSetItem("alephra.vitals", newVitals);
-          }
-        }
+        const localVitals = safeGetItem<VitalsPoint[]>("alephra.vitals", []);
+        const localLabs = safeGetItem<LabData[]>("alephra.labs", []);
+        const localReminders = safeGetItem<Reminder[]>("alephra.reminders", []);
+        const localAppointments = safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("alephra.appointments", []);
+        const localCart = safeGetItem<any[]>("alephra.cart", []);
         
-        const rawLabs = safeGetItem<LabData[]>("alephra.labs", []);
-        if (Array.isArray(rawLabs)) {
-          const oldLabs = rawLabs.filter((l: any) => {
-            const year = new Date(l.date).getFullYear();
-            return year < 2025;
-          });
-          if (oldLabs.length > 0) {
-            const newLabs = rawLabs.filter((l: any) => {
-              const year = new Date(l.date).getFullYear();
-              return year >= 2025;
-            });
-            safeSetItem("alephra.labs", newLabs);
-          }
-        }
+        // Filter out old data (before 2025)
+        setVitals(localVitals.filter((v: VitalsPoint) => new Date(v.date || v.time).getFullYear() >= 2025));
+        setLabData(localLabs.filter((l: LabData) => new Date(l.date).getFullYear() >= 2025));
+        setReminders(localReminders);
+        setAppointments(localAppointments);
+        setCartItems(localCart);
+        
+        setIsInitialized(true);
       }
-
-      // Load vitals and labs with hybrid sync (server + localStorage)
+      
+      // Then sync with server in background if logged in (no blocking)
       if (session?.user?.email) {
-        // Logged in - load from server with auto-migration
         try {
           const serverVitals = await loadVitalsHybrid(session.user.email);
           const serverLabs = await loadLabsHybrid(session.user.email);
@@ -684,6 +669,7 @@ export default function DashboardPage() {
             return year >= 2025;
           });
           
+          // Update state with server data
           setVitals(filteredVitals);
           setLabData(filteredLabs);
           
@@ -693,41 +679,16 @@ export default function DashboardPage() {
             safeSetItem("alephra.labs", filteredLabs);
           }
           
-          console.log('✅ Data loaded from cloud:', { vitals: filteredVitals.length, labs: filteredLabs.length });
+          console.log('✅ Data synced from cloud:', { vitals: filteredVitals.length, labs: filteredLabs.length });
         } catch (error) {
-          console.error('Failed to load from server, using localStorage:', error);
-          // Fallback to localStorage
-          const localVitals = safeGetItem<VitalsPoint[]>("alephra.vitals", []);
-          const localLabs = safeGetItem<LabData[]>("alephra.labs", []);
-          
-          setVitals(localVitals.filter((v: VitalsPoint) => new Date(v.date || v.time).getFullYear() >= 2025));
-          setLabData(localLabs.filter((l: LabData) => new Date(l.date).getFullYear() >= 2025));
+          console.error('Background sync failed:', error);
+          // Keep using localStorage data, no need to show error
         }
-      } else {
-        // Not logged in - use localStorage
-        const localVitals = safeGetItem<VitalsPoint[]>("alephra.vitals", []);
-        const localLabs = safeGetItem<LabData[]>("alephra.labs", []);
-        
-        setVitals(localVitals.filter((v: VitalsPoint) => new Date(v.date || v.time).getFullYear() >= 2025));
-        setLabData(localLabs.filter((l: LabData) => new Date(l.date).getFullYear() >= 2025));
       }
-      
-      // Reminders and appointments still from localStorage (already have API)
-      if (isLocalStorageAvailable()) {
-        setReminders(safeGetItem<Reminder[]>("alephra.reminders", []));
-        setAppointments(safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("alephra.appointments", []));
-        setCartItems(safeGetItem<any[]>("alephra.cart", []));
-      } else {
-        setReminders([]);
-        setAppointments([]);
-        setCartItems([]);
-      }
-      
-      setIsInitialized(true);
     };
     
     loadData();
-  }, [session]);
+  }, [session, isInitialized]);
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
@@ -1400,6 +1361,215 @@ export default function DashboardPage() {
           />
         </div>
 
+        {/* Vitals Input Form - Moved here for better proximity to vital metrics */}
+        <div className="mb-8">
+          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-pink-500">
+                    <Heart className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold text-black dark:text-white">Record Vitals</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Track your health metrics</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    // Check if user is signed in before showing form
+                    if (!session?.user?.email && !showVitalsForm) {
+                      setShowSignInPrompt(true);
+                      return;
+                    }
+                    
+                    setShowVitalsForm(!showVitalsForm);
+                    if (!showVitalsForm) {
+                      setNewHrDate(new Date().toISOString().split('T')[0]);
+                    }
+                  }}
+                  className={`
+                    px-5 py-2.5 text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105
+                    ${showVitalsForm 
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' 
+                      : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
+                    }
+                    flex items-center gap-2
+                  `}
+                >
+                  {showVitalsForm ? (
+                    <>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Vitals Data
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              {showVitalsForm && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div>
+                    <Label htmlFor="vitals-date" className="text-sm font-medium">Date</Label>
+                    <div className="relative">
+                      <Input
+                        id="vitals-date"
+                        type="date"
+                        value={newHrDate || new Date().toISOString().split('T')[0]}
+                        onChange={(e) => setNewHrDate(e.target.value)}
+                        onClick={() => {
+                          const input = document.getElementById('vitals-date') as HTMLInputElement;
+                          if (input && input.showPicker) {
+                            input.showPicker();
+                          }
+                        }}
+                        className="mt-1 pr-10 cursor-pointer"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <CalendarDays className="h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewHrDate(new Date().toISOString().split('T')[0])}
+                        className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1 rounded border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                      >
+                        Today
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const yesterday = new Date();
+                          yesterday.setDate(yesterday.getDate() - 1);
+                          setNewHrDate(yesterday.toISOString().split('T')[0]);
+                        }}
+                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        Yesterday
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="heart-rate" className="text-sm font-medium">Heart Rate (bpm)</Label>
+                    <Input
+                      id="heart-rate"
+                      type="number"
+                      placeholder="72"
+                      min="30"
+                      max="200"
+                      value={newHrValue}
+                      onChange={(e) => setNewHrValue(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="spo2" className="text-sm font-medium">SpO2 (%)</Label>
+                    <Input
+                      id="spo2"
+                      type="number"
+                      placeholder="98"
+                      min="80"
+                      max="100"
+                      value={newSpO2Value}
+                      onChange={(e) => setNewSpO2Value(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="bp-systolic" className="text-sm font-medium">BP Systolic (mmHg)</Label>
+                    <Input
+                      id="bp-systolic"
+                      type="number"
+                      placeholder="120"
+                      min="70"
+                      max="200"
+                      value={newBpSystolic}
+                      onChange={(e) => setNewBpSystolic(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="bp-diastolic" className="text-sm font-medium">BP Diastolic (mmHg)</Label>
+                    <Input
+                      id="bp-diastolic"
+                      type="number"
+                      placeholder="80"
+                      min="40"
+                      max="120"
+                      value={newBpDiastolic}
+                      onChange={(e) => setNewBpDiastolic(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="weight" className="text-sm font-medium">Weight (kg)</Label>
+                    <Input
+                      id="weight"
+                      type="number"
+                      placeholder="70"
+                      min="30"
+                      max="200"
+                      value={newWeight}
+                      onChange={(e) => setNewWeight(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="temperature" className="text-sm font-medium">Temperature (°C)</Label>
+                    <Input
+                      id="temperature"
+                      type="number"
+                      placeholder="36.5"
+                      min="35"
+                      max="42"
+                      step="0.1"
+                      value={newTemperature}
+                      onChange={(e) => setNewTemperature(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-3">
+                    <button
+                      onClick={() => setShowVitalsForm(false)}
+                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={addVitalsEntry}
+                      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+                    >
+                      Save Vitals
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {remindersStatus && (
+                <div className="mt-3 text-sm text-blue-600 dark:text-blue-400">
+                  {remindersStatus}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Medical Reminders */}
         <div className="mb-8">
           <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
@@ -1697,265 +1867,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
-          <MetricCard 
-            label="Heart Rate" 
-            value={vitals.length > 0 ? vitals[vitals.length - 1].hr.toString() : "86"} 
-            unit="bpm" 
-            accent={vitals.length > 0 && vitals[vitals.length - 1].hr > 100 ? "High" : vitals.length > 0 && vitals[vitals.length - 1].hr < 60 ? "Low" : "Normal"} 
-          />
-          <MetricCard 
-            label="SpO2" 
-            value={vitals.length > 0 ? `${vitals[vitals.length - 1].spo2}%` : "98%"} 
-            accent={vitals.length > 0 && vitals[vitals.length - 1].spo2 < 95 ? "Low" : "Good"} 
-          />
-          <MetricCard 
-            label="Blood Pressure" 
-            value={getBpStatus().value} 
-            unit="mmHg" 
-            accent={getBpStatus().status} 
-          />
-          <MetricCard 
-            label="Health Score" 
-            value={getHeartScore().toString()} 
-            unit="%" 
-            accent={getHeartScore() >= 90 ? "Excellent" : getHeartScore() >= 80 ? "Good" : getHeartScore() >= 70 ? "Fair" : "Needs Attention"} 
-          />
-          <MetricCard 
-            label="Weight" 
-            value={(() => {
-              const latestVital = vitals[vitals.length - 1];
-              return latestVital?.weight ? latestVital.weight.toString() : "70";
-            })()} 
-            unit="kg" 
-            accent="Normal" 
-          />
-          <MetricCard 
-            label="Temperature" 
-            value={(() => {
-              const latestVital = vitals[vitals.length - 1];
-              return latestVital?.temperature ? latestVital.temperature.toString() : "36.5";
-            })()} 
-            unit="°C" 
-            accent={(() => {
-              const latestVital = vitals[vitals.length - 1];
-              if (!latestVital?.temperature) return "Normal";
-              if (latestVital.temperature > 37.5) return "Fever";
-              if (latestVital.temperature < 36) return "Low";
-              return "Normal";
-            })()} 
-          />
-        </div>
-
-        {/* Vitals Input Form */}
-        <div className="mb-8">
-          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-pink-500">
-                    <Heart className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-lg font-semibold text-black dark:text-white">Record Vitals</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">Track your health metrics</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    // Check if user is signed in before showing form
-                    if (!session?.user?.email && !showVitalsForm) {
-                      setShowSignInPrompt(true);
-                      return;
-                    }
-                    
-                    setShowVitalsForm(!showVitalsForm);
-                    if (!showVitalsForm) {
-                      setNewHrDate(new Date().toISOString().split('T')[0]);
-                    }
-                  }}
-                  className={`
-                    px-5 py-2.5 text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105
-                    ${showVitalsForm 
-                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' 
-                      : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
-                    }
-                    flex items-center gap-2
-                  `}
-                >
-                  {showVitalsForm ? (
-                    <>
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Cancel
-                    </>
-                  ) : (
-                    <>
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                      Add Vitals Data
-                    </>
-                  )}
-                </button>
-              </div>
-              
-              {showVitalsForm && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div>
-                    <Label htmlFor="vitals-date" className="text-sm font-medium">Date</Label>
-                    <div className="relative">
-                      <Input
-                        id="vitals-date"
-                        type="date"
-                        value={newHrDate || new Date().toISOString().split('T')[0]}
-                        onChange={(e) => setNewHrDate(e.target.value)}
-                        onClick={() => {
-                          const input = document.getElementById('vitals-date') as HTMLInputElement;
-                          if (input && input.showPicker) {
-                            input.showPicker();
-                          }
-                        }}
-                        className="mt-1 pr-10 cursor-pointer"
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <CalendarDays className="h-4 w-4 text-gray-400" />
-                      </div>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setNewHrDate(new Date().toISOString().split('T')[0])}
-                        className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1 rounded border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                      >
-                        Today
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const yesterday = new Date();
-                          yesterday.setDate(yesterday.getDate() - 1);
-                          setNewHrDate(yesterday.toISOString().split('T')[0]);
-                        }}
-                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                      >
-                        Yesterday
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="heart-rate" className="text-sm font-medium">Heart Rate (bpm)</Label>
-                    <Input
-                      id="heart-rate"
-                      type="number"
-                      placeholder="72"
-                      min="30"
-                      max="200"
-                      value={newHrValue}
-                      onChange={(e) => setNewHrValue(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="spo2" className="text-sm font-medium">SpO2 (%)</Label>
-                    <Input
-                      id="spo2"
-                      type="number"
-                      placeholder="98"
-                      min="80"
-                      max="100"
-                      value={newSpO2Value}
-                      onChange={(e) => setNewSpO2Value(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="bp-systolic" className="text-sm font-medium">BP Systolic (mmHg)</Label>
-                    <Input
-                      id="bp-systolic"
-                      type="number"
-                      placeholder="120"
-                      min="70"
-                      max="200"
-                      value={newBpSystolic}
-                      onChange={(e) => setNewBpSystolic(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="bp-diastolic" className="text-sm font-medium">BP Diastolic (mmHg)</Label>
-                    <Input
-                      id="bp-diastolic"
-                      type="number"
-                      placeholder="80"
-                      min="40"
-                      max="120"
-                      value={newBpDiastolic}
-                      onChange={(e) => setNewBpDiastolic(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="weight" className="text-sm font-medium">Weight (kg)</Label>
-                    <Input
-                      id="weight"
-                      type="number"
-                      placeholder="70"
-                      min="30"
-                      max="200"
-                      value={newWeight}
-                      onChange={(e) => setNewWeight(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="temperature" className="text-sm font-medium">Temperature (°C)</Label>
-                    <Input
-                      id="temperature"
-                      type="number"
-                      placeholder="36.5"
-                      min="35"
-                      max="42"
-                      step="0.1"
-                      value={newTemperature}
-                      onChange={(e) => setNewTemperature(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-3">
-                    <button
-                      onClick={() => setShowVitalsForm(false)}
-                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={addVitalsEntry}
-                      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
-                    >
-                      Save Vitals
-                    </button>
-                  </div>
-                </div>
-              )}
-              
-              {remindersStatus && (
-                <div className="mt-3 text-sm text-blue-600 dark:text-blue-400">
-                  {remindersStatus}
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>

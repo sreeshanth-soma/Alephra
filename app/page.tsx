@@ -19,16 +19,23 @@ import { HoverButton } from "@/components/ui/hover-button";
 import Waves from "@/components/Waves";
 
 export default function Home() {
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+  
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  const currentTheme = mounted ? (resolvedTheme || theme) : "light";
   
   return (
     <>
       {/* Fixed background with Waves animation */}
       <div className="fixed inset-0 z-0 bg-white dark:bg-black">
         <Waves
-          lineColor={theme === "dark" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.25)"}
+          lineColor={currentTheme === "dark" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.25)"}
           backgroundColor="transparent"
-          cursorDotColor={theme === "dark" ? "#000000" : "#ffffff"}
+          cursorDotColor="transparent"
           waveSpeedX={0.02}
           waveSpeedY={0.01}
           waveAmpX={40}
@@ -145,7 +152,8 @@ export default function Home() {
         >
           <div className="relative mx-auto rounded-2xl overflow-hidden z-10">
           <Image
-            src={theme === "dark" ? "/landing-hero-dark1.jpg" : "/landing-hero-light.jpg"}
+            key={currentTheme}
+            src={currentTheme === "dark" ? "/landing-hero-dark1.jpg" : "/landing-hero-light.jpg"}
               alt="Alephra AI Medical Assistant Dashboard"
             height={720}
             width={1400}
