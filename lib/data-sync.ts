@@ -114,29 +114,32 @@ export async function deleteLabFromServer(id: string) {
 }
 
 // Migration helper - one-time sync from localStorage to database
-export async function migrateLocalDataToServer() {
+export async function migrateLocalDataToServer(userEmail: string): Promise<void> {
+  const isDev = process.env.NODE_ENV !== 'production';
+  if (isDev) console.log('Starting data migration from localStorage to server...');
+  
   try {
-    console.log('Starting data migration from localStorage to server...');
-    
     // Migrate vitals
-    const localVitals = safeGetItem('alephra.vitals', []);
+    const localVitals = JSON.parse(safeGetItem("vitals", "[]"));
     if (localVitals.length > 0) {
-      console.log(`Migrating ${localVitals.length} vitals...`);
-      await syncVitalsToServer(localVitals);
+      if (isDev) console.log(`Migrating ${localVitals.length} vitals...`);
+      for (const vital of localVitals) {
+        await saveVitalToServer(vital);
+      }
     }
     
     // Migrate labs
-    const localLabs = safeGetItem('alephra.labs', []);
+    const localLabs = JSON.parse(safeGetItem("labs", "[]"));
     if (localLabs.length > 0) {
-      console.log(`Migrating ${localLabs.length} lab results...`);
-      await syncLabsToServer(localLabs);
+      if (isDev) console.log(`Migrating ${localLabs.length} lab results...`);
+      for (const lab of localLabs) {
+        await saveLabToServer(lab);
+      }
     }
     
-    console.log('Migration complete!');
-    return { success: true, vitals: localVitals.length, labs: localLabs.length };
+    if (isDev) console.log('Migration complete!');
   } catch (error) {
-    console.error('Migration failed:', error);
-    return { success: false, error };
+    console.error('Migration error:', error);
   }
 }
 

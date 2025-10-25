@@ -42,16 +42,16 @@ export async function GET(req: NextRequest) {
     const formattedReports = reports.map((report: any) => ({
       id: report.id,
       fileName: report.fileName,
-      fileUrl: report.fileUrl,
-      fileType: report.fileType,
-      fileSize: report.fileSize,
-      reportText: null, // Excluded for performance
-      summary: report.summary,
-      extractedData: null, // Excluded for performance
+      fileUrl: report.fileUrl || "",
+      fileType: report.fileType || "",
+      fileSize: report.fileSize || 0,
+      reportText: "", // Excluded for performance - use /api/reports/[id] to get full text
+      summary: report.summary || "",
+      extractedData: "", // Excluded for performance - use /api/reports/[id] to get full data
       uploadDate: report.uploadDate.toISOString(),
-      reportDate: report.reportDate?.toISOString(),
-      category: report.category,
-      status: report.status,
+      reportDate: report.reportDate?.toISOString() || null,
+      category: report.category || "General",
+      status: report.status || "processed",
     }));
 
     return NextResponse.json({ reports: formattedReports });

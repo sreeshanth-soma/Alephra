@@ -46,8 +46,7 @@ export function SplineBackground({
             iframeDoc.head.appendChild(style);
           }
         } catch (error) {
-          // Cross-origin restrictions may prevent this, but we try anyway
-          console.log('Could not remove watermark due to cross-origin restrictions');
+          // Cross-origin restrictions may prevent this, silently ignore
         }
       }
     };

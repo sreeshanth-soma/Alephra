@@ -39,6 +39,7 @@ import {
 } from "@/lib/data-sync";
 import { OnboardingTour } from "@/components/ui/onboarding-tour";
 import { onboardingSteps } from "@/app/onboarding-config";
+import { devLog } from "@/lib/dev-logger";
 // Removed dropdown menu in Appointments to keep a single add button
 
 type VitalsPoint = { time: string; hr: number; spo2: number; date: string; bp?: { systolic: number; diastolic: number }; weight?: number; temperature?: number };
@@ -643,8 +644,6 @@ export default function DashboardPage() {
         const localAppointments = safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("alephra.appointments", []);
         const localCart = safeGetItem<any[]>("alephra.cart", []);
         
-        console.log('📊 Loading from localStorage:', { vitals: localVitals.length, labs: localLabs.length });
-        
         // Filter out old data (before 2025) and remove duplicates
         const filteredVitals = localVitals.filter((v: VitalsPoint) => {
           const dateStr = v.date || v.time;
@@ -677,8 +676,6 @@ export default function DashboardPage() {
         setReminders(localReminders);
         setAppointments(localAppointments);
         setCartItems(localCart);
-        
-        console.log('✅ Loaded from localStorage:', { vitals: dedupedVitals.length, labs: filteredLabs.length });
       }
       
       // Then sync with server in background if logged in (no blocking)
@@ -723,8 +720,6 @@ export default function DashboardPage() {
             safeSetItem("alephra.vitals", dedupedVitals);
             safeSetItem("alephra.labs", filteredLabs);
           }
-          
-          console.log('✅ Data synced from cloud:', { vitals: dedupedVitals.length, labs: filteredLabs.length });
         } catch (error) {
           console.error('Background sync failed:', error);
           // Keep using localStorage data, no need to show error

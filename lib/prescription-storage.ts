@@ -61,7 +61,8 @@ class PrescriptionStorage {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Report saved to server:', data.report.id);
+        const isDev = process.env.NODE_ENV !== 'production';
+        if (isDev) console.log('Report saved to server:', data.report.id);
         
         // Invalidate cache to force fresh fetch
         this.invalidateCache();
@@ -119,13 +120,11 @@ class PrescriptionStorage {
     // Check if cache is valid (less than 30 seconds old)
     const now = Date.now();
     if (this.cache && (now - this.cacheTimestamp) < this.CACHE_DURATION) {
-      console.log('📦 Using cached prescriptions');
       return this.cache;
     }
 
     // If there's already a pending request, wait for it instead of making a new one
     if (this.pendingRequest) {
-      console.log('⏳ Waiting for pending request...');
       return this.pendingRequest;
     }
 
@@ -142,7 +141,6 @@ class PrescriptionStorage {
 
   private async fetchPrescriptions(): Promise<PrescriptionRecord[]> {
     try {
-      console.log('🌐 Fetching prescriptions from server...');
       // Try to fetch from server
       const response = await fetch('/api/reports');
       
@@ -195,7 +193,8 @@ class PrescriptionStorage {
   invalidateCache(): void {
     this.cache = null;
     this.cacheTimestamp = 0;
-    console.log('🗑️ Cache invalidated');
+    const isDev = process.env.NODE_ENV !== 'production';
+    if (isDev) console.log('🗑️ Cache invalidated');
   }
 
   // Get prescription by ID
@@ -213,7 +212,8 @@ class PrescriptionStorage {
       });
 
       if (response.ok) {
-        console.log('Report deleted from server');
+        const isDev = process.env.NODE_ENV !== 'production';
+        if (isDev) console.log('Report deleted from server');
         // Invalidate cache to force fresh fetch
         this.invalidateCache();
       }

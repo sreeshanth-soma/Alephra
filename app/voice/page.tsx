@@ -21,9 +21,10 @@ import { CustomSelect } from '@/components/ui/custom-select';
 import { FloatingSelectModal } from '@/components/ui/floating-select-modal';
 import { useSession } from 'next-auth/react';
 import { SignInPromptModal } from '@/components/ui/signin-prompt-modal';
+import { devLog } from '@/lib/dev-logger';
 
 const isProd = process.env.NODE_ENV === 'production';
-const log = (...args: any[]) => { if (!isProd) console.log(...args); };
+const log = (...args: any[]) => { if (!isProd) devLog(...args); };
 
 // TypeScript declarations for browser speech recognition
 declare global {
@@ -489,7 +490,7 @@ export default function VoiceAgentPage() {
         mediaRecorderRef.current.stop();
         mediaRecorderRef.current = null;
       } catch (error) {
-        console.log('MediaRecorder already stopped:', error);
+        devLog('MediaRecorder already stopped:', error);
       }
     }
     
@@ -578,17 +579,15 @@ export default function VoiceAgentPage() {
           }
         }
       } catch (error) {
-        console.log('Error loading report data:', error);
+        devLog('Error loading report data:', error);
       }
 
       // Get dashboard vitals data
       let vitalsData = '';
       try {
         const vitals = JSON.parse(localStorage.getItem('alephra.vitals') || '[]');
-        console.log('Vitals from localStorage:', vitals);
         if (vitals && vitals.length > 0) {
           const latestVitals = vitals[vitals.length - 1];
-          console.log('Latest vitals:', latestVitals);
           const vitalsSummary = [];
           
           if (latestVitals.hr) vitalsSummary.push(`Heart Rate: ${latestVitals.hr} bpm`);
@@ -601,10 +600,8 @@ export default function VoiceAgentPage() {
           
           if (vitalsSummary.length > 0) {
             vitalsData = `\n--- Latest Vitals (${latestVitals.date}) ---\n${vitalsSummary.join(', ')}`;
-            console.log('Generated vitals data:', vitalsData);
           }
         } else {
-          console.log('No vitals data found in localStorage');
           // Create sample vitals data for testing if none exists
           const sampleVitals = [{
             date: new Date().toISOString(),
@@ -615,7 +612,6 @@ export default function VoiceAgentPage() {
             temperature: 36.5
           }];
           localStorage.setItem('alephra.vitals', JSON.stringify(sampleVitals));
-          console.log('Created sample vitals data for testing');
           
           // Now process the sample data
           const latestVitals = sampleVitals[0];
@@ -631,17 +627,13 @@ export default function VoiceAgentPage() {
           
           if (vitalsSummary.length > 0) {
             vitalsData = `\n--- Latest Vitals (${latestVitals.date}) ---\n${vitalsSummary.join(', ')}`;
-            console.log('Generated sample vitals data:', vitalsData);
           }
         }
       } catch (error) {
-        console.log('Error loading vitals data:', error);
       }
 
       // Call Gemini AI API for intelligent response with vector database
       const finalReportData = reportData + vitalsData;
-      console.log('Final report data being sent:', finalReportData);
-      console.log('Report data length:', finalReportData.length);
       
       const response = await fetch('/api/voice/gemini-chat', {
         method: 'POST',
@@ -1001,7 +993,7 @@ export default function VoiceAgentPage() {
     
     // Stop speech synthesis (browser TTS)
     if ('speechSynthesis' in window && speechSynthesis.speaking) {
-      console.log('Stopping speech synthesis');
+      devLog('Stopping speech synthesis');
       speechSynthesis.cancel();
     }
     

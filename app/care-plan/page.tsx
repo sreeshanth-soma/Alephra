@@ -81,21 +81,15 @@ export default function CarePlanPage() {
 
       setIsLoading(true);
       try {
-        const [serverMeds, serverGoals, serverAppts] = await Promise.all([
-          fetch('/api/care-plan/medications').then(r => r.ok ? r.json() : []),
-          fetch('/api/care-plan/health-goals').then(r => r.ok ? r.json() : []),
-          fetch('/api/care-plan/care-appointments').then(r => r.ok ? r.json() : [])
+        const [medsResponse, goalsResponse, apptsResponse] = await Promise.all([
+          fetch('/api/care-plan/medications').then(r => r.ok ? r.json() : { medications: [] }),
+          fetch('/api/care-plan/health-goals').then(r => r.ok ? r.json() : { healthGoals: [] }),
+          fetch('/api/care-plan/care-appointments').then(r => r.ok ? r.json() : { appointments: [] })
         ]);
 
-        setMedications(serverMeds);
-        setHealthGoals(serverGoals);
-        setAppointments(serverAppts);
-        
-        console.log('✅ Data loaded from cloud:', { 
-          medications: serverMeds.length, 
-          goals: serverGoals.length, 
-          appointments: serverAppts.length 
-        });
+        setMedications(medsResponse.medications || []);
+        setHealthGoals(goalsResponse.healthGoals || []);
+        setAppointments(apptsResponse.appointments || []);
       } catch (error) {
         console.error('Error loading from server:', error);
       } finally {
@@ -125,8 +119,7 @@ export default function CarePlanPage() {
       if (response.ok) {
         // Reload all medications from server to ensure sync
         const serverMeds = await fetch('/api/care-plan/medications').then(r => r.json());
-        setMedications(serverMeds);
-        console.log('✅ Medication saved to cloud');
+        setMedications(serverMeds.medications || []);
       }
     } catch (err) {
       console.error('Error saving medication:', err);
@@ -152,8 +145,7 @@ export default function CarePlanPage() {
       if (response.ok) {
         // Reload all goals from server to ensure sync
         const serverGoals = await fetch('/api/care-plan/health-goals').then(r => r.json());
-        setHealthGoals(serverGoals);
-        console.log('✅ Health goal saved to cloud');
+        setHealthGoals(serverGoals.healthGoals || []);
       }
     } catch (err) {
       console.error('Error saving health goal:', err);
@@ -179,18 +171,16 @@ export default function CarePlanPage() {
       if (response.ok) {
         // Reload all appointments from server to ensure sync
         const serverAppts = await fetch('/api/care-plan/care-appointments').then(r => r.json());
-        setAppointments(serverAppts);
+        setAppointments(serverAppts.appointments || []);
         
         // Also sync to dashboard appointments
-        const dashboardAppts = serverAppts.map((apt: Appointment) => ({
+        const dashboardAppts = (serverAppts.appointments || []).map((apt: Appointment) => ({
           id: apt.id,
           title: `${apt.doctor} - ${apt.specialty}`,
           date: apt.date,
           time: apt.time
         }));
         localStorage.setItem('alephra.appointments', JSON.stringify(dashboardAppts));
-        
-        console.log('✅ Appointment saved to cloud');
       }
     } catch (err) {
       console.error('Error saving appointment:', err);
@@ -217,7 +207,7 @@ export default function CarePlanPage() {
       if (response.ok) {
         // Reload from server
         const serverMeds = await fetch('/api/care-plan/medications').then(r => r.json());
-        setMedications(serverMeds);
+        setMedications(serverMeds.medications || []);
       }
     } catch (err) {
       console.error('Error updating medication:', err);
@@ -238,8 +228,7 @@ export default function CarePlanPage() {
       if (response.ok) {
         // Reload from server
         const serverMeds = await fetch('/api/care-plan/medications').then(r => r.json());
-        setMedications(serverMeds);
-        console.log('✅ Medication deleted from cloud');
+        setMedications(serverMeds.medications || []);
       }
     } catch (err) {
       console.error('Error deleting medication:', err);
@@ -261,8 +250,7 @@ export default function CarePlanPage() {
       if (response.ok) {
         // Reload from server
         const serverGoals = await fetch('/api/care-plan/health-goals').then(r => r.json());
-        setHealthGoals(serverGoals);
-        console.log('✅ Health goal deleted from cloud');
+        setHealthGoals(serverGoals.healthGoals || []);
       }
     } catch (err) {
       console.error('Error deleting health goal:', err);
@@ -284,18 +272,16 @@ export default function CarePlanPage() {
       if (response.ok) {
         // Reload from server
         const serverAppts = await fetch('/api/care-plan/care-appointments').then(r => r.json());
-        setAppointments(serverAppts);
+        setAppointments(serverAppts.appointments || []);
         
         // Also update dashboard appointments
-        const dashboardAppts = serverAppts.map((apt: Appointment) => ({
+        const dashboardAppts = (serverAppts.appointments || []).map((apt: Appointment) => ({
           id: apt.id,
           title: `${apt.doctor} - ${apt.specialty}`,
           date: apt.date,
           time: apt.time
         }));
         localStorage.setItem('alephra.appointments', JSON.stringify(dashboardAppts));
-        
-        console.log('✅ Appointment deleted from cloud');
       }
     } catch (err) {
       console.error('Error deleting appointment:', err);

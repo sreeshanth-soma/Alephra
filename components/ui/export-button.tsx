@@ -29,9 +29,6 @@ export function ExportButton({
       const link = await onShare();
       setCopied(true);
       
-      // Log success message
-      console.log('✅ Share link copied to clipboard:', link);
-      
       setTimeout(() => setCopied(false), 3000);
     } catch (error) {
       console.error('❌ Share failed:', error);
