@@ -69,158 +69,237 @@ export default function CarePlanPage() {
   const [showMedicationForm, setShowMedicationForm] = useState(false);
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Hybrid sync: Load from localStorage first (instant), then sync with server
+  // Load data from server only (no localStorage)
   useEffect(() => {
-    if (isInitialized) return;
-
-    // 1. Load from localStorage immediately (instant display)
-    const savedMedications = localStorage.getItem('alephra.carePlan.medications');
-    const savedGoals = localStorage.getItem('alephra.carePlan.healthGoals');
-    const savedAppointments = localStorage.getItem('alephra.carePlan.appointments');
-    
-    if (savedMedications) {
-      try {
-        setMedications(JSON.parse(savedMedications));
-      } catch (e) {
-        console.error('Failed to parse medications:', e);
+    const loadDataFromServer = async () => {
+      if (!session?.user) {
+        setIsLoading(false);
+        return;
       }
-    }
-    
-    if (savedGoals) {
+
+      setIsLoading(true);
       try {
-        setHealthGoals(JSON.parse(savedGoals));
-      } catch (e) {
-        console.error('Failed to parse health goals:', e);
+        const [serverMeds, serverGoals, serverAppts] = await Promise.all([
+          fetch('/api/care-plan/medications').then(r => r.ok ? r.json() : []),
+          fetch('/api/care-plan/health-goals').then(r => r.ok ? r.json() : []),
+          fetch('/api/care-plan/care-appointments').then(r => r.ok ? r.json() : [])
+        ]);
+
+        setMedications(serverMeds);
+        setHealthGoals(serverGoals);
+        setAppointments(serverAppts);
+        
+        console.log('✅ Data loaded from cloud:', { 
+          medications: serverMeds.length, 
+          goals: serverGoals.length, 
+          appointments: serverAppts.length 
+        });
+      } catch (error) {
+        console.error('Error loading from server:', error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    
-    if (savedAppointments) {
-      try {
-        setAppointments(JSON.parse(savedAppointments));
-      } catch (e) {
-        console.error('Failed to parse appointments:', e);
-      }
-    }
+    };
 
-    // 2. If user is signed in, sync with server in background
-    if (session?.user) {
-      Promise.all([
-        fetch('/api/care-plan/medications').then(r => r.ok ? r.json() : []),
-        fetch('/api/care-plan/health-goals').then(r => r.ok ? r.json() : []),
-        fetch('/api/care-plan/care-appointments').then(r => r.ok ? r.json() : [])
-      ]).then(([serverMeds, serverGoals, serverAppts]) => {
-        if (serverMeds.length > 0) {
-          setMedications(serverMeds);
-          localStorage.setItem('alephra.carePlan.medications', JSON.stringify(serverMeds));
-        }
-        if (serverGoals.length > 0) {
-          setHealthGoals(serverGoals);
-          localStorage.setItem('alephra.carePlan.healthGoals', JSON.stringify(serverGoals));
-        }
-        if (serverAppts.length > 0) {
-          setAppointments(serverAppts);
-          localStorage.setItem('alephra.carePlan.appointments', JSON.stringify(serverAppts));
-        }
-      }).catch(error => {
-        console.error('Error syncing with server:', error);
-      });
-    }
+    loadDataFromServer();
+  }, [session]);
 
-    setIsInitialized(true);
-  }, [session, isInitialized]);
-
-  // Save to both localStorage and server
+  // Save to server only
   const syncMedications = async (newMedications: Medication[]) => {
-    setMedications(newMedications);
-    localStorage.setItem('alephra.carePlan.medications', JSON.stringify(newMedications));
+    if (!session?.user) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    const newMed = newMedications[newMedications.length - 1];
     
-    if (session?.user) {
-      // Sync to server in background
-      fetch('/api/care-plan/medications', {
+    try {
+      const response = await fetch('/api/care-plan/medications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMedications[newMedications.length - 1])
-      }).catch(err => console.error('Error syncing medication:', err));
+        body: JSON.stringify(newMed)
+      });
+
+      if (response.ok) {
+        // Reload all medications from server to ensure sync
+        const serverMeds = await fetch('/api/care-plan/medications').then(r => r.json());
+        setMedications(serverMeds);
+        console.log('✅ Medication saved to cloud');
+      }
+    } catch (err) {
+      console.error('Error saving medication:', err);
+      alert('Failed to save medication. Please try again.');
     }
   };
 
   const syncHealthGoals = async (newGoals: HealthGoal[]) => {
-    setHealthGoals(newGoals);
-    localStorage.setItem('alephra.carePlan.healthGoals', JSON.stringify(newGoals));
+    if (!session?.user) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    const newGoal = newGoals[newGoals.length - 1];
     
-    if (session?.user) {
-      fetch('/api/care-plan/health-goals', {
+    try {
+      const response = await fetch('/api/care-plan/health-goals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newGoals[newGoals.length - 1])
-      }).catch(err => console.error('Error syncing health goal:', err));
+        body: JSON.stringify(newGoal)
+      });
+
+      if (response.ok) {
+        // Reload all goals from server to ensure sync
+        const serverGoals = await fetch('/api/care-plan/health-goals').then(r => r.json());
+        setHealthGoals(serverGoals);
+        console.log('✅ Health goal saved to cloud');
+      }
+    } catch (err) {
+      console.error('Error saving health goal:', err);
+      alert('Failed to save health goal. Please try again.');
     }
   };
 
   const syncAppointments = async (newAppointments: Appointment[]) => {
-    setAppointments(newAppointments);
-    localStorage.setItem('alephra.carePlan.appointments', JSON.stringify(newAppointments));
+    if (!session?.user) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    const newAppt = newAppointments[newAppointments.length - 1];
     
-    if (session?.user) {
-      fetch('/api/care-plan/care-appointments', {
+    try {
+      const response = await fetch('/api/care-plan/care-appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newAppointments[newAppointments.length - 1])
-      }).catch(err => console.error('Error syncing appointment:', err));
+        body: JSON.stringify(newAppt)
+      });
+
+      if (response.ok) {
+        // Reload all appointments from server to ensure sync
+        const serverAppts = await fetch('/api/care-plan/care-appointments').then(r => r.json());
+        setAppointments(serverAppts);
+        
+        // Also sync to dashboard appointments
+        const dashboardAppts = serverAppts.map((apt: Appointment) => ({
+          id: apt.id,
+          title: `${apt.doctor} - ${apt.specialty}`,
+          date: apt.date,
+          time: apt.time
+        }));
+        localStorage.setItem('alephra.appointments', JSON.stringify(dashboardAppts));
+        
+        console.log('✅ Appointment saved to cloud');
+      }
+    } catch (err) {
+      console.error('Error saving appointment:', err);
+      alert('Failed to save appointment. Please try again.');
     }
   };
 
   const toggleMedicationTaken = async (id: string) => {
-    const updatedMeds = medications.map(med => 
-      med.id === id ? { ...med, taken: !med.taken } : med
-    );
-    setMedications(updatedMeds);
-    localStorage.setItem('alephra.carePlan.medications', JSON.stringify(updatedMeds));
-    
-    if (session?.user) {
-      fetch(`/api/care-plan/medications?id=${id}`, {
+    if (!session?.user) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    const medication = medications.find(m => m.id === id);
+    if (!medication) return;
+
+    try {
+      const response = await fetch(`/api/care-plan/medications?id=${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ taken: !medications.find(m => m.id === id)?.taken })
-      }).catch(err => console.error('Error updating medication:', err));
+        body: JSON.stringify({ taken: !medication.taken })
+      });
+
+      if (response.ok) {
+        // Reload from server
+        const serverMeds = await fetch('/api/care-plan/medications').then(r => r.json());
+        setMedications(serverMeds);
+      }
+    } catch (err) {
+      console.error('Error updating medication:', err);
     }
   };
 
   const deleteMedication = async (id: string) => {
-    const updatedMeds = medications.filter(med => med.id !== id);
-    setMedications(updatedMeds);
-    localStorage.setItem('alephra.carePlan.medications', JSON.stringify(updatedMeds));
-    
-    if (session?.user) {
-      fetch(`/api/care-plan/medications?id=${id}`, {
+    if (!session?.user) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/care-plan/medications?id=${id}`, {
         method: 'DELETE'
-      }).catch(err => console.error('Error deleting medication:', err));
+      });
+
+      if (response.ok) {
+        // Reload from server
+        const serverMeds = await fetch('/api/care-plan/medications').then(r => r.json());
+        setMedications(serverMeds);
+        console.log('✅ Medication deleted from cloud');
+      }
+    } catch (err) {
+      console.error('Error deleting medication:', err);
+      alert('Failed to delete medication. Please try again.');
     }
   };
 
   const deleteHealthGoal = async (id: string) => {
-    const updatedGoals = healthGoals.filter(goal => goal.id !== id);
-    setHealthGoals(updatedGoals);
-    localStorage.setItem('alephra.carePlan.healthGoals', JSON.stringify(updatedGoals));
-    
-    if (session?.user) {
-      fetch(`/api/care-plan/health-goals?id=${id}`, {
+    if (!session?.user) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/care-plan/health-goals?id=${id}`, {
         method: 'DELETE'
-      }).catch(err => console.error('Error deleting health goal:', err));
+      });
+
+      if (response.ok) {
+        // Reload from server
+        const serverGoals = await fetch('/api/care-plan/health-goals').then(r => r.json());
+        setHealthGoals(serverGoals);
+        console.log('✅ Health goal deleted from cloud');
+      }
+    } catch (err) {
+      console.error('Error deleting health goal:', err);
+      alert('Failed to delete health goal. Please try again.');
     }
   };
 
   const deleteAppointment = async (id: string) => {
-    const updatedAppts = appointments.filter(appt => appt.id !== id);
-    setAppointments(updatedAppts);
-    localStorage.setItem('alephra.carePlan.appointments', JSON.stringify(updatedAppts));
-    
-    if (session?.user) {
-      fetch(`/api/care-plan/care-appointments?id=${id}`, {
+    if (!session?.user) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/care-plan/care-appointments?id=${id}`, {
         method: 'DELETE'
-      }).catch(err => console.error('Error deleting appointment:', err));
+      });
+
+      if (response.ok) {
+        // Reload from server
+        const serverAppts = await fetch('/api/care-plan/care-appointments').then(r => r.json());
+        setAppointments(serverAppts);
+        
+        // Also update dashboard appointments
+        const dashboardAppts = serverAppts.map((apt: Appointment) => ({
+          id: apt.id,
+          title: `${apt.doctor} - ${apt.specialty}`,
+          date: apt.date,
+          time: apt.time
+        }));
+        localStorage.setItem('alephra.appointments', JSON.stringify(dashboardAppts));
+        
+        console.log('✅ Appointment deleted from cloud');
+      }
+    } catch (err) {
+      console.error('Error deleting appointment:', err);
+      alert('Failed to delete appointment. Please try again.');
     }
   };
 
@@ -272,6 +351,39 @@ export default function CarePlanPage() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-black pt-16 pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading your health space...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show sign in prompt if not authenticated
+  if (!session?.user) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-black pt-16 pb-12 flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <Heart className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+          <h2 className="text-2xl font-bold text-black dark:text-white mb-2">Sign In Required</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Please sign in to access your health space and sync your data across devices.
+          </p>
+          <button
+            onClick={() => setShowSignInModal(true)}
+            className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition font-medium"
+          >
+            Sign In Now
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-black pt-16 pb-12">
@@ -685,19 +797,8 @@ export default function CarePlanPage() {
                       // Reset form first (before hiding it)
                       e.currentTarget.reset();
                       
-                      // Add to care plan appointments
+                      // Add to care plan appointments (will also sync to dashboard)
                       await syncAppointments([...appointments, newAppointment]);
-                      
-                      // Also add to dashboard appointments (sync)
-                      const dashboardAppointments = localStorage.getItem('alephra.appointments');
-                      const dashboardAppts = dashboardAppointments ? JSON.parse(dashboardAppointments) : [];
-                      dashboardAppts.push({
-                        id: newAppointment.id,
-                        title: `${doctor} - ${newAppointment.specialty}`,
-                        date: date,
-                        time: time
-                      });
-                      localStorage.setItem('alephra.appointments', JSON.stringify(dashboardAppts));
                       
                       // Hide form after reset
                       setShowAppointmentForm(false);
