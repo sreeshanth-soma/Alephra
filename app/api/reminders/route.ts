@@ -6,27 +6,34 @@ import { google } from "googleapis";
 
 const prisma = new PrismaClient();
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
+    // Optimized: Single query, active reminders only
     const reminders = await prisma.reminder.findMany({
-      where: {
-        userId: session.user.id,
+      where: { 
+        user: { email: session.user.email },
+        isCompleted: false // Only show active reminders
       },
-      orderBy: {
-        reminderTime: 'asc',
-      },
+      orderBy: { createdAt: 'desc' },
+      take: 30, // Max 30 reminders
     });
 
     return NextResponse.json({ reminders });
   } catch (error) {
-    console.error("Reminders fetch error:", error);
-    return NextResponse.json({ error: "Failed to fetch reminders" }, { status: 500 });
+    console.error("Error fetching reminders:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch reminders" },
+      { status: 500 }
+    );
   }
 }
 

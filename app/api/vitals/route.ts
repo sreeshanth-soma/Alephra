@@ -15,22 +15,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Get user
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
+    // Optimized: Single query with relation, limited to last 90 days
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    // Fetch vitals
     const vitals = await prisma.vital.findMany({
-      where: { userId: user.id },
-      orderBy: { date: 'asc' },
+      where: { 
+        user: { email: session.user.email },
+        date: { gte: ninetyDaysAgo } // Only last 90 days
+      },
+      orderBy: { date: 'desc' },
+      take: 100, // Max 100 records
     });
 
     // Transform to match frontend format

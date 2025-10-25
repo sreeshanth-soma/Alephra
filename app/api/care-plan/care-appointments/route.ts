@@ -3,22 +3,30 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Optimized: Direct query, fetch upcoming appointments only
+    const today = new Date().toISOString().split('T')[0];
+
     const appointments = await prisma.carePlanAppointment.findMany({
-      where: { userEmail: session.user.email },
-      orderBy: { createdAt: 'desc' }
+      where: { 
+        userEmail: session.user.email,
+        date: { gte: today } // Only future/today appointments
+      },
+      orderBy: { date: 'asc' },
+      take: 20, // Max 20 upcoming appointments
     });
 
-    return NextResponse.json(appointments);
+    return NextResponse.json({ appointments });
   } catch (error) {
-    console.error('Error fetching appointments:', error);
-    return NextResponse.json({ error: 'Failed to fetch appointments' }, { status: 500 });
+    console.error("Error fetching appointments:", error);
+    return NextResponse.json({ error: "Failed to fetch appointments" }, { status: 500 });
   }
 }
 

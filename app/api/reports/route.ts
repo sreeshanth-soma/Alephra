@@ -15,20 +15,27 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
-
+    // Optimized: Single query, exclude huge TEXT fields, limited to 20 reports
     const reports = await prisma.medicalReport.findMany({
-      where: { userId: user.id },
+      where: { 
+        user: { email: session.user.email }
+      },
       orderBy: { uploadDate: 'desc' },
+      take: 20, // Max 20 reports
+      select: {
+        id: true,
+        fileName: true,
+        fileUrl: true,
+        fileType: true,
+        fileSize: true,
+        summary: true, // Keep summary (usually short)
+        uploadDate: true,
+        reportDate: true,
+        category: true,
+        status: true,
+        // Exclude reportText and extractedData (they're huge)
+        // Can fetch them separately when viewing a specific report
+      }
     });
 
     // Transform to match frontend format
@@ -38,9 +45,9 @@ export async function GET(req: NextRequest) {
       fileUrl: report.fileUrl,
       fileType: report.fileType,
       fileSize: report.fileSize,
-      reportText: report.reportText,
+      reportText: null, // Excluded for performance
       summary: report.summary,
-      extractedData: report.extractedData ? JSON.parse(report.extractedData) : null,
+      extractedData: null, // Excluded for performance
       uploadDate: report.uploadDate.toISOString(),
       reportDate: report.reportDate?.toISOString(),
       category: report.category,

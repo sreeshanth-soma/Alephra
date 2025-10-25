@@ -3,22 +3,25 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Optimized: Direct query, no extra user lookup needed
     const healthGoals = await prisma.healthGoal.findMany({
       where: { userEmail: session.user.email },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      take: 30, // Max 30 goals
     });
 
-    return NextResponse.json(healthGoals);
+    return NextResponse.json({ healthGoals });
   } catch (error) {
-    console.error('Error fetching health goals:', error);
-    return NextResponse.json({ error: 'Failed to fetch health goals' }, { status: 500 });
+    console.error("Error fetching health goals:", error);
+    return NextResponse.json({ error: "Failed to fetch health goals" }, { status: 500 });
   }
 }
 

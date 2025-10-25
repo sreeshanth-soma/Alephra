@@ -3,22 +3,25 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Optimized: Direct query, no extra user lookup needed
     const medications = await prisma.medication.findMany({
       where: { userEmail: session.user.email },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      take: 50, // Max 50 medications
     });
 
-    return NextResponse.json(medications);
+    return NextResponse.json({ medications });
   } catch (error) {
-    console.error('Error fetching medications:', error);
-    return NextResponse.json({ error: 'Failed to fetch medications' }, { status: 500 });
+    console.error("Error fetching medications:", error);
+    return NextResponse.json({ error: "Failed to fetch medications" }, { status: 500 });
   }
 }
 

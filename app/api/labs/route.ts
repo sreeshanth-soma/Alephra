@@ -15,20 +15,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
+    // Optimized: Single query with relation, limited to last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
     const labs = await prisma.lab.findMany({
-      where: { userId: user.id },
+      where: { 
+        user: { email: session.user.email },
+        date: { gte: sixMonthsAgo } // Only last 6 months
+      },
       orderBy: { date: 'desc' },
+      take: 50, // Max 50 records
     });
 
     // Transform to match frontend format
