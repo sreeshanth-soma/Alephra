@@ -50,6 +50,9 @@ model User {
   vitals        Vital[]
   labs          Lab[]
   reports       MedicalReport[]
+  medications   Medication[]
+  healthGoals   HealthGoal[]
+  carePlanAppointments CarePlanAppointment[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -143,4 +146,53 @@ model MedicalReport {
 
   @@index([userId, uploadDate])
   @@index([userId, category])
+}
+
+model Medication {
+  id          String   @id @default(cuid())
+  name        String
+  dosage      String
+  frequency   String
+  time        String   // JSON array of times
+  startDate   String
+  endDate     String?
+  taken       Boolean  @default(false)
+  userEmail   String
+  user        User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userEmail])
+}
+
+model HealthGoal {
+  id          String   @id @default(cuid())
+  title       String
+  target      String
+  current     String
+  progress    Float
+  deadline    String
+  category    String
+  userEmail   String
+  user        User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userEmail])
+}
+
+model CarePlanAppointment {
+  id          String   @id @default(cuid())
+  doctor      String
+  specialty   String
+  date        String
+  time        String
+  location    String
+  notes       String?
+  userEmail   String
+  user        User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userEmail])
 }

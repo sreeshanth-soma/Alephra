@@ -63,27 +63,165 @@ export default function CarePlanPage() {
   const [showSignInModal, setShowSignInModal] = useState(false);
   
   const [medications, setMedications] = useState<Medication[]>([]);
-
   const [healthGoals, setHealthGoals] = useState<HealthGoal[]>([]);
-
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   const [showMedicationForm, setShowMedicationForm] = useState(false);
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const toggleMedicationTaken = (id: string) => {
-    setMedications(medications.map(med => 
+  // Hybrid sync: Load from localStorage first (instant), then sync with server
+  useEffect(() => {
+    if (isInitialized) return;
+
+    // 1. Load from localStorage immediately (instant display)
+    const savedMedications = localStorage.getItem('alephra.carePlan.medications');
+    const savedGoals = localStorage.getItem('alephra.carePlan.healthGoals');
+    const savedAppointments = localStorage.getItem('alephra.carePlan.appointments');
+    
+    if (savedMedications) {
+      try {
+        setMedications(JSON.parse(savedMedications));
+      } catch (e) {
+        console.error('Failed to parse medications:', e);
+      }
+    }
+    
+    if (savedGoals) {
+      try {
+        setHealthGoals(JSON.parse(savedGoals));
+      } catch (e) {
+        console.error('Failed to parse health goals:', e);
+      }
+    }
+    
+    if (savedAppointments) {
+      try {
+        setAppointments(JSON.parse(savedAppointments));
+      } catch (e) {
+        console.error('Failed to parse appointments:', e);
+      }
+    }
+
+    // 2. If user is signed in, sync with server in background
+    if (session?.user) {
+      Promise.all([
+        fetch('/api/care-plan/medications').then(r => r.ok ? r.json() : []),
+        fetch('/api/care-plan/health-goals').then(r => r.ok ? r.json() : []),
+        fetch('/api/care-plan/care-appointments').then(r => r.ok ? r.json() : [])
+      ]).then(([serverMeds, serverGoals, serverAppts]) => {
+        if (serverMeds.length > 0) {
+          setMedications(serverMeds);
+          localStorage.setItem('alephra.carePlan.medications', JSON.stringify(serverMeds));
+        }
+        if (serverGoals.length > 0) {
+          setHealthGoals(serverGoals);
+          localStorage.setItem('alephra.carePlan.healthGoals', JSON.stringify(serverGoals));
+        }
+        if (serverAppts.length > 0) {
+          setAppointments(serverAppts);
+          localStorage.setItem('alephra.carePlan.appointments', JSON.stringify(serverAppts));
+        }
+      }).catch(error => {
+        console.error('Error syncing with server:', error);
+      });
+    }
+
+    setIsInitialized(true);
+  }, [session, isInitialized]);
+
+  // Save to both localStorage and server
+  const syncMedications = async (newMedications: Medication[]) => {
+    setMedications(newMedications);
+    localStorage.setItem('alephra.carePlan.medications', JSON.stringify(newMedications));
+    
+    if (session?.user) {
+      // Sync to server in background
+      fetch('/api/care-plan/medications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMedications[newMedications.length - 1])
+      }).catch(err => console.error('Error syncing medication:', err));
+    }
+  };
+
+  const syncHealthGoals = async (newGoals: HealthGoal[]) => {
+    setHealthGoals(newGoals);
+    localStorage.setItem('alephra.carePlan.healthGoals', JSON.stringify(newGoals));
+    
+    if (session?.user) {
+      fetch('/api/care-plan/health-goals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newGoals[newGoals.length - 1])
+      }).catch(err => console.error('Error syncing health goal:', err));
+    }
+  };
+
+  const syncAppointments = async (newAppointments: Appointment[]) => {
+    setAppointments(newAppointments);
+    localStorage.setItem('alephra.carePlan.appointments', JSON.stringify(newAppointments));
+    
+    if (session?.user) {
+      fetch('/api/care-plan/care-appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAppointments[newAppointments.length - 1])
+      }).catch(err => console.error('Error syncing appointment:', err));
+    }
+  };
+
+  const toggleMedicationTaken = async (id: string) => {
+    const updatedMeds = medications.map(med => 
       med.id === id ? { ...med, taken: !med.taken } : med
-    ));
+    );
+    setMedications(updatedMeds);
+    localStorage.setItem('alephra.carePlan.medications', JSON.stringify(updatedMeds));
+    
+    if (session?.user) {
+      fetch(`/api/care-plan/medications?id=${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taken: !medications.find(m => m.id === id)?.taken })
+      }).catch(err => console.error('Error updating medication:', err));
+    }
   };
 
-  const deleteMedication = (id: string) => {
-    setMedications(medications.filter(med => med.id !== id));
+  const deleteMedication = async (id: string) => {
+    const updatedMeds = medications.filter(med => med.id !== id);
+    setMedications(updatedMeds);
+    localStorage.setItem('alephra.carePlan.medications', JSON.stringify(updatedMeds));
+    
+    if (session?.user) {
+      fetch(`/api/care-plan/medications?id=${id}`, {
+        method: 'DELETE'
+      }).catch(err => console.error('Error deleting medication:', err));
+    }
   };
 
-  const deleteHealthGoal = (id: string) => {
-    setHealthGoals(healthGoals.filter(goal => goal.id !== id));
+  const deleteHealthGoal = async (id: string) => {
+    const updatedGoals = healthGoals.filter(goal => goal.id !== id);
+    setHealthGoals(updatedGoals);
+    localStorage.setItem('alephra.carePlan.healthGoals', JSON.stringify(updatedGoals));
+    
+    if (session?.user) {
+      fetch(`/api/care-plan/health-goals?id=${id}`, {
+        method: 'DELETE'
+      }).catch(err => console.error('Error deleting health goal:', err));
+    }
+  };
+
+  const deleteAppointment = async (id: string) => {
+    const updatedAppts = appointments.filter(appt => appt.id !== id);
+    setAppointments(updatedAppts);
+    localStorage.setItem('alephra.carePlan.appointments', JSON.stringify(updatedAppts));
+    
+    if (session?.user) {
+      fetch(`/api/care-plan/care-appointments?id=${id}`, {
+        method: 'DELETE'
+      }).catch(err => console.error('Error deleting appointment:', err));
+    }
   };
 
   const calculateProgress = (current: string, target: string): number => {
@@ -206,7 +344,7 @@ export default function CarePlanPage() {
             {showMedicationForm && (
               <div className="p-5 rounded-lg bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 mb-4">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Add New Medication</h3>
-                <form onSubmit={(e) => {
+                <form onSubmit={async (e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
                   const times = formData.get('time') as string;
@@ -220,9 +358,12 @@ export default function CarePlanPage() {
                     endDate: formData.get('endDate') as string || undefined,
                     taken: false,
                   };
-                  setMedications([...medications, newMedication]);
-                  setShowMedicationForm(false);
+                  
+                  // Reset form first
                   e.currentTarget.reset();
+                  
+                  await syncMedications([...medications, newMedication]);
+                  setShowMedicationForm(false);
                 }} className="space-y-3">
                   <div>
                     <Label htmlFor="name" className="text-sm text-gray-700 dark:text-gray-300">Medication Name</Label>
@@ -284,6 +425,31 @@ export default function CarePlanPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
+                        onClick={() => {
+                          // Add today's medication to dashboard reminders
+                          const dashboardReminders = localStorage.getItem('alephra.reminders');
+                          const reminders = dashboardReminders ? JSON.parse(dashboardReminders) : [];
+                          
+                          med.time.forEach(time => {
+                            reminders.push({
+                              id: `${Date.now()}-${Math.random()}`,
+                              text: `Take ${med.name} (${med.dosage})`,
+                              time: time,
+                              done: false
+                            });
+                          });
+                          
+                          localStorage.setItem('alephra.reminders', JSON.stringify(reminders));
+                          alert(`Added ${med.name} to today's reminders!`);
+                        }}
+                        size="sm"
+                        variant="ghost"
+                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        title="Add to today's reminders"
+                      >
+                        <Bell className="w-4 h-4" />
+                      </Button>
+                      <Button
                         onClick={() => toggleMedicationTaken(med.id)}
                         size="sm"
                         variant={med.taken ? "default" : "ghost"}
@@ -344,7 +510,7 @@ export default function CarePlanPage() {
                 {showGoalForm && (
                   <div className="p-5 rounded-lg bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 mb-4">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Add New Health Goal</h3>
-                    <form onSubmit={(e) => {
+                    <form onSubmit={async (e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
                       const current = formData.get('current') as string;
@@ -360,9 +526,12 @@ export default function CarePlanPage() {
                         deadline: formData.get('deadline') as string,
                         category: formData.get('category') as 'weight' | 'exercise' | 'diet' | 'vitals' | 'other',
                       };
-                      setHealthGoals([...healthGoals, newGoal]);
-                      setShowGoalForm(false);
+                      
+                      // Reset form first
                       e.currentTarget.reset();
+                      
+                      await syncHealthGoals([...healthGoals, newGoal]);
+                      setShowGoalForm(false);
                     }} className="space-y-3">
                       <div>
                         <Label htmlFor="title" className="text-sm text-gray-700 dark:text-gray-300">Goal Title</Label>
@@ -496,21 +665,42 @@ export default function CarePlanPage() {
                 {showAppointmentForm && (
                   <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 mb-4">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Add New Appointment</h3>
-                    <form onSubmit={(e) => {
+                    <form onSubmit={async (e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
+                      const date = formData.get('date') as string;
+                      const time = formData.get('time') as string;
+                      const doctor = formData.get('doctor') as string;
+                      
                       const newAppointment: Appointment = {
                         id: Date.now().toString(),
-                        doctor: formData.get('doctor') as string,
+                        doctor: doctor,
                         specialty: formData.get('specialty') as string,
-                        date: formData.get('date') as string,
-                        time: formData.get('time') as string,
+                        date: date,
+                        time: time,
                         location: formData.get('location') as string,
                         notes: formData.get('notes') as string || undefined,
                       };
-                      setAppointments([...appointments, newAppointment]);
-                      setShowAppointmentForm(false);
+                      
+                      // Reset form first (before hiding it)
                       e.currentTarget.reset();
+                      
+                      // Add to care plan appointments
+                      await syncAppointments([...appointments, newAppointment]);
+                      
+                      // Also add to dashboard appointments (sync)
+                      const dashboardAppointments = localStorage.getItem('alephra.appointments');
+                      const dashboardAppts = dashboardAppointments ? JSON.parse(dashboardAppointments) : [];
+                      dashboardAppts.push({
+                        id: newAppointment.id,
+                        title: `${doctor} - ${newAppointment.specialty}`,
+                        date: date,
+                        time: time
+                      });
+                      localStorage.setItem('alephra.appointments', JSON.stringify(dashboardAppts));
+                      
+                      // Hide form after reset
+                      setShowAppointmentForm(false);
                     }} className="space-y-3">
                       <div>
                         <Label htmlFor="doctor" className="text-sm text-gray-700 dark:text-gray-300">Doctor Name</Label>
@@ -557,15 +747,57 @@ export default function CarePlanPage() {
                       key={apt.id}
                       className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700"
                     >
-                      <div className="flex items-start gap-3 mb-2">
-                        <Stethoscope className="w-5 h-5 text-gray-700 dark:text-gray-300 mt-0.5" />
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 dark:text-white">
-                            {apt.doctor}
-                          </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {apt.specialty}
-                          </p>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-start gap-3">
+                          <Stethoscope className="w-5 h-5 text-gray-700 dark:text-gray-300 mt-0.5" />
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 dark:text-white">
+                              {apt.doctor}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {apt.specialty}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => {
+                              const appointmentDateTime = new Date(`${apt.date}T${apt.time}`);
+                              const endDateTime = new Date(appointmentDateTime.getTime() + 30 * 60000);
+                              
+                              const formatDateTime = (date: Date): string => {
+                                const year = date.getUTCFullYear();
+                                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                                const day = String(date.getUTCDate()).padStart(2, '0');
+                                const hours = String(date.getUTCHours()).padStart(2, '0');
+                                const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                                const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+                                return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+                              };
+                              
+                              const calendarUrl = new URL('https://calendar.google.com/calendar/render');
+                              calendarUrl.searchParams.append('action', 'TEMPLATE');
+                              calendarUrl.searchParams.append('text', `${apt.doctor} - ${apt.specialty}`);
+                              calendarUrl.searchParams.append('dates', `${formatDateTime(appointmentDateTime)}/${formatDateTime(endDateTime)}`);
+                              calendarUrl.searchParams.append('details', `Appointment with ${apt.doctor}\nSpecialty: ${apt.specialty}\nLocation: ${apt.location}${apt.notes ? `\nNotes: ${apt.notes}` : ''}`);
+                              
+                              window.open(calendarUrl.toString(), '_blank', 'noopener,noreferrer');
+                            }}
+                            size="sm"
+                            variant="ghost"
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            title="Add to Google Calendar"
+                          >
+                            📅
+                          </Button>
+                          <Button
+                            onClick={() => deleteAppointment(apt.id)}
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                       <div className="ml-8 space-y-1 text-sm">

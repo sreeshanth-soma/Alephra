@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import BlackTimePicker from "@/components/ui/black-time-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Activity, Calendar, Filter, CalendarDays, AlertTriangle, Trash2 } from "lucide-react";
+import { Heart, Activity, Calendar, Filter, CalendarDays, AlertTriangle, Trash2, Clock } from "lucide-react";
 import BasicModal from "@/components/ui/modal";
 import { Noise } from "@/components/ui/noise";
 import { useSession } from "next-auth/react";
@@ -620,6 +620,7 @@ export default function DashboardPage() {
   const [isInitialized, setIsInitialized] = useState(false);
   // Show all labs or just recent ones
   const [showAllLabs, setShowAllLabs] = useState(false);
+  const [showLabsModal, setShowLabsModal] = useState(false);
   // Lab chart filter
   const [selectedLabType, setSelectedLabType] = useState<'all' | 'HDL' | 'LDL' | 'Triglycerides' | 'Total Cholesterol'>('all');
   // Time range filter for analytics
@@ -630,8 +631,8 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    // Only load if not already initialized
-    if (isInitialized) return;
+    // Always reload data when component mounts (even if previously initialized)
+    // This ensures data shows when navigating back to dashboard
     
     const loadData = async () => {
       // Load vitals and labs from localStorage first (instant)
@@ -642,48 +643,94 @@ export default function DashboardPage() {
         const localAppointments = safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("alephra.appointments", []);
         const localCart = safeGetItem<any[]>("alephra.cart", []);
         
-        // Filter out old data (before 2025)
-        setVitals(localVitals.filter((v: VitalsPoint) => new Date(v.date || v.time).getFullYear() >= 2025));
-        setLabData(localLabs.filter((l: LabData) => new Date(l.date).getFullYear() >= 2025));
+        console.log('📊 Loading from localStorage:', { vitals: localVitals.length, labs: localLabs.length });
+        
+        // Filter out old data (before 2025) and remove duplicates
+        const filteredVitals = localVitals.filter((v: VitalsPoint) => {
+          const dateStr = v.date || v.time;
+          if (!dateStr) return false;
+          const year = new Date(dateStr).getFullYear();
+          return year >= 2025;
+        });
+        
+        // Deduplicate vitals by date (keep last entry per date)
+        const dedupedVitals = filteredVitals.reduce((acc: VitalsPoint[], curr: VitalsPoint) => {
+          const currDate = curr.date || curr.time;
+          const existingIndex = acc.findIndex(v => (v.date || v.time) === currDate);
+          if (existingIndex >= 0) {
+            // Replace with newer data
+            acc[existingIndex] = curr;
+          } else {
+            acc.push(curr);
+          }
+          return acc;
+        }, []);
+        
+        const filteredLabs = localLabs.filter((l: LabData) => {
+          if (!l.date) return false;
+          const year = new Date(l.date).getFullYear();
+          return year >= 2025;
+        });
+        
+        setVitals(dedupedVitals);
+        setLabData(filteredLabs);
         setReminders(localReminders);
         setAppointments(localAppointments);
         setCartItems(localCart);
         
-        setIsInitialized(true);
+        console.log('✅ Loaded from localStorage:', { vitals: dedupedVitals.length, labs: filteredLabs.length });
       }
       
       // Then sync with server in background if logged in (no blocking)
-      if (session?.user?.email) {
+      if (session?.user?.email && !isInitialized) {
         try {
           const serverVitals = await loadVitalsHybrid(session.user.email);
           const serverLabs = await loadLabsHybrid(session.user.email);
           
           // Filter out any data from before 2025
           const filteredVitals = serverVitals.filter((v: VitalsPoint) => {
-            const year = new Date(v.date || v.time).getFullYear();
+            const dateStr = v.date || v.time;
+            if (!dateStr) return false;
+            const year = new Date(dateStr).getFullYear();
             return year >= 2025;
           });
           
+          // Deduplicate vitals by date (keep last entry per date)
+          const dedupedVitals = filteredVitals.reduce((acc: VitalsPoint[], curr: VitalsPoint) => {
+            const currDate = curr.date || curr.time;
+            const existingIndex = acc.findIndex(v => (v.date || v.time) === currDate);
+            if (existingIndex >= 0) {
+              // Replace with newer data
+              acc[existingIndex] = curr;
+            } else {
+              acc.push(curr);
+            }
+            return acc;
+          }, []);
+          
           const filteredLabs = serverLabs.filter((l: LabData) => {
+            if (!l.date) return false;
             const year = new Date(l.date).getFullYear();
             return year >= 2025;
           });
           
           // Update state with server data
-          setVitals(filteredVitals);
+          setVitals(dedupedVitals);
           setLabData(filteredLabs);
           
           // Also save to localStorage as backup
           if (isLocalStorageAvailable()) {
-            safeSetItem("alephra.vitals", filteredVitals);
+            safeSetItem("alephra.vitals", dedupedVitals);
             safeSetItem("alephra.labs", filteredLabs);
           }
           
-          console.log('✅ Data synced from cloud:', { vitals: filteredVitals.length, labs: filteredLabs.length });
+          console.log('✅ Data synced from cloud:', { vitals: dedupedVitals.length, labs: filteredLabs.length });
         } catch (error) {
           console.error('Background sync failed:', error);
           // Keep using localStorage data, no need to show error
         }
+        
+        setIsInitialized(true);
       }
     };
     
@@ -1001,7 +1048,24 @@ export default function DashboardPage() {
     const weight = Number(newWeight);
     const temperature = Number(newTemperature);
     
-    if (!newHrDate || !Number.isFinite(hr) || hr < 30 || hr > 200) {
+    if (!newHrDate) {
+      setRemindersStatus("Please select a date");
+      return;
+    }
+    
+    // Prevent future dates
+    const selectedDate = new Date(newHrDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for fair comparison
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate > today) {
+      setRemindersStatus("❌ Cannot record vitals for future dates");
+      setTimeout(() => setRemindersStatus(""), 3000);
+      return;
+    }
+    
+    if (!Number.isFinite(hr) || hr < 30 || hr > 200) {
       setRemindersStatus("Please enter valid Heart Rate (30-200 bpm)");
       return;
     }
@@ -1013,6 +1077,7 @@ export default function DashboardPage() {
     
     const vitalData = {
       date: newHrDate,
+      time: newHrDate, // Ensure both date and time are set
       hr,
       spo2,
       ...(systolic && diastolic && { bp: { systolic, diastolic } }),
@@ -1025,11 +1090,24 @@ export default function DashboardPage() {
       try {
         await saveVitalToServer(vitalData);
         const updatedVitals = await loadVitalsHybrid(session.user.email);
-        setVitals(updatedVitals);
+        
+        // Remove duplicates by date (keep latest entry per date)
+        const deduped = updatedVitals.reduce((acc: VitalsPoint[], curr: VitalsPoint) => {
+          const existingIndex = acc.findIndex(v => (v.date || v.time) === (curr.date || curr.time));
+          if (existingIndex >= 0) {
+            // Replace with newer data
+            acc[existingIndex] = curr;
+          } else {
+            acc.push(curr);
+          }
+          return acc;
+        }, []);
+        
+        setVitals(deduped);
         
         // Also save to localStorage for offline access
         if (isLocalStorageAvailable()) {
-          safeSetItem("alephra.vitals", updatedVitals);
+          safeSetItem("alephra.vitals", deduped);
         }
         
         setRemindersStatus("✅ Vitals saved to cloud!");
@@ -1037,13 +1115,26 @@ export default function DashboardPage() {
         console.error('Failed to save to server:', error);
         setRemindersStatus("⚠️ Saved locally (will sync when online)");
         // Fallback to localStorage
-        const point: VitalsPoint = { ...vitalData, time: newHrDate };
-        const updatedVitals = [...vitals.filter(p => p.date !== newHrDate), point].sort((a, b) => a.date.localeCompare(b.date));
+        const point: VitalsPoint = { ...vitalData };
+        // Remove any existing entry for this date
+        const filtered = vitals.filter(p => (p.date || p.time) !== newHrDate);
+        const updatedVitals = [...filtered, point].sort((a, b) => (a.date || a.time).localeCompare(b.date || b.time));
         setVitals(updatedVitals);
         if (isLocalStorageAvailable()) {
           safeSetItem("alephra.vitals", updatedVitals);
         }
       }
+    } else {
+      // Not logged in - save locally only
+      const point: VitalsPoint = { ...vitalData };
+      // Remove any existing entry for this date
+      const filtered = vitals.filter(p => (p.date || p.time) !== newHrDate);
+      const updatedVitals = [...filtered, point].sort((a, b) => (a.date || a.time).localeCompare(b.date || b.time));
+      setVitals(updatedVitals);
+      if (isLocalStorageAvailable()) {
+        safeSetItem("alephra.vitals", updatedVitals);
+      }
+      setRemindersStatus("✅ Vitals saved locally!");
     }
     
     // Clear form
@@ -1361,6 +1452,99 @@ export default function DashboardPage() {
           />
         </div>
 
+        {/* Next Appointment Countdown */}
+        {appointments.length > 0 && (() => {
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          
+          // Find the next upcoming appointment
+          const upcomingAppointments = appointments
+            .map(apt => ({
+              ...apt,
+              dateObj: new Date(apt.date)
+            }))
+            .filter(apt => {
+              apt.dateObj.setHours(0, 0, 0, 0);
+              return apt.dateObj >= now;
+            })
+            .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+          
+          if (upcomingAppointments.length === 0) return null;
+          
+          const nextApt = upcomingAppointments[0];
+          const daysUntil = Math.ceil((nextApt.dateObj.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          
+          let urgencyColor = "from-blue-500 to-cyan-500";
+          let urgencyText = "Upcoming";
+          let urgencyBg = "bg-blue-50 dark:bg-blue-900/20";
+          let urgencyBorder = "border-blue-300 dark:border-blue-700";
+          
+          if (daysUntil === 0) {
+            urgencyColor = "from-red-500 to-orange-500";
+            urgencyText = "Today!";
+            urgencyBg = "bg-red-50 dark:bg-red-900/20";
+            urgencyBorder = "border-red-300 dark:border-red-700";
+          } else if (daysUntil === 1) {
+            urgencyColor = "from-orange-500 to-yellow-500";
+            urgencyText = "Tomorrow";
+            urgencyBg = "bg-orange-50 dark:bg-orange-900/20";
+            urgencyBorder = "border-orange-300 dark:border-orange-700";
+          } else if (daysUntil <= 3) {
+            urgencyColor = "from-yellow-500 to-amber-500";
+            urgencyText = "Soon";
+            urgencyBg = "bg-yellow-50 dark:bg-yellow-900/20";
+            urgencyBorder = "border-yellow-300 dark:border-yellow-700";
+          }
+          
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8"
+            >
+              <Card className={`${urgencyBg} backdrop-blur border-2 ${urgencyBorder} shadow-lg`}>
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className={`flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${urgencyColor} shadow-lg`}>
+                      <Calendar className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline" className={`${urgencyBorder} text-xs font-semibold`}>
+                          {urgencyText}
+                        </Badge>
+                        {daysUntil > 0 && (
+                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                            in {daysUntil} {daysUntil === 1 ? 'day' : 'days'}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-2xl font-bold text-black dark:text-white mb-1">
+                        {nextApt.title}
+                      </h3>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>{new Date(nextApt.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          <span>{nextApt.time}</span>
+                        </div>
+                      </div>
+                      {upcomingAppointments.length > 1 && (
+                        <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                          + {upcomingAppointments.length - 1} more upcoming {upcomingAppointments.length === 2 ? 'appointment' : 'appointments'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })()}
+
         {/* Vitals Input Form - Moved here for better proximity to vital metrics */}
         <div className="mb-8">
           <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
@@ -1425,6 +1609,7 @@ export default function DashboardPage() {
                         type="date"
                         value={newHrDate || new Date().toISOString().split('T')[0]}
                         onChange={(e) => setNewHrDate(e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
                         onClick={() => {
                           const input = document.getElementById('vitals-date') as HTMLInputElement;
                           if (input && input.showPicker) {
@@ -1987,10 +2172,10 @@ export default function DashboardPage() {
                   </button>
                   {labData.length > 3 && (
                       <button
-                      onClick={() => setShowAllLabs(!showAllLabs)}
+                      onClick={() => setShowLabsModal(true)}
                       className="text-xs text-cyan-600 hover:text-cyan-700 font-medium"
                     >
-                      {showAllLabs ? 'Show Less' : `View All (${labData.length})`}
+                      View All ({labData.length})
                       </button>
                   )}
                   {/* <a href="/dashboard/labs" className="text-xs text-cyan-600">View details →</a> */}
@@ -2000,7 +2185,7 @@ export default function DashboardPage() {
               
               {/* Lab Values with Enhanced Status Indicators - Show only 3 by default */}
               <div className="space-y-2 mb-4">
-                {labData.slice(0, showAllLabs ? labData.length : 3).map((lab) => {
+                {labData.slice(0, 3).map((lab) => {
                   const status = getLabStatus(lab);
                   const isNormal = status === "normal";
                   const isLipid = ['HDL', 'LDL', 'Triglycerides', 'Total Cholesterol'].includes(lab.name);
@@ -2568,6 +2753,147 @@ export default function DashboardPage() {
         isOpen={showSignInPrompt}
         onClose={() => setShowSignInPrompt(false)}
       />
+      
+      {/* All Labs Modal */}
+      {showLabsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative w-full max-w-4xl max-h-[85vh] bg-white dark:bg-black rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800"
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
+              <div>
+                <h2 className="text-2xl font-bold text-black dark:text-white">All Lab Results</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Total: {labData.length} results</p>
+              </div>
+              <button
+                onClick={() => setShowLabsModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition"
+              >
+                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content - Scrollable with bottom padding */}
+            <div className="overflow-y-auto max-h-[calc(85vh-180px)] p-6 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {labData.map((lab) => {
+                  const status = getLabStatus(lab);
+                  const isNormal = status === "normal";
+                  const isLipid = ['HDL', 'LDL', 'Triglycerides', 'Total Cholesterol'].includes(lab.name);
+                  
+                  return (
+                    <div
+                      key={lab.id}
+                      className={`p-4 rounded-lg border transition-all duration-200 hover:shadow-lg ${
+                        isNormal 
+                          ? 'border-gray-300 dark:border-gray-700 bg-green-50 dark:bg-green-950/30 hover:bg-green-100 dark:hover:bg-green-950/40' 
+                          : 'border-gray-400 dark:border-gray-600 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-950/40'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2 flex-1">
+                          <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                            isNormal ? 'bg-green-500' : 'bg-red-500'
+                          }`}></div>
+                          <div className="font-bold text-base text-black dark:text-white">{lab.name}</div>
+                          {isLipid && (
+                            <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-full font-semibold">
+                              Lipid
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (session?.user?.email) {
+                              try {
+                                await deleteLabFromServer(lab.id);
+                                const updatedLabs = labData.filter(l => l.id !== lab.id);
+                                setLabData(updatedLabs);
+                                if (isLocalStorageAvailable()) {
+                                  safeSetItem("alephra.labs", updatedLabs);
+                                }
+                              } catch (error) {
+                                console.error('Failed to delete from server:', error);
+                                const updatedLabs = labData.filter(l => l.id !== lab.id);
+                                setLabData(updatedLabs);
+                                if (isLocalStorageAvailable()) {
+                                  safeSetItem("alephra.labs", updatedLabs);
+                                }
+                              }
+                            } else {
+                              const updatedLabs = labData.filter(l => l.id !== lab.id);
+                              setLabData(updatedLabs);
+                              if (isLocalStorageAvailable()) {
+                                safeSetItem("alephra.labs", updatedLabs);
+                              }
+                            }
+                          }}
+                          className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded transition flex-shrink-0"
+                          title="Delete lab result"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="mb-2">
+                        <div className="text-3xl font-bold text-black dark:text-white">
+                          {lab.value} <span className="text-lg font-medium text-gray-600 dark:text-gray-400">{lab.unit}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <div className="text-gray-600 dark:text-gray-400">
+                          Normal: {lab.normalRange.min}-{lab.normalRange.max} {lab.unit}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="text-gray-500 dark:text-gray-500">
+                          {new Date(lab.date).toLocaleDateString()}
+                        </div>
+                        {lab.category && (
+                          <span className="px-2 py-1 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-full">
+                            {lab.category}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {labData.length === 0 && (
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <p className="text-lg">No lab results yet</p>
+                  <p className="text-sm mt-2">Add your first lab result to get started</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer - Sticky at bottom */}
+            <div className="sticky bottom-0 p-4 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 flex justify-end gap-3">
+              <button
+                onClick={() => exportLabsToCSV(labData)}
+                className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition font-medium"
+              >
+                Export All to CSV
+              </button>
+              <button
+                onClick={() => setShowLabsModal(false)}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
       
       {/* Onboarding Tour */}
       <OnboardingTour
