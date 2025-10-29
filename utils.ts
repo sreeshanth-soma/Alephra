@@ -25,6 +25,16 @@ const QUERY_CACHE_MAX = 100
 const voiceEmbedCache = new Map<string, number[]>()
 const VOICE_EMBED_CACHE_MAX = 200
 
+// Optimized cache eviction helper to reduce repeated checks
+function evictFromCache<K, V>(cache: Map<K, V>, maxSize: number): void {
+  if (cache.size >= maxSize) {
+    const firstKey = cache.keys().next().value;
+    if (typeof firstKey !== 'undefined') {
+      cache.delete(firstKey);
+    }
+  }
+}
+
 // Pre-warm common voice queries for instant responses
 const COMMON_VOICE_QUERIES = [
   "what is the diagnosis",
@@ -160,16 +170,23 @@ async function embedForVoice(texts: string[], model: string): Promise<number[][]
       computed = parallelResults
     }
 
-    // Write back to voice cache
+    // Write back to voice cache - optimized eviction
+    // Check cache size once before loop, not on every iteration
+    const needsEviction = voiceEmbedCache.size + missingIdx.length > VOICE_EMBED_CACHE_MAX;
+    if (needsEviction) {
+      const toEvict = Math.max(0, voiceEmbedCache.size + missingIdx.length - VOICE_EMBED_CACHE_MAX);
+      const iterator = voiceEmbedCache.keys();
+      for (let i = 0; i < toEvict; i++) {
+        const key = iterator.next().value;
+        if (typeof key !== 'undefined') {
+          voiceEmbedCache.delete(key);
+        }
+      }
+    }
+    // Now add all items without checking size on each iteration
     for (let j = 0; j < missingIdx.length; j++) {
       const idx = missingIdx[j]
       const vec = Array.isArray(computed[j]) ? computed[j] : []
-      if (voiceEmbedCache.size >= VOICE_EMBED_CACHE_MAX) {
-        const firstKey = voiceEmbedCache.keys().next().value
-        if (typeof firstKey !== 'undefined') {
-          voiceEmbedCache.delete(firstKey)
-        }
-      }
       voiceEmbedCache.set(keys[idx], vec)
       results[idx] = vec
     }
@@ -201,24 +218,22 @@ async function embedWithFallback(texts: string[], model: string): Promise<number
         } catch (e2) {
           // Final fallback: HuggingFace inference if configured
           if (!process.env.HF_TOKEN) throw e2
-          const mxbOutputs = [] as number[][]
-          for (const i of missingIdx) {
+          // Parallelize API calls for better performance
+          const promises = missingIdx.map(async (i) => {
             const apiOutput: any = await hf.featureExtraction({ model, inputs: texts[i] })
-            const vec = Array.from(apiOutput).map((x: any) => Number(x))
-            mxbOutputs.push(vec)
-          }
-          computed = mxbOutputs
+            return Array.from(apiOutput).map((x: any) => Number(x))
+          })
+          computed = await Promise.all(promises)
         }
       } else {
         // Vercel path: go straight to HF fallback to avoid local cache
         if (!process.env.HF_TOKEN) throw e
-        const mxbOutputs = [] as number[][]
-        for (const i of missingIdx) {
+        // Parallelize API calls for better performance
+        const promises = missingIdx.map(async (i) => {
           const apiOutput: any = await hf.featureExtraction({ model, inputs: texts[i] })
-          const vec = Array.from(apiOutput).map((x: any) => Number(x))
-          mxbOutputs.push(vec)
-        }
-        computed = mxbOutputs
+          return Array.from(apiOutput).map((x: any) => Number(x))
+        })
+        computed = await Promise.all(promises)
       }
     }
 
@@ -346,12 +361,7 @@ export async function queryPineconeVectorStoreForVoice(
       console.log(`Voice returning ${concatenatedRetrievals.length} characters of retrieved content`);
       
       // Cache the result
-      if (queryResultCache.size >= QUERY_CACHE_MAX) {
-        const firstKey = queryResultCache.keys().next().value;
-        if (typeof firstKey !== 'undefined') {
-          queryResultCache.delete(firstKey);
-        }
-      }
+      evictFromCache(queryResultCache, QUERY_CACHE_MAX);
       queryResultCache.set(cacheKey, concatenatedRetrievals);
       
       return concatenatedRetrievals;
@@ -360,12 +370,7 @@ export async function queryPineconeVectorStoreForVoice(
       const noMatchesResult = "<nomatches>";
       
       // Cache the no matches result too
-      if (queryResultCache.size >= QUERY_CACHE_MAX) {
-        const firstKey = queryResultCache.keys().next().value;
-        if (typeof firstKey !== 'undefined') {
-          queryResultCache.delete(firstKey);
-        }
-      }
+      evictFromCache(queryResultCache, QUERY_CACHE_MAX);
       queryResultCache.set(cacheKey, noMatchesResult);
       
       return noMatchesResult;
@@ -454,12 +459,7 @@ export async function queryPineconeVectorStore(
       console.log(`Returning ${concatenatedRetrievals.length} characters of retrieved content`);
       
       // Cache the result
-      if (queryResultCache.size >= QUERY_CACHE_MAX) {
-        const firstKey = queryResultCache.keys().next().value;
-        if (typeof firstKey !== 'undefined') {
-          queryResultCache.delete(firstKey);
-        }
-      }
+      evictFromCache(queryResultCache, QUERY_CACHE_MAX);
       queryResultCache.set(cacheKey, concatenatedRetrievals);
       
       return concatenatedRetrievals;
@@ -468,12 +468,7 @@ export async function queryPineconeVectorStore(
       const noMatchesResult = "<nomatches>";
       
       // Cache the no matches result too
-      if (queryResultCache.size >= QUERY_CACHE_MAX) {
-        const firstKey = queryResultCache.keys().next().value;
-        if (typeof firstKey !== 'undefined') {
-          queryResultCache.delete(firstKey);
-        }
-      }
+      evictFromCache(queryResultCache, QUERY_CACHE_MAX);
       queryResultCache.set(cacheKey, noMatchesResult);
       
       return noMatchesResult;

@@ -26,12 +26,15 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
 // Vitals sync
 export async function syncVitalsToServer(vitals: any[]) {
   try {
-    for (const vital of vitals) {
-      await fetchAPI('/api/vitals', {
-        method: 'POST',
-        body: JSON.stringify(vital),
-      });
-    }
+    // Parallelize API calls for better performance
+    await Promise.all(
+      vitals.map(vital => 
+        fetchAPI('/api/vitals', {
+          method: 'POST',
+          body: JSON.stringify(vital),
+        })
+      )
+    );
     return true;
   } catch (error) {
     console.error('Failed to sync vitals to server:', error);
@@ -65,12 +68,15 @@ export async function saveVitalToServer(vital: any) {
 // Labs sync
 export async function syncLabsToServer(labs: any[]) {
   try {
-    for (const lab of labs) {
-      await fetchAPI('/api/labs', {
-        method: 'POST',
-        body: JSON.stringify(lab),
-      });
-    }
+    // Parallelize API calls for better performance
+    await Promise.all(
+      labs.map(lab =>
+        fetchAPI('/api/labs', {
+          method: 'POST',
+          body: JSON.stringify(lab),
+        })
+      )
+    );
     return true;
   } catch (error) {
     console.error('Failed to sync labs to server:', error);

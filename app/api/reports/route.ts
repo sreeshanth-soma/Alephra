@@ -54,7 +54,11 @@ export async function GET(req: NextRequest) {
       status: report.status || "processed",
     }));
 
-    return NextResponse.json({ reports: formattedReports });
+    return NextResponse.json({ reports: formattedReports }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error("Error fetching reports:", error);
     return NextResponse.json(

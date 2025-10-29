@@ -78,15 +78,20 @@ export function VoiceChat({
     generateParticles();
   }, []);
 
-  // Animate particles
+  // Animate particles - reduced frequency for better performance
   useEffect(() => {
+    let frameCount = 0;
     const animateParticles = () => {
-      setParticles(prev => prev.map(particle => ({
-        ...particle,
-        x: (particle.x + particle.velocity.x + 400) % 400,
-        y: (particle.y + particle.velocity.y + 400) % 400,
-        opacity: particle.opacity + (Math.random() - 0.5) * 0.02
-      })));
+      frameCount++;
+      // Update particles every 3rd frame to reduce CPU usage (from 60fps to ~20fps)
+      if (frameCount % 3 === 0) {
+        setParticles(prev => prev.map(particle => ({
+          ...particle,
+          x: (particle.x + particle.velocity.x + 400) % 400,
+          y: (particle.y + particle.velocity.y + 400) % 400,
+          opacity: particle.opacity + (Math.random() - 0.5) * 0.02
+        })));
+      }
       animationRef.current = requestAnimationFrame(animateParticles);
     };
 
@@ -98,11 +103,12 @@ export function VoiceChat({
     };
   }, []);
 
-  // Timer and waveform simulation
+  // Timer and waveform simulation - optimized interval
   useEffect(() => {
     const shouldAnimate = demoMode ? isListening : actualIsListening;
     
     if (shouldAnimate) {
+      // Reduced frequency from 100ms to 200ms for better performance
       intervalRef.current = setInterval(() => {
         setDuration(prev => prev + 1);
         
@@ -116,7 +122,7 @@ export function VoiceChat({
         const newVolume = Math.random() * 100;
         setVolume(newVolume);
         onVolumeChange?.(newVolume);
-      }, 100);
+      }, 200);
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
