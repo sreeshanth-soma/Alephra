@@ -77,6 +77,8 @@ model Appointment {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([userId, startTime])
 }
 
 model Reminder {
@@ -90,6 +92,9 @@ model Reminder {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([userId, reminderTime])
+  @@index([userId, isCompleted])
 }
 
 model Vital {
@@ -124,6 +129,7 @@ model Lab {
   updatedAt   DateTime @updatedAt
 
   @@index([userId, date])
+  @@index([userId, category])
 }
 
 model MedicalReport {
@@ -146,6 +152,7 @@ model MedicalReport {
 
   @@index([userId, uploadDate])
   @@index([userId, category])
+  @@index([userId, status])
 }
 
 model Medication {
@@ -163,6 +170,7 @@ model Medication {
   updatedAt   DateTime @updatedAt
 
   @@index([userEmail])
+  @@index([userEmail, taken])
 }
 
 model HealthGoal {

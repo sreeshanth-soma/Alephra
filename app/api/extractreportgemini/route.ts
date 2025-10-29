@@ -16,15 +16,19 @@ const pinecone = new Pinecone({
     apiKey: process.env.PINECONE_API_KEY ?? "",
 });
 
-const validationPrompt = `Analyze the attached image and determine if it is a medical/clinical report (such as lab results, blood tests, radiology reports, pathology reports, diagnostic reports, etc.).
+// Combined validation and extraction prompt for efficiency (single API call instead of two)
+const combinedPrompt = `Analyze the attached image and perform two tasks:
 
-Respond with ONLY one of these options:
-- "VALID_MEDICAL_REPORT" if it is a medical/clinical report
-- "NOT_MEDICAL_REPORT: [brief reason]" if it is not a medical report (e.g., resume, invoice, general document, etc.)`;
+Task 1: Determine if this is a medical/clinical report (such as lab results, blood tests, radiology reports, pathology reports, diagnostic reports, etc.).
 
-const extractionPrompt = `Attached is an image of a clinical report. 
-Go over the the clinical report and identify biomarkers that show slight or large abnormalities. Then summarize in 100 words. You may increase the word limit if the report has multiple pages. Do not output patient name, date etc. Make sure to include numerical values and key details from the report, including report title.
-## Summary: `;
+Task 2: If it is a valid medical report, extract and summarize the key biomarkers showing abnormalities in 100 words (may increase for multi-page reports). Do not include patient name or date. Include numerical values and report title.
+
+Respond in the following JSON format:
+{
+  "isValidMedicalReport": true/false,
+  "reason": "brief reason if not a medical report, or empty if valid",
+  "summary": "summary text if valid medical report, or empty if not valid"
+}`;
 
 // Simple concurrency limiter to avoid thundering herd
 let inFlight = 0;
@@ -71,15 +75,38 @@ export async function POST(req: Request) {
         const { base64 } = await req.json();
         const filePart = fileToGenerativePart(base64);
 
-        // Step 1: Validate if the document is a medical report
-        console.log("Validating if document is a medical report...");
-        const validationResponse = await generateContentWithRetry(filePart, validationPrompt);
+        // Combined validation and extraction in single API call for better performance
+        console.log("Processing document with combined validation and extraction...");
+        const response = await generateContentWithRetry(filePart, combinedPrompt);
         
-        console.log("Validation response:", validationResponse);
+        console.log("AI response received:", response?.substring(0, 200));
+        
+        // Parse JSON response
+        let parsedResponse;
+        try {
+            // Extract JSON from response (handle cases where AI adds markdown formatting)
+            const jsonMatch = response.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                parsedResponse = JSON.parse(jsonMatch[0]);
+            } else {
+                throw new Error("No JSON found in response");
+            }
+        } catch (parseError) {
+            console.error("Failed to parse AI response as JSON:", parseError);
+            // Fallback: treat as invalid if we can't parse
+            return new Response(JSON.stringify({ 
+                error: "Invalid Document Type",
+                message: "Unable to process document. Please ensure it's a clear medical report image.",
+                isValidMedicalReport: false
+            }), { 
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
         
         // Check if document is valid medical report
-        if (!validationResponse || !validationResponse.includes("VALID_MEDICAL_REPORT")) {
-            const reason = validationResponse?.replace("NOT_MEDICAL_REPORT:", "").trim() || "This document does not appear to be a medical or clinical report";
+        if (!parsedResponse.isValidMedicalReport) {
+            const reason = parsedResponse.reason || "This document does not appear to be a medical or clinical report";
             console.log("Document validation failed:", reason);
             return new Response(JSON.stringify({ 
                 error: "Invalid Document Type",
@@ -91,9 +118,9 @@ export async function POST(req: Request) {
             });
         }
 
-        // Step 2: Document is valid, proceed with extraction
-        console.log("Document validated as medical report. Processing with Gemini API...");
-        const textResponse = await generateContentWithRetry(filePart, extractionPrompt);
+        // Document is valid and we already have the summary
+        const textResponse = parsedResponse.summary || "";
+        console.log("Successfully processed valid medical report");
 
         console.log("Successfully generated content");
         
