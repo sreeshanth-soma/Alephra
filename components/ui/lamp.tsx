@@ -20,7 +20,7 @@ export function LampDemo() {
           Alephra
         </span>
         <br />
-        <span className="block text-lg md:text-3xl mt-4 text-neutral-700 dark:text-slate-200 font-medium tracking-wide">
+        <span className="inline-block text-lg md:text-3xl mt-4 text-neutral-700 dark:text-slate-200 font-medium tracking-wide whitespace-nowrap px-2">
           Where care meets technology
         </span>
         <motion.span 

@@ -33,21 +33,20 @@ export async function GET(req: NextRequest) {
         reportDate: true,
         category: true,
         status: true,
-        // Exclude reportText and extractedData (they're huge)
-        // Can fetch them separately when viewing a specific report
+        // Exclude reportText and extractedData for list view - fetch separately when needed
       }
     });
 
-    // Transform to match frontend format
+    // Transform to match frontend format (lightweight for list view)
     const formattedReports = reports.map((report: any) => ({
       id: report.id,
       fileName: report.fileName,
       fileUrl: report.fileUrl || "",
       fileType: report.fileType || "",
       fileSize: report.fileSize || 0,
-      reportText: "", // Excluded for performance - use /api/reports/[id] to get full text
+      reportText: "", // Excluded for performance - fetch individually when selected
       summary: report.summary || "",
-      extractedData: "", // Excluded for performance - use /api/reports/[id] to get full data
+      extractedData: null, // Excluded for performance - fetch individually when selected
       uploadDate: report.uploadDate.toISOString(),
       reportDate: report.reportDate?.toISOString() || null,
       category: report.category || "General",

@@ -12,11 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info, Upload, BarChart3, Share2, FileStack, Calendar } from "lucide-react";
 import Link from "next/link";
+import { HoverButton } from "@/components/ui/hover-button";
 import { Squares } from "@/components/ui/squares-background";
 import { MultiStepLoader as Loader } from "@/components/ui/multi-step-loader";
 import { ReportTimeline } from "@/components/ui/report-timeline";
 import { ReportCategories, ReportTemplate } from "@/components/ui/report-categories";
 import { CollaborativeSharing } from "@/components/ui/collaborative-sharing";
+import BasicModal from "@/components/ui/modal";
 import { 
   extractMetricsFromReport, 
   calculateHealthScore, 
@@ -43,6 +45,7 @@ const AnalysisPage = () => {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showSharing, setShowSharing] = useState(false);
   const [reportToShare, setReportToShare] = useState<PrescriptionRecord | null>(null);
+  const [showClearModal, setShowClearModal] = useState(false);
 
   // Memoized analytics data
   const analytics = useMemo(() => {
@@ -85,6 +88,8 @@ const AnalysisPage = () => {
   // Load prescriptions on component mount
   useEffect(() => {
     const loadPrescriptions = async () => {
+      // Force fresh fetch to get reportText
+      prescriptionStorage.invalidateCache();
       const all = await prescriptionStorage.getAllPrescriptions();
       const sorted = all.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
       setPrescriptions(sorted);
@@ -104,21 +109,45 @@ const AnalysisPage = () => {
     setLoading(loading);
   }
 
-  const handlePrescriptionSelect = (prescription: PrescriptionRecord) => {
+  const handlePrescriptionSelect = async (prescription: PrescriptionRecord) => {
     // Toggle selection: if already selected, deselect it
     if (selectedPrescriptionId === prescription.id) {
       setSelectedPrescriptionId("");
       setreportData("");
+      console.log('Report deselected');
       toast({
         description: "Report deselected"
       });
     } else {
-      // Select the new prescription
-      setreportData(prescription.reportData);
-      setSelectedPrescriptionId(prescription.id);
+      // Fetch full report data lazily
       toast({
-        description: `Loaded prescription: ${prescription.fileName}`
+        description: `Loading ${prescription.fileName}...`
       });
+      
+      try {
+        const fullReport = await prescriptionStorage.getPrescriptionById(prescription.id);
+        
+        if (fullReport && fullReport.reportData) {
+          console.log('Loaded full report:', {
+            fileName: fullReport.fileName,
+            reportDataLength: fullReport.reportData.length,
+            hasReportData: !!fullReport.reportData
+          });
+          setreportData(fullReport.reportData);
+          setSelectedPrescriptionId(prescription.id);
+          toast({
+            description: `✓ Loaded: ${prescription.fileName}`
+          });
+        } else {
+          throw new Error('Report data not found');
+        }
+      } catch (error) {
+        console.error('Error loading report:', error);
+        toast({
+          variant: 'destructive',
+          description: `Failed to load ${prescription.fileName}`
+        });
+      }
     }
   }
 
@@ -141,6 +170,7 @@ const AnalysisPage = () => {
     setPrescriptions([]);
     setSelectedPrescriptionId("");
     setreportData("");
+    setShowClearModal(false);
     toast({
       description: "All reports cleared",
     });
@@ -201,75 +231,81 @@ const AnalysisPage = () => {
           onClose={() => setLoading(false)}
         />
         
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-black dark:text-white mb-2 font-playfair">
+        <div className="text-center mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-2 font-playfair">
             Alephra
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 font-medium">
+          <p className="text-base md:text-lg text-black dark:text-gray-300 font-medium mb-4">
             AI-powered medical report analysis
           </p>
-        </div>
-        
-        {/* History control pinned to top-right below navbar */}
-        <div className="absolute top-16 right-6 z-30 flex items-center gap-2">
-          <button
-            onClick={() => {
-              setShowTimeline(!showTimeline);
-              if (!showTimeline) setShowTemplates(false); // Close templates when opening timeline
-            }}
-            className={`inline-flex items-center px-4 py-2 text-sm font-semibold backdrop-blur-sm rounded-full shadow-lg border transition-all duration-200 ${
-              showTimeline
-                ? 'bg-red-500 hover:bg-red-600 text-white border-red-600'
-                : 'text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-            }`}
-          >
-            {showTimeline ? (
-              <>
-                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Close Timeline
-              </>
-            ) : (
-              <>
-                <Calendar className="h-4 w-4 mr-2" />
-                Timeline
-              </>
-            )}
-          </button>
-          <button
-            data-templates-button
-            onClick={() => {
-              setShowTemplates(!showTemplates);
-              if (!showTemplates) setShowTimeline(false); // Close timeline when opening templates
-            }}
-            className={`inline-flex items-center px-4 py-2 text-sm font-semibold backdrop-blur-sm rounded-full shadow-lg border transition-all duration-200 ${
-              showTemplates
-                ? 'bg-red-500 hover:bg-red-600 text-white border-red-600'
-                : 'text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-            }`}
-          >
-            {showTemplates ? (
-              <>
-                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Close Templates
-              </>
-            ) : (
-              <>
-                <FileStack className="h-4 w-4 mr-2" />
-                Templates
-              </>
-            )}
-          </button>
-          <a 
-            href="#history" 
-            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
-          >
-            <BarChart3 className="h-4 w-4 mr-2" />
-            History
-          </a>
+          
+          {/* Quick Actions - Enhanced User-Friendly Buttons */}
+          <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 mt-4">
+            <HoverButton
+              onClick={() => {
+                setShowTimeline(!showTimeline);
+                if (!showTimeline) setShowTemplates(false);
+              }}
+              className={`px-5 py-2.5 text-sm font-medium ${
+                showTimeline
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : ''
+              }`}
+              title="View your reports in chronological order"
+            >
+              {showTimeline ? (
+                <>
+                  <svg className="h-4 w-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>Close Timeline</span>
+                </>
+              ) : (
+                <>
+                  <Calendar className="h-4 w-4 mr-2 inline" />
+                  <span>Report Timeline</span>
+                </>
+              )}
+            </HoverButton>
+            
+            <HoverButton
+              data-templates-button
+              onClick={() => {
+                setShowTemplates(!showTemplates);
+                if (!showTemplates) setShowTimeline(false);
+              }}
+              className={`px-5 py-2.5 text-sm font-medium ${
+                showTemplates
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : ''
+              }`}
+              title="Use pre-filled templates for common medical tests"
+            >
+              {showTemplates ? (
+                <>
+                  <svg className="h-4 w-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>Close Templates</span>
+                </>
+              ) : (
+                <>
+                  <FileStack className="h-4 w-4 mr-2 inline" />
+                  <span>Quick Templates</span>
+                </>
+              )}
+            </HoverButton>
+            
+            <a href="#history">
+              <HoverButton
+                className="px-5 py-2.5 text-sm font-medium"
+                title="View and manage all your uploaded reports"
+              >
+                <BarChart3 className="h-4 w-4 mr-2 inline" />
+                <span>My Reports</span>
+              </HoverButton>
+            </a>
+          </div>
         </div>
         
         <div className="max-w-7xl mx-auto space-y-6">
@@ -324,7 +360,11 @@ const AnalysisPage = () => {
             </div>
             <div className="space-y-4 h-full">
               <div className="h-full">
-                <ChatComponent reportData={reportData} />
+                <ChatComponent 
+                  reportData={reportData} 
+                  selectedReportId={selectedPrescriptionId}
+                  allPrescriptions={prescriptions}
+                />
               </div>
             </div>
           </div>
@@ -457,7 +497,7 @@ const AnalysisPage = () => {
                 {prescriptions.length > 0 && (
                   <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                     <button
-                      onClick={handleClearAll}
+                      onClick={() => setShowClearModal(true)}
                       className="w-full text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors"
                     >
                       Clear All Reports
@@ -480,6 +520,34 @@ const AnalysisPage = () => {
           }}
         />
       )}
+
+      {/* Clear All Reports Confirmation Modal */}
+      <BasicModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        title="Clear All Reports"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Are you sure you want to delete all {prescriptions.length} report{prescriptions.length !== 1 ? 's' : ''}? 
+            This action cannot be undone and all your medical reports will be permanently removed.
+          </p>
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowClearModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleClearAll}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete All Reports
+            </Button>
+          </div>
+        </div>
+      </BasicModal>
     </div>
   );
 };

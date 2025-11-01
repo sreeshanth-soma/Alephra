@@ -197,8 +197,33 @@ class PrescriptionStorage {
     if (isDev) console.log('🗑️ Cache invalidated');
   }
 
-  // Get prescription by ID
+  // Get prescription by ID with full report text (lazy loading)
   async getPrescriptionById(id: string): Promise<PrescriptionRecord | null> {
+    try {
+      // Try to fetch from server with full reportText
+      const response = await fetch(`/api/reports/${id}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const report = data.report;
+        return {
+          id: report.id,
+          reportData: report.reportText,
+          summary: report.summary || report.reportText.substring(0, 250) + '...',
+          uploadedAt: new Date(report.uploadDate),
+          fileName: report.fileName,
+          fileUrl: report.fileUrl,
+          fileType: report.fileType,
+          fileSize: report.fileSize,
+          extractedData: report.extractedData,
+          category: report.category,
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching report by ID:', error);
+    }
+    
+    // Fallback to cache/localStorage (but reportText will be empty)
     const prescriptions = await this.getAllPrescriptions();
     return prescriptions.find(p => p.id === id) || null;
   }

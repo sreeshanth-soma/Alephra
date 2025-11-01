@@ -1016,38 +1016,38 @@ export default function VoiceAgentPage() {
 
   return (
     <>
-    <div className="fixed inset-0 bg-gray-50 dark:bg-black pt-16 pb-20 md:pb-0">
-      <div className="w-full h-full flex flex-col p-2 md:p-6 gap-3 overflow-hidden">
+    <div className="fixed inset-0 bg-gray-50 dark:bg-black pt-16 pb-20 md:pb-6">
+      <div className="w-full h-full flex flex-col p-3 md:p-6 gap-2 md:gap-3 overflow-hidden">
         {/* Header - Enhanced */}
         <div className="flex-shrink-0 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-2">Voice Agent</h1>
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl md:text-4xl font-bold text-black dark:text-white mb-1 md:mb-2">Voice Agent</h1>
+          <p className="text-xs md:text-base text-gray-600 dark:text-gray-400">
             Speak naturally in any Indian language for medical assistance
           </p>
         </div>
 
         {/* Language / Voice Controls */}
         <Card className="flex-shrink-0 border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-lg">
-          <CardContent className="p-3 md:p-4">
-            <div className="flex flex-col gap-4">
+          <CardContent className="p-2 md:p-4">
+            <div className="flex flex-col gap-2 md:gap-4">
               {/* Report Selector Row */}
               {availableReports.length > 0 && (
-                <div className="pb-4 border-b border-gray-200 dark:border-gray-700 relative z-[70]">
-                  <div className="flex items-center gap-3">
+                <div className="pb-2 md:pb-4 border-b border-gray-200 dark:border-gray-700 relative z-[70]">
+                  <div className="flex items-center gap-2 md:gap-3">
                     <button
                       onClick={() => setShowReportModal(true)}
-                      className="flex-1 min-h-[40px] px-3 md:px-4 flex items-center justify-between gap-2 rounded-lg border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
+                      className="flex-1 min-h-[36px] md:min-h-[40px] px-2 md:px-4 flex items-center justify-between gap-1 md:gap-2 rounded-lg border-[2px] md:border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
                     >
-                      <div className="flex items-center gap-2 flex-1 text-left min-w-0">
-                        <FileText className="h-3.5 w-3.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                      <div className="flex items-center gap-1 md:gap-2 flex-1 text-left min-w-0">
+                        <FileText className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
                         <span className="text-xs md:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                           {selectedReportId === 'all' 
-                            ? `All Reports (${availableReports.length} total)`
+                            ? `All Reports (${availableReports.length})`
                             : availableReports.find(r => r.id === selectedReportId)?.fileName || 'Select Report'
                           }
                         </span>
                       </div>
-                      <Languages className="h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+                      <Languages className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                     </button>
                     {selectedReportId !== 'all' && (
                       <Badge variant="outline" className="text-xs whitespace-nowrap">
@@ -1059,52 +1059,52 @@ export default function VoiceAgentPage() {
               )}
               
               {/* Language and Voice Controls Row */}
-              <div className="flex flex-col md:flex-row items-stretch gap-2 md:gap-4">
+              <div className="flex flex-col md:flex-row items-stretch gap-2">
                 <button
                   onClick={() => setShowLanguageModal(true)}
-                  className="flex-1 min-h-[40px] px-3 md:px-4 flex items-center justify-between gap-2 rounded-lg border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
+                  className="flex-1 min-h-[36px] md:min-h-[40px] px-2 md:px-4 flex items-center justify-between gap-1 md:gap-2 rounded-lg border-[2px] md:border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
                 >
-                  <div className="flex items-center gap-2 flex-1 text-left min-w-0">
-                    <Languages className="h-3.5 w-3.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                  <div className="flex items-center gap-1 md:gap-2 flex-1 text-left min-w-0">
+                    <Languages className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
                     <span className="text-xs md:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                       {languages.find(lang => lang.code === selectedLanguage)?.name || 'Select Language'}
                     </span>
                   </div>
-                  <Languages className="h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+                  <Languages className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                 </button>
                 
                 <button
                   onClick={() => setShowSpeakerModal(true)}
-                  className="flex-1 min-h-[40px] px-3 md:px-4 flex items-center justify-between gap-2 rounded-lg border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
+                  className="flex-1 min-h-[36px] md:min-h-[40px] px-2 md:px-4 flex items-center justify-between gap-1 md:gap-2 rounded-lg border-[2px] md:border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
                 >
-                  <div className="flex items-center gap-2 flex-1 text-left min-w-0">
-                    <UserCircle className="h-3.5 w-3.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                  <div className="flex items-center gap-1 md:gap-2 flex-1 text-left min-w-0">
+                    <UserCircle className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
                     <span className="text-xs md:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                       {sarvamSpeakers.find(speaker => speaker.code === selectedSpeaker) ? 
                         getSpeakerNameWithNativeScript(sarvamSpeakers.find(speaker => speaker.code === selectedSpeaker)!, selectedLanguage) : 
                         'Select Speaker'}
                     </span>
                   </div>
-                  <UserCircle className="h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+                  <UserCircle className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                 </button>
                 
-                <div className="flex items-stretch gap-2">
+                <div className="flex items-stretch gap-1 md:gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setIsMuted(!isMuted)}
-                    className="flex items-center gap-1 text-xs px-2 md:px-3 min-h-[40px] whitespace-nowrap border-[3px] border-gray-900 dark:border-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all"
+                    className="flex items-center gap-1 text-xs px-2 md:px-3 min-h-[36px] md:min-h-[40px] whitespace-nowrap border-[2px] md:border-[3px] border-gray-900 dark:border-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all"
                   >
-                    {isMuted ? <VolumeX className="h-3.5 w-3.5 flex-shrink-0" /> : <Volume2 className="h-3.5 w-3.5 flex-shrink-0" />}
+                    {isMuted ? <VolumeX className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0" /> : <Volume2 className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0" />}
                     <span className="hidden sm:inline">{isMuted ? 'Unmute' : 'Mute'}</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowClearModal(true)}
-                    className="flex items-center gap-1 text-xs px-2 md:px-3 min-h-[40px] whitespace-nowrap border-[3px] border-gray-900 dark:border-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all"
+                    className="flex items-center gap-1 text-xs px-2 md:px-3 min-h-[36px] md:min-h-[40px] whitespace-nowrap border-[2px] md:border-[3px] border-gray-900 dark:border-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all"
                   >
-                    <RotateCcw className="h-3.5 w-3.5 flex-shrink-0" />
+                    <RotateCcw className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0" />
                     <span className="hidden sm:inline">Clear</span>
                   </Button>
                 </div>
@@ -1114,9 +1114,9 @@ export default function VoiceAgentPage() {
         </Card>
 
         {/* Main Content Layout */}
-        <div className="flex flex-col md:flex-row gap-3 md:gap-4 flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-2 md:gap-4 flex-1 min-h-0 overflow-hidden">
           {/* Left Side - Voice Interface */}
-          <div className="w-full md:w-[30%] h-64 md:h-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden relative flex-shrink-0">
+          <div className="w-full md:w-[30%] h-48 md:h-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden relative flex-shrink-0">
             {/* Floating Particles */}
             <FloatingParticles isActive={showParticles} count={15} />
             

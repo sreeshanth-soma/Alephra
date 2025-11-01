@@ -15,9 +15,11 @@ import { SignInPromptModal } from '@/components/ui/signin-prompt-modal';
 
 type Props = {
   reportData?: string
+  selectedReportId?: string
+  allPrescriptions?: any[]
 }
 
-const ChatComponent = ({ reportData }: Props) => {
+const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props) => {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
@@ -27,6 +29,17 @@ const ChatComponent = ({ reportData }: Props) => {
   const [showClearModal, setShowClearModal] = useState<boolean>(false);
   const [prescriptionCount, setPrescriptionCount] = useState<number>(0);
   const [showSignInPrompt, setShowSignInPrompt] = useState<boolean>(false);
+  const [selectedReportName, setSelectedReportName] = useState<string>("");
+
+  // Debug log when props change
+  useEffect(() => {
+    console.log('ChatComponent props updated:', {
+      hasReportData: !!reportData,
+      reportDataLength: reportData?.length || 0,
+      selectedReportId,
+      allPrescriptionsCount: allPrescriptions?.length || 0
+    });
+  }, [reportData, selectedReportId, allPrescriptions]);
 
   // Load chat history from localStorage on component mount
   useEffect(() => {
@@ -62,21 +75,49 @@ const ChatComponent = ({ reportData }: Props) => {
   useEffect(() => {
     const loadReports = async () => {
       if (!reportData) {
-        const allPrescriptions = await prescriptionStorage.getAllPrescriptions();
+        // Check if a specific report ID is selected (from props or localStorage)
+        const storedReportId = localStorage.getItem('selectedReportId');
+        const effectiveReportId = selectedReportId || storedReportId;
+        
+        const prescriptionsToUse = allPrescriptions || await prescriptionStorage.getAllPrescriptions();
         const count = await prescriptionStorage.getPrescriptionsCount();
         setPrescriptionCount(count);
-        if (allPrescriptions.length > 0) {
-          const combinedReports = allPrescriptions
+        
+        if (effectiveReportId) {
+          // Load only the selected report
+          const selectedReport = prescriptionsToUse.find(p => p.id === effectiveReportId);
+          if (selectedReport) {
+            setAllReportsData(selectedReport.reportData);
+            setSelectedReportName(selectedReport.fileName);
+            setPrescriptionCount(1); // Show as 1 report loaded
+            return;
+          }
+        }
+        
+        // If no specific report selected, load all reports
+        if (prescriptionsToUse.length > 0) {
+          const combinedReports = prescriptionsToUse
             .map((prescription, index) => 
               `**Report ${index + 1} (${prescription.fileName} - ${prescriptionStorage.formatDate(prescription.uploadedAt)}):**\n${prescription.reportData}`
             )
             .join('\n\n---\n\n');
           setAllReportsData(combinedReports);
+          setSelectedReportName("");
+        }
+      } else {
+        // If reportData is provided directly, check if we have a selected report name from props
+        if (selectedReportId && allPrescriptions) {
+          const selectedReport = allPrescriptions.find(p => p.id === selectedReportId);
+          if (selectedReport) {
+            setSelectedReportName(selectedReport.fileName);
+          }
+        } else {
+          setSelectedReportName("");
         }
       }
     };
     loadReports();
-  }, [reportData]);
+  }, [reportData, selectedReportId, allPrescriptions]);
 
   // Preserve chat when a new report is selected
   // (Previously cleared messages on report change.)
@@ -94,13 +135,25 @@ const ChatComponent = ({ reportData }: Props) => {
       <div className="absolute -top-3 left-6 z-20 px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-300 dark:border-gray-700 shadow-lg">
         <Badge 
           variant="secondary" 
-          className={`text-sm font-semibold transition-all duration-200 ${
+          className={`text-sm font-semibold transition-all duration-200 cursor-pointer ${
             reportData || allReportsData
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700" 
               : "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300 border-gray-200 dark:border-gray-700"
           }`}
+          onClick={() => {
+            if (localStorage.getItem('selectedReportId') || selectedReportId) {
+              localStorage.removeItem('selectedReportId');
+              window.location.reload();
+            }
+          }}
         >
-          {reportData ? "✓ Report Loaded" : allReportsData ? `✓ ${prescriptionCount} ${prescriptionCount === 1 ? 'Report' : 'Reports'} Available` : "No Report"}
+          {selectedReportName 
+            ? `✓ ${selectedReportName}` 
+            : reportData || (allReportsData && prescriptionCount === 1) 
+              ? "✓ Report Loaded" 
+              : allReportsData 
+                ? `✓ ${prescriptionCount} ${prescriptionCount === 1 ? 'Report' : 'Reports'} Available` 
+                : "No Report"}
         </Badge>
       </div>
       
@@ -155,12 +208,24 @@ const ChatComponent = ({ reportData }: Props) => {
             setMessages(nextMessages);
             setInput("");
             setIsLoading(true);
+            
+            // Get the effective report data to send
+            const effectiveReportData = reportData || allReportsData;
+            console.log('Sending to API:', {
+              hasReportData: !!reportData,
+              reportDataLength: reportData?.length || 0,
+              hasAllReportsData: !!allReportsData,
+              allReportsDataLength: allReportsData?.length || 0,
+              effectiveDataLength: effectiveReportData?.length || 0,
+              selectedReportName
+            });
+            
             fetch('/api/medichatgemini', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ 
                 messages: nextMessages, 
-                reportData: reportData || allReportsData 
+                reportData: effectiveReportData 
               }),
             })
               .then(async (res) => {

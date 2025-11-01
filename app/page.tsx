@@ -73,7 +73,7 @@ export default function Home() {
               }}
               className="text-2xl md:text-4xl lg:text-5xl text-black dark:text-gray-200 font-medium tracking-wide max-w-5xl mx-auto"
             >
-              <span className="px-4 py-2 rounded-full bg-white/70 dark:bg-black/70 backdrop-blur-md border-2 border-blue-300/30 dark:border-blue-500/30 shadow-xl shadow-blue-500/10">
+              <span className="inline-block px-4 py-2 rounded-full bg-white/70 dark:bg-black/70 backdrop-blur-md border-2 border-blue-300/30 dark:border-blue-500/30 shadow-xl shadow-blue-500/10 whitespace-nowrap">
                 Where care meets technology
               </span>
             </motion.p>

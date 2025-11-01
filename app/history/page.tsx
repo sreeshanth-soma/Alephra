@@ -36,6 +36,8 @@ export default function HistoryPage() {
       setPrescriptions(sorted);
       if (sorted.length > 0) {
         setSelected(sorted[0]);
+        // Save the selected report ID to localStorage for chat context
+        localStorage.setItem('selectedReportId', sorted[0].id);
       }
     };
     loadData();
@@ -105,7 +107,11 @@ export default function HistoryPage() {
             <EnhancedHistoryList
               prescriptions={prescriptions}
               healthScores={new Map()}
-              onSelectPrescription={setSelected}
+              onSelectPrescription={(prescription) => {
+                setSelected(prescription);
+                // Save the selected report ID to localStorage for chat context
+                localStorage.setItem('selectedReportId', prescription.id);
+              }}
               selectedPrescriptionId={selected?.id}
               onClearAll={handleClearAll}
               onDelete={handleDelete}
@@ -121,6 +127,12 @@ export default function HistoryPage() {
                         <div>
                             <CardTitle className="text-xl text-gray-900 dark:text-white">{selected.fileName}</CardTitle>
                             <p className="text-sm text-gray-600 dark:text-gray-400">{new Date(selected.uploadedAt).toLocaleString()}</p>
+                            <Link href="/dashboard">
+                              <Button size="sm" className="mt-2 gap-1" variant="outline">
+                                <ArrowRight className="h-3 w-3" />
+                                Discuss with AI
+                              </Button>
+                            </Link>
                         </div>
                         <div className="flex items-center gap-2">
                             <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>Overview</TabButton>
