@@ -6,7 +6,9 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // You can use either HF Inference API or your own GPU endpoint
-const DEEPSEEK_API_URL = process.env.DEEPSEEK_OCR_ENDPOINT || "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-OCR";
+// NOTE: Hugging Face has migrated inference traffic to the router host. Use the router URL by default
+// Example router URL: https://router.huggingface.co/hf-inference/models/<model>
+const DEEPSEEK_API_URL = process.env.DEEPSEEK_OCR_ENDPOINT || "https://router.huggingface.co/hf-inference/models/deepseek-ai/DeepSeek-OCR";
 const API_KEY = process.env.DEEPSEEK_API_KEY || process.env.HF_TOKEN;
 
 const pinecone = new Pinecone({

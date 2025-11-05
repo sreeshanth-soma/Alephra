@@ -22,9 +22,15 @@ export async function POST(request: NextRequest) {
       type: audioFile.type
     });
 
-    // Create FormData for Sarvam AI API
-    const sarvamFormData = new FormData();
-    sarvamFormData.append('file', audioFile);
+  // Create FormData for Sarvam AI API
+  const sarvamFormData = new FormData();
+  // Some clients send Content-Type with codec parameters (e.g. 'audio/webm;codecs=opus')
+  // Sarvam expects a canonical mime type. Normalize by stripping parameters.
+  const normalizedType = audioFile.type ? audioFile.type.split(';')[0].trim() : 'application/octet-stream';
+  console.log('Normalizing audio MIME type:', audioFile.type, '->', normalizedType);
+  // Create a new File/Blob with the normalized MIME type to avoid provider rejection
+  const normalizedFile = new File([audioFile], audioFile.name, { type: normalizedType });
+  sarvamFormData.append('file', normalizedFile);
 
     // Call Sarvam AI API directly using configured key
     const apiKey = process.env.SARVAM_API_KEY;
