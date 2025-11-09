@@ -535,7 +535,10 @@ export default function VoiceAgentPage() {
         setCurrentText(result.text);
         
         // Generate AI response and convert to speech
-        await generateAndSpeakResponse(result.text);
+        // Use detected language from speech-to-text, fallback to selectedLanguage
+        const detectedLanguage = result.language || selectedLanguage;
+        log('Using detected language:', detectedLanguage, 'from result:', result);
+        await generateAndSpeakResponse(result.text, detectedLanguage);
       } else {
         throw new Error(result.error || 'Speech recognition failed');
       }
@@ -547,7 +550,7 @@ export default function VoiceAgentPage() {
     }
   };
 
-  const generateAndSpeakResponse = async (userText: string) => {
+  const generateAndSpeakResponse = async (userText: string, detectedLanguage?: string) => {
     try {
       // Add processing message
       const processingMessage: VoiceMessage = {
@@ -635,6 +638,10 @@ export default function VoiceAgentPage() {
       // Call Gemini AI API for intelligent response with vector database
       const finalReportData = reportData + vitalsData;
       
+      // Use detected language from speech-to-text, fallback to selectedLanguage
+      const languageToUse = detectedLanguage || selectedLanguage;
+      log('Calling Gemini chat with language:', languageToUse, '(detected:', detectedLanguage, ', selected:', selectedLanguage, ')');
+      
       const response = await fetch('/api/voice/gemini-chat', {
         method: 'POST',
         headers: {
@@ -642,7 +649,7 @@ export default function VoiceAgentPage() {
         },
         body: JSON.stringify({
           message: userText,
-          language: selectedLanguage,
+          language: languageToUse,
           reportData: finalReportData, // Include both report and vitals data
           reportId: reportIdToSend  // Pass reportId for vector search filtering
         }),
@@ -664,6 +671,7 @@ export default function VoiceAgentPage() {
       }
 
       // Convert response to speech first, then show message when audio starts
+      // Use the same language for TTS that was used for the chat response
       textToSpeech(responseText, () => {
         // Show message when audio starts playing
         const assistantMessage: VoiceMessage = {
@@ -673,7 +681,7 @@ export default function VoiceAgentPage() {
           type: 'assistant'
         };
         setMessages(prev => [...prev, assistantMessage]);
-      }).catch(error => {
+      }, languageToUse).catch(error => {
         console.error('TTS error:', error);
         // Fallback to browser TTS if Sarvam fails, pass the callback
         const assistantMessage: VoiceMessage = {
@@ -847,11 +855,15 @@ export default function VoiceAgentPage() {
     return null;
   };
 
-  const textToSpeech = async (text: string, onAudioStart?: () => void) => {
+  const textToSpeech = async (text: string, onAudioStart?: () => void, languageCode?: string) => {
     log('textToSpeech called with text:', text.substring(0, 50) + '...');
     log('textToSpeech called from:', new Error().stack);
     
     if (isMuted) return;
+
+    // Use provided language code or fallback to selectedLanguage
+    const languageToUse = languageCode || selectedLanguage;
+    log('TTS using language:', languageToUse, '(provided:', languageCode, ', selected:', selectedLanguage, ')');
 
     try {
       const response = await fetch('/api/voice/text-to-speech', {
@@ -861,14 +873,14 @@ export default function VoiceAgentPage() {
         },
         body: JSON.stringify({
           text: text,
-          target_language_code: selectedLanguage,
+          target_language_code: languageToUse,
           speaker: selectedSpeaker
         }),
       });
 
       const result = await response.json();
       log('TTS API result:', result);
-      log('Selected language for TTS:', selectedLanguage);
+      log('Language used for TTS:', languageToUse);
       log('Selected speaker for TTS:', selectedSpeaker);
 
       // Try Sarvam TTS first
