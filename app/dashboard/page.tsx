@@ -1300,6 +1300,7 @@ export default function DashboardPage() {
       setLabData(prev => prev.filter(lab => lab.id !== id));
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black relative overflow-hidden pt-16">
       {/* Noise Background */}
@@ -1556,8 +1557,8 @@ export default function DashboardPage() {
                 </div>
                 <button
                   onClick={() => {
-                    // Check if user is signed in before showing form
-                    if (!session?.user?.email && !showVitalsForm) {
+                    // Check if user is signed in before showing form (only show prompt if authenticated and not signed in)
+                    if (status === "unauthenticated" && !showVitalsForm) {
                       setShowSignInPrompt(true);
                       return;
                     }
@@ -2118,8 +2119,8 @@ export default function DashboardPage() {
               <div className="flex justify-center mt-6">
                           <button
                             onClick={() => {
-                    // Check if user is signed in before showing form
-                    if (!session?.user?.email && !showLabForm) {
+                    // Check if user is signed in before showing form (only show prompt if authenticated and not signed in)
+                    if (status === "unauthenticated" && !showLabForm) {
                       setShowSignInPrompt(true);
                       return;
                     }

@@ -210,7 +210,7 @@ export function VoiceChatInteractive({
   return (
     <div className={cn("relative w-full h-full overflow-hidden", className)}>
       {/* Spline Animation - Top layer for pointer interaction */}
-      <SplineBackground className="absolute inset-0 z-20" />
+      <SplineBackground className="absolute top-8 left-0 right-0 bottom-0 z-20" />
 
       {/* Subtle overlay for better contrast */}
       <div className="absolute inset-0 z-25 bg-black/5" />
@@ -239,10 +239,10 @@ export function VoiceChatInteractive({
       </div>
 
       {/* Voice Controls - Positioned at top middle */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30 flex flex-col items-center space-y-4">
-        {/* Main voice button */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
+        {/* Main voice button - centered */}
         <motion.div
-          className="relative"
+          className="relative inline-block"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -353,27 +353,28 @@ export function VoiceChatInteractive({
           </AnimatePresence>
         </motion.div>
 
-        {/* Original Status text, now only for idle state */}
+        {/* Original Status text, now only for idle state - positioned to the right of mic */}
         {!actualIsListening && !actualIsProcessing && !actualIsSpeaking && (
           <motion.p
             key="idle-status-text"
-            className={cn("text-lg font-medium transition-colors bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full", getStatusColor())}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            className="absolute left-full ml-4 top-1/2 transform -translate-y-1/2 text-base font-semibold px-4 py-2 rounded-full whitespace-nowrap bg-blue-600 text-white shadow-md"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.3 }}
           >
             Tap to speak
           </motion.p>
         )}
 
-        {/* Stop button - only show when speaking */}
+        {/* Stop button - only show when speaking, positioned to the right */}
         <AnimatePresence>
           {actualIsSpeaking && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: 10 }}
+              className="absolute left-full ml-4 top-1/2 transform -translate-y-1/2"
+              initial={{ opacity: 0, scale: 0.8, x: -10 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.8, x: -10 }}
               transition={{ duration: 0.3 }}
             >
               <motion.button

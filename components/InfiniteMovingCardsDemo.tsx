@@ -4,32 +4,32 @@ import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards";
 
 const medicalStepsData = [
   {
-    quote: "Drop a PDF or image. We securely extract values, units, and reference ranges from your medical reports using advanced AI technology.",
+    quote: "Upload any medical report. AI extracts all values instantly.",
     name: "Step 1",
     title: "Upload Report",
   },
   {
-    quote: "We normalize test names, map to medical concepts, and track your health history over time for comprehensive analysis.",
+    quote: "Your data organized. History tracked automatically.",
     name: "Step 2",
     title: "Structure Data",
   },
   {
-    quote: "Gemini AI reviews out-of-range values, symptoms, and medical guidelines to draft personalized insights for you.",
+    quote: "AI reviews your results against medical guidelines.",
     name: "Step 3",
     title: "AI Analysis",
   },
   {
-    quote: "We explain reasoning in plain language and cite where medical interpretations come from for transparency.",
+    quote: "Clear explanations with trusted medical sources.",
     name: "Step 4",
     title: "Verify Results",
   },
   {
-    quote: "Set reminders in the dashboard, speak with the voice assistant, or share a summary with your clinician for follow-up care.",
+    quote: "Set reminders, chat with voice AI, or share with doctors.",
     name: "Step 5",
     title: "Take Action",
   },
   {
-    quote: "Over time Alephra learns your health baselines to reduce noise and surface what matters most to you.",
+    quote: "Learns your health patterns. Shows what matters.",
     name: "Step 6",
     title: "Learn & Improve",
   },
