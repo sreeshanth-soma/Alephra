@@ -114,7 +114,7 @@ export function FloatingSelectModal({
             <motion.div
               ref={modalRef}
               className={cn(
-                "relative w-full max-w-xl bg-white dark:bg-black border-2 border-gray-300 dark:border-gray-700 rounded-2xl shadow-2xl pointer-events-auto",
+                "relative w-full max-w-xl bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] pointer-events-auto",
                 className
               )}
               initial={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -123,15 +123,16 @@ export function FloatingSelectModal({
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
-                <h3 className="text-2xl font-bold text-black dark:text-white">
+              <div className="flex items-center justify-between p-6 border-b-2 border-black dark:border-white">
+                <h3 className="text-xl font-bold text-black dark:text-white">
                   {title}
                 </h3>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                  className="p-2 rounded-lg border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white"
+                  aria-label="Close modal"
                 >
-                  <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <X className="w-5 h-5 text-black dark:text-white" strokeWidth={2.5} />
                 </button>
               </div>
 
@@ -146,7 +147,8 @@ export function FloatingSelectModal({
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       placeholder="Search options..."
-                      className="w-full pl-10 pr-4 py-4 text-base rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-gray-500 dark:focus:border-gray-400 transition-colors duration-200"
+                      className="w-full pl-10 pr-4 py-4 text-base rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white transition-all"
+                      aria-label="Search options"
                     />
                   </div>
                 </div>
@@ -161,11 +163,13 @@ export function FloatingSelectModal({
                       type="button"
                       onClick={() => handleSelect(option.value)}
                       className={cn(
-                        "w-full px-6 py-5 flex items-center justify-between gap-3 transition-all duration-200 border-b border-gray-100 dark:border-gray-800 last:border-b-0",
+                        "w-full px-6 py-5 flex items-center justify-between gap-3 transition-all duration-200 border-b-2 border-black dark:border-white last:border-b-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white",
                         option.value === value 
-                          ? "bg-gray-200 dark:bg-gray-700" 
-                          : "hover:bg-gray-50 dark:hover:bg-gray-900"
+                          ? "bg-black dark:bg-white text-white dark:text-black" 
+                          : "hover:bg-gray-100 dark:hover:bg-gray-900 text-black dark:text-white"
                       )}
+                      aria-label={`Select ${option.label}`}
+                      aria-pressed={option.value === value}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
@@ -186,20 +190,25 @@ export function FloatingSelectModal({
                           <span className={cn(
                             "text-base font-semibold",
                             option.value === value 
-                              ? "text-black dark:text-white" 
-                              : "text-gray-700 dark:text-gray-300"
+                              ? "text-white dark:text-black" 
+                              : "text-black dark:text-white"
                           )}>
                             {option.label}
                           </span>
                           {option.description && (
-                            <span className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            <span className={cn(
+                              "text-sm mt-1",
+                              option.value === value 
+                                ? "text-white/80 dark:text-black/80" 
+                                : "text-gray-600 dark:text-gray-400"
+                            )}>
                               {option.description}
                             </span>
                           )}
                         </div>
                       </div>
                       {option.value === value && (
-                        <Check className="w-5 h-5 text-black dark:text-white flex-shrink-0" />
+                        <Check className="w-5 h-5 text-white dark:text-black flex-shrink-0" strokeWidth={2.5} />
                       )}
                     </motion.button>
                   ))

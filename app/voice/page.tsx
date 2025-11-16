@@ -6,7 +6,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw, BarChart3, LayoutDashboard, FileText, Languages, UserCircle } from 'lucide-react';
+import { Mic, MicOff, Pause, Volume2, VolumeX, RotateCcw, BarChart3, LayoutDashboard, FileText, Languages, UserCircle, Globe } from 'lucide-react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { VoiceChatInteractive } from '@/components/VoiceChatInteractive';
@@ -254,7 +254,7 @@ export default function VoiceAgentPage() {
             id: '1',
             text: reports.length > 0 
               ? `Hello! I am your AI medical voice assistant. I can see you have ${reports.length} medical report${reports.length > 1 ? 's' : ''} uploaded. I can help you understand your reports, answer health questions, schedule appointments, and provide medical guidance. You can speak to me in any Indian language. How can I assist you today?`
-              : `Hello! I am your AI medical voice assistant. I can help you with general health questions, appointment scheduling, and medical guidance. You can speak to me in any Indian language.\n\n📋 To get personalized insights about your medical reports:\n1. Go to the Analysis page (use the navigation menu)\n2. Upload your medical reports (lab results, blood tests, etc.)\n3. Come back here and I'll be able to answer specific questions about your health data!\n\nFor now, feel free to ask me any general health questions. How can I help you?`,
+              : `Hello! I am your AI medical voice assistant. I can help you with general health questions, appointment scheduling, and medical guidance. You can speak to me in any Indian language.\n\nTo get personalized insights about your medical reports:\n1. Go to the Analysis page (use the navigation menu)\n2. Upload your medical reports (lab results, blood tests, etc.)\n3. Come back here and I'll be able to answer specific questions about your health data!\n\nFor now, feel free to ask me any general health questions. How can I help you?`,
             timestamp: new Date(),
             type: 'assistant'
           };
@@ -1039,7 +1039,7 @@ export default function VoiceAgentPage() {
         </div>
 
         {/* Language / Voice Controls */}
-        <Card className="flex-shrink-0 border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-lg">
+        <Card className="flex-shrink-0 rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
           <CardContent className="p-2 md:p-4">
             <div className="flex flex-col gap-2 md:gap-4">
               {/* Report Selector Row */}
@@ -1048,7 +1048,8 @@ export default function VoiceAgentPage() {
                   <div className="flex items-center gap-2 md:gap-3">
                     <button
                       onClick={() => setShowReportModal(true)}
-                      className="flex-1 min-h-[36px] md:min-h-[40px] px-2 md:px-4 flex items-center justify-between gap-1 md:gap-2 rounded-lg border-[2px] md:border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
+                      className="flex-1 min-h-[36px] md:min-h-[40px] px-2 md:px-4 flex items-center justify-between gap-1 md:gap-2 rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white"
+                      aria-label="Select medical report context"
                     >
                       <div className="flex items-center gap-1 md:gap-2 flex-1 text-left min-w-0">
                         <FileText className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
@@ -1074,7 +1075,8 @@ export default function VoiceAgentPage() {
               <div className="flex flex-col md:flex-row items-stretch gap-2">
                 <button
                   onClick={() => setShowLanguageModal(true)}
-                  className="flex-1 min-h-[36px] md:min-h-[40px] px-2 md:px-4 flex items-center justify-between gap-1 md:gap-2 rounded-lg border-[2px] md:border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
+                  className="flex-1 min-h-[36px] md:min-h-[40px] px-2 md:px-4 flex items-center justify-between gap-1 md:gap-2 rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white"
+                  aria-label="Select response language"
                 >
                   <div className="flex items-center gap-1 md:gap-2 flex-1 text-left min-w-0">
                     <Languages className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
@@ -1087,7 +1089,8 @@ export default function VoiceAgentPage() {
                 
                 <button
                   onClick={() => setShowSpeakerModal(true)}
-                  className="flex-1 min-h-[36px] md:min-h-[40px] px-2 md:px-4 flex items-center justify-between gap-1 md:gap-2 rounded-lg border-[2px] md:border-[3px] border-gray-900 dark:border-white bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all duration-200"
+                  className="flex-1 min-h-[36px] md:min-h-[40px] px-2 md:px-4 flex items-center justify-between gap-1 md:gap-2 rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white"
+                  aria-label="Select voice speaker"
                 >
                   <div className="flex items-center gap-1 md:gap-2 flex-1 text-left min-w-0">
                     <UserCircle className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
@@ -1105,7 +1108,8 @@ export default function VoiceAgentPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsMuted(!isMuted)}
-                    className="flex items-center gap-1 text-xs px-2 md:px-3 min-h-[36px] md:min-h-[40px] whitespace-nowrap border-[2px] md:border-[3px] border-gray-900 dark:border-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all"
+                    className="flex items-center gap-1 text-xs px-2 md:px-3 min-h-[36px] md:min-h-[40px] whitespace-nowrap rounded-lg border-2 border-black dark:border-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white"
+                    aria-label={isMuted ? "Unmute audio" : "Mute audio"}
                   >
                     {isMuted ? <VolumeX className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0" /> : <Volume2 className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0" />}
                     <span className="hidden sm:inline">{isMuted ? 'Unmute' : 'Mute'}</span>
@@ -1114,7 +1118,8 @@ export default function VoiceAgentPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowClearModal(true)}
-                    className="flex items-center gap-1 text-xs px-2 md:px-3 min-h-[36px] md:min-h-[40px] whitespace-nowrap border-[2px] md:border-[3px] border-gray-900 dark:border-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-black dark:hover:border-gray-100 hover:shadow-lg transition-all"
+                    className="flex items-center gap-1 text-xs px-2 md:px-3 min-h-[36px] md:min-h-[40px] whitespace-nowrap rounded-lg border-2 border-black dark:border-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white"
+                    aria-label="Clear conversation history"
                   >
                     <RotateCcw className="h-3 w-3 md:h-3.5 md:w-3.5 flex-shrink-0" />
                     <span className="hidden sm:inline">Clear</span>
@@ -1128,7 +1133,7 @@ export default function VoiceAgentPage() {
         {/* Main Content Layout */}
         <div className="flex flex-col md:flex-row gap-2 md:gap-4 flex-1 min-h-0 overflow-hidden">
           {/* Left Side - Voice Interface */}
-          <div className="w-full md:w-[30%] h-48 md:h-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden relative flex-shrink-0">
+          <div className="w-full md:w-[30%] h-48 md:h-full rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden relative flex-shrink-0">
             {/* Floating Particles */}
             <FloatingParticles isActive={showParticles} count={15} />
             
@@ -1159,9 +1164,9 @@ export default function VoiceAgentPage() {
           <div className="w-full md:w-[70%] flex flex-col gap-2 min-h-0 flex-1 overflow-hidden">
             {/* Current Text Display - Compact */}
             {currentText && (
-              <Card className="flex-shrink-0 border border-gray-300 dark:border-gray-700">
+              <Card className="flex-shrink-0 rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]">
                 <CardHeader className="pb-1 pt-2">
-                  <CardTitle className="text-xs md:text-sm">You said:</CardTitle>
+                  <CardTitle className="text-xs md:text-sm font-bold text-black dark:text-white">You said:</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2">
                   <p className="text-xs md:text-sm text-black dark:text-white line-clamp-2">{currentText}</p>
@@ -1170,7 +1175,7 @@ export default function VoiceAgentPage() {
             )}
 
             {/* Messages - Glassy Chat UI */}
-            <div className="flex-1 min-h-0 border border-white/10 dark:border-gray-700 rounded-lg overflow-hidden shadow-md relative">
+            <div className="flex-1 min-h-0 rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden relative">
               {/* Subtle animated background */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-zinc-900 dark:via-black dark:to-zinc-900"
@@ -1279,13 +1284,13 @@ export default function VoiceAgentPage() {
           {
             value: 'all',
             label: `All Reports (${availableReports.length} total)`,
-            icon: '🌐',
+            icon: <Globe className="w-6 h-6" strokeWidth={2} />,
             description: 'Search across all your medical reports'
           },
           ...availableReports.map(report => ({
             value: report.id,
             label: report.fileName,
-            icon: '📄',
+            icon: <FileText className="w-6 h-6" strokeWidth={2} />,
             description: prescriptionStorage.formatDate(report.uploadedAt)
           }))
         ]}
