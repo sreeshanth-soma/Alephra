@@ -196,3 +196,32 @@ model CarePlanAppointment {
 
   @@index([userEmail])
 }
+
+model Prescription {
+  id                  String   @id @default(cuid())
+  doctorName          String
+  reason              String   @db.Text
+  prescriptionDate    DateTime
+  medicines           String   @db.Text // JSON array of medicines
+  reportId            String?
+  reportName          String?
+  comments            String?  @db.Text
+  takenLog            String   @db.Text // JSON array of taken logs
+  userEmail           String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([userEmail])
+}
+
+model MedicineData {
+  id          String   @id @default(cuid())
+  userEmail   String   @unique
+  stock       String   @db.Text // JSON object of medicine stock
+  frequency   String   @db.Text // JSON object of custom frequencies
+  favorites   String   @db.Text // JSON array of favorite medicines
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userEmail])
+}

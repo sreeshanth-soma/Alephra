@@ -36,7 +36,12 @@ import {
   loadLabsHybrid,
   saveVitalToServer,
   saveLabToServer,
-  deleteLabFromServer 
+  deleteLabFromServer,
+  loadPrescriptionsHybrid,
+  savePrescriptionToServer,
+  deletePrescriptionFromServer,
+  loadMedicineDataHybrid,
+  saveMedicineDataToServer
 } from "@/lib/data-sync";
 import { OnboardingTour } from "@/components/ui/onboarding-tour";
 import { onboardingSteps } from "@/app/onboarding-config";
@@ -674,6 +679,8 @@ export default function DashboardPage() {
   });
   const [uploadedReports, setUploadedReports] = useState<PrescriptionRecord[]>([]);
   const [selectedPrescriptionView, setSelectedPrescriptionView] = useState<PrescriptionEntry | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [deletingPrescriptionId, setDeletingPrescriptionId] = useState<string | null>(null);
   // Flag to prevent saving empty data on initial load
   const [isInitialized, setIsInitialized] = useState(false);
   // Show all labs or just recent ones
@@ -748,6 +755,8 @@ export default function DashboardPage() {
         try {
           const serverVitals = await loadVitalsHybrid(session.user.email);
           const serverLabs = await loadLabsHybrid(session.user.email);
+          const serverPrescriptions = await loadPrescriptionsHybrid(session.user.email);
+          const serverMedicineData = await loadMedicineDataHybrid(session.user.email);
           
           // Filter out any data from before 2025
           const filteredVitals = serverVitals.filter((v: VitalsPoint) => {
@@ -779,11 +788,19 @@ export default function DashboardPage() {
           // Update state with server data
           setVitals(dedupedVitals);
           setLabData(filteredLabs);
+          setPrescriptions(serverPrescriptions);
+          setMedicineStock(serverMedicineData.stock);
+          setCustomFrequency(serverMedicineData.frequency);
+          setFavoriteMedicines(serverMedicineData.favorites);
           
           // Also save to localStorage as backup
           if (isLocalStorageAvailable()) {
             safeSetItem("alephra.vitals", dedupedVitals);
             safeSetItem("alephra.labs", filteredLabs);
+            safeSetItem("alephra.prescriptions", serverPrescriptions);
+            safeSetItem("alephra.medicineStock", serverMedicineData.stock);
+            safeSetItem("alephra.customFrequency", serverMedicineData.frequency);
+            safeSetItem("alephra.favoriteMedicines", serverMedicineData.favorites);
           }
         } catch (error) {
           console.error('Background sync failed:', error);
@@ -810,6 +827,97 @@ export default function DashboardPage() {
     };
     loadReports();
   }, []);
+
+  // Manual sync function to reload data from server
+  const syncFromCloud = async () => {
+    if (!session?.user?.email) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to sync from cloud",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      const serverPrescriptions = await loadPrescriptionsHybrid(session.user.email);
+      const serverMedicineData = await loadMedicineDataHybrid(session.user.email);
+      
+      setPrescriptions(serverPrescriptions);
+      setMedicineStock(serverMedicineData.stock);
+      setCustomFrequency(serverMedicineData.frequency);
+      setFavoriteMedicines(serverMedicineData.favorites);
+      
+      // Update localStorage with server data
+      if (isLocalStorageAvailable()) {
+        safeSetItem("alephra.prescriptions", serverPrescriptions);
+        safeSetItem("alephra.medicineStock", serverMedicineData.stock);
+        safeSetItem("alephra.customFrequency", serverMedicineData.frequency);
+        safeSetItem("alephra.favoriteMedicines", serverMedicineData.favorites);
+      }
+      
+      toast({
+        title: "✓ Synced from cloud",
+        description: "Your data has been updated from the cloud"
+      });
+    } catch (error) {
+      console.error('Sync failed:', error);
+      toast({
+        title: "Sync failed",
+        description: "Could not load data from cloud",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Smart sync: Only sync when user returns to the tab (page visibility change)
+  // This is much more efficient than polling every 30 seconds
+  useEffect(() => {
+    if (!session?.user?.email || !isInitialized) return;
+
+    const handleVisibilityChange = async () => {
+      // Only sync when tab becomes visible (user switches back to this tab)
+      if (!document.hidden && session?.user?.email) {
+        try {
+          const serverPrescriptions = await loadPrescriptionsHybrid(session.user.email);
+          const serverMedicineData = await loadMedicineDataHybrid(session.user.email);
+          
+          // Only update if data has actually changed
+          if (JSON.stringify(serverPrescriptions) !== JSON.stringify(prescriptions)) {
+            setPrescriptions(serverPrescriptions);
+            if (isLocalStorageAvailable()) {
+              safeSetItem("alephra.prescriptions", serverPrescriptions);
+            }
+          }
+          
+          if (JSON.stringify(serverMedicineData.stock) !== JSON.stringify(medicineStock) ||
+              JSON.stringify(serverMedicineData.frequency) !== JSON.stringify(customFrequency) ||
+              JSON.stringify(serverMedicineData.favorites) !== JSON.stringify(favoriteMedicines)) {
+            setMedicineStock(serverMedicineData.stock);
+            setCustomFrequency(serverMedicineData.frequency);
+            setFavoriteMedicines(serverMedicineData.favorites);
+            if (isLocalStorageAvailable()) {
+              safeSetItem("alephra.medicineStock", serverMedicineData.stock);
+              safeSetItem("alephra.customFrequency", serverMedicineData.frequency);
+              safeSetItem("alephra.favoriteMedicines", serverMedicineData.favorites);
+            }
+          }
+        } catch (error) {
+          console.error('Visibility sync failed:', error);
+        }
+      }
+    };
+
+    // Listen for when user switches back to this tab
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [session?.user?.email, isInitialized, prescriptions, medicineStock, customFrequency, favoriteMedicines]);
 
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
@@ -855,26 +963,42 @@ export default function DashboardPage() {
   }, [appointments, isInitialized]);
 
   // Save medicine-related data to localStorage
+  // Medicine data sync effect (combined for efficiency)
   useEffect(() => {
-    if (isInitialized && isLocalStorageAvailable()) {
-      safeSetItem("alephra.medicineStock", medicineStock);
-    }
-  }, [medicineStock, isInitialized]);
+    if (!isInitialized) return;
+    
+    const syncMedicineData = async () => {
+      // Always save to localStorage first
+      if (isLocalStorageAvailable()) {
+        safeSetItem("alephra.medicineStock", medicineStock);
+        safeSetItem("alephra.customFrequency", customFrequency);
+        safeSetItem("alephra.favoriteMedicines", favoriteMedicines);
+      }
+      
+      // Then sync to server if logged in
+      if (session?.user?.email) {
+        try {
+          await saveMedicineDataToServer({
+            stock: medicineStock,
+            frequency: customFrequency,
+            favorites: favoriteMedicines
+          });
+        } catch (error) {
+          console.error('Failed to sync medicine data to server:', error);
+        }
+      }
+    };
+    
+    syncMedicineData();
+  }, [medicineStock, customFrequency, favoriteMedicines, isInitialized, session?.user?.email]);
 
+  // Prescriptions sync effect - only save to localStorage
+  // Individual save/update operations handle server sync directly
   useEffect(() => {
-    if (isInitialized && isLocalStorageAvailable()) {
-      safeSetItem("alephra.customFrequency", customFrequency);
-    }
-  }, [customFrequency, isInitialized]);
-
-  useEffect(() => {
-    if (isInitialized && isLocalStorageAvailable()) {
-      safeSetItem("alephra.favoriteMedicines", favoriteMedicines);
-    }
-  }, [favoriteMedicines, isInitialized]);
-
-  useEffect(() => {
-    if (isInitialized && isLocalStorageAvailable()) {
+    if (!isInitialized) return;
+    
+    // Only save to localStorage (server sync is handled per-operation)
+    if (isLocalStorageAvailable()) {
       safeSetItem("alephra.prescriptions", prescriptions);
     }
   }, [prescriptions, isInitialized]);
@@ -3058,17 +3182,44 @@ export default function DashboardPage() {
                   <div className="text-lg font-semibold text-black dark:text-white">My Prescriptions</div>
                   <div className="text-sm text-gray-500 mt-1">Track your medications and dosage schedule</div>
                 </div>
-                <button 
-                  onClick={() => {
-                    setShowPrescriptionForm(true);
-                    setCurrentMedicines([]);
-                    setNewMedicine({ name: '', dosage: '', frequency: '2 times daily', duration: '', instructions: '' });
-                    setNewPrescription({ doctorName: '', reason: '', prescriptionDate: new Date().toISOString().split('T')[0], reportId: '', comments: '' });
-                  }}
-                  className="h-10 px-4 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition shadow-md border-2 border-black dark:border-white"
-                >
-                  + Add Prescription
-                </button>
+                <div className="flex gap-2">
+                  {session?.user?.email && (
+                    <button 
+                      onClick={syncFromCloud}
+                      disabled={isSyncing}
+                      className="h-10 px-4 rounded-lg bg-white dark:bg-zinc-900 text-black dark:text-white text-sm font-semibold hover:bg-gray-100 dark:hover:bg-zinc-800 transition shadow-md border-2 border-black dark:border-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Sync from cloud"
+                    >
+                      {isSyncing ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 inline-block mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Syncing...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Sync
+                        </>
+                      )}
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => {
+                      setShowPrescriptionForm(true);
+                      setCurrentMedicines([]);
+                      setNewMedicine({ name: '', dosage: '', frequency: '2 times daily', duration: '', instructions: '' });
+                      setNewPrescription({ doctorName: '', reason: '', prescriptionDate: new Date().toISOString().split('T')[0], reportId: '', comments: '' });
+                    }}
+                    className="h-10 px-4 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition shadow-md border-2 border-black dark:border-white"
+                  >
+                    + Add Prescription
+                  </button>
+                </div>
               </div>
 
               {/* Prescriptions Preview Grid */}
@@ -3093,17 +3244,49 @@ export default function DashboardPage() {
                         {/* Delete Button */}
                         <div className="absolute top-2 right-2 z-10">
                           <button
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
                               if (confirm('Delete this prescription?')) {
+                                setDeletingPrescriptionId(prescription.id);
+                                
+                                // Delete from server FIRST if logged in
+                                if (session?.user?.email) {
+                                  try {
+                                    await deletePrescriptionFromServer(prescription.id);
+                                    toast({
+                                      title: "✓ Deleted from cloud",
+                                      description: "Prescription removed successfully"
+                                    });
+                                  } catch (error) {
+                                    console.error('Failed to delete prescription from server:', error);
+                                    toast({
+                                      title: "Delete failed",
+                                      description: "Could not delete from cloud. Try again.",
+                                      variant: "destructive"
+                                    });
+                                    setDeletingPrescriptionId(null);
+                                    return; // Don't delete locally if server delete fails
+                                  }
+                                }
+                                
+                                // Only update local state after server delete succeeds
                                 setPrescriptions(prev => prev.filter(p => p.id !== prescription.id));
+                                setDeletingPrescriptionId(null);
                               }
                             }}
-                            className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                            disabled={deletingPrescriptionId === prescription.id}
+                            className="text-gray-400 hover:text-red-600 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            {deletingPrescriptionId === prescription.id ? (
+                              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            ) : (
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            )}
                           </button>
                         </div>
                         
@@ -3750,7 +3933,7 @@ export default function DashboardPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (!newPrescription.doctorName.trim() || !newPrescription.reason.trim()) {
                       alert('Please fill in doctor name and reason for prescription');
                       return;
@@ -3780,10 +3963,28 @@ export default function DashboardPage() {
                     setNewMedicine({ name: '', dosage: '', frequency: '2 times daily', duration: '', instructions: '' });
                     setNewPrescription({ doctorName: '', reason: '', prescriptionDate: new Date().toISOString().split('T')[0], reportId: '', comments: '' });
                     
-                    toast({
-                      title: "Prescription Added",
-                      description: `Prescription from Dr. ${prescription.doctorName} with ${prescription.medicines.length} medicine(s) added.`
-                    });
+                    // Immediately save to server if logged in
+                    if (session?.user?.email) {
+                      try {
+                        await savePrescriptionToServer(prescription);
+                        toast({
+                          title: "✓ Prescription Added & Synced",
+                          description: `Prescription from Dr. ${prescription.doctorName} with ${prescription.medicines.length} medicine(s) saved to cloud.`
+                        });
+                      } catch (error) {
+                        console.error('Failed to save to server:', error);
+                        toast({
+                          title: "Prescription Added",
+                          description: `Saved locally. Will sync when online.`,
+                          variant: "default"
+                        });
+                      }
+                    } else {
+                      toast({
+                        title: "Prescription Added",
+                        description: `Prescription from Dr. ${prescription.doctorName} with ${prescription.medicines.length} medicine(s) added.`
+                      });
+                    }
                   }}
                   className="flex-1 h-12 bg-black dark:bg-white text-white dark:text-black font-bold hover:opacity-80 transition shadow-lg"
                 >
@@ -3894,20 +4095,33 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-semibold text-black dark:text-white truncate">{med.name}</span>
                           <button
-                            onClick={() => {
+                            onClick={async () => {
                               const now = new Date();
                               const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+                              
+                              let updatedPrescription: PrescriptionEntry | null = null;
+                              
                               setPrescriptions(prev => prev.map(p => {
                                 if (p.id === selectedPrescriptionView.id) {
                                   const updated = {
                                     ...p,
                                     takenLog: [...p.takenLog, { medicineId: med.id, date: today, time: timeStr }]
                                   };
+                                  updatedPrescription = updated;
                                   setSelectedPrescriptionView(updated);
                                   return updated;
                                 }
                                 return p;
                               }));
+                              
+                              // Sync to server if logged in
+                              if (session?.user?.email && updatedPrescription) {
+                                try {
+                                  await savePrescriptionToServer(updatedPrescription);
+                                } catch (error) {
+                                  console.error('Failed to sync taken log to server:', error);
+                                }
+                              }
                             }}
                             className="text-xs px-2 py-1 bg-black dark:bg-white text-white dark:text-black font-bold hover:opacity-80 transition"
                           >

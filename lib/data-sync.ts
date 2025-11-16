@@ -203,3 +203,145 @@ export async function loadLabsHybrid(userId?: string): Promise<any[]> {
     return safeGetItem('alephra.labs', []);
   }
 }
+
+// Prescriptions sync
+export async function loadPrescriptionsFromServer(): Promise<any[]> {
+  try {
+    const data = await fetchAPI('/api/prescriptions');
+    return data.prescriptions || [];
+  } catch (error) {
+    console.error('Failed to load prescriptions from server:', error);
+    return [];
+  }
+}
+
+export async function savePrescriptionToServer(prescription: any) {
+  try {
+    const data = await fetchAPI('/api/prescriptions', {
+      method: 'POST',
+      body: JSON.stringify(prescription),
+    });
+    return data.prescription;
+  } catch (error) {
+    console.error('Failed to save prescription to server:', error);
+    throw error;
+  }
+}
+
+export async function deletePrescriptionFromServer(id: string) {
+  try {
+    await fetchAPI(`/api/prescriptions?id=${id}`, {
+      method: 'DELETE',
+    });
+    return true;
+  } catch (error) {
+    console.error('Failed to delete prescription from server:', error);
+    return false;
+  }
+}
+
+export async function syncPrescriptionsToServer(prescriptions: any[]) {
+  try {
+    for (const prescription of prescriptions) {
+      await savePrescriptionToServer(prescription);
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to sync prescriptions to server:', error);
+    return false;
+  }
+}
+
+export async function loadPrescriptionsHybrid(userId?: string): Promise<any[]> {
+  if (!userId) {
+    return safeGetItem('alephra.prescriptions', []);
+  }
+  
+  try {
+    const serverData = await loadPrescriptionsFromServer();
+    
+    // If server has no data, try to migrate local data
+    if (serverData.length === 0) {
+      const localData = safeGetItem('alephra.prescriptions', []);
+      if (localData.length > 0) {
+        await syncPrescriptionsToServer(localData);
+        return localData;
+      }
+    }
+    
+    return serverData;
+  } catch (error) {
+    console.error('Server unavailable, using localStorage:', error);
+    return safeGetItem('alephra.prescriptions', []);
+  }
+}
+
+// Medicine data sync
+export async function loadMedicineDataFromServer(): Promise<any> {
+  try {
+    const data = await fetchAPI('/api/medicine-data');
+    return data.medicineData || { stock: {}, frequency: {}, favorites: [] };
+  } catch (error) {
+    console.error('Failed to load medicine data from server:', error);
+    return { stock: {}, frequency: {}, favorites: [] };
+  }
+}
+
+export async function saveMedicineDataToServer(medicineData: any) {
+  try {
+    const data = await fetchAPI('/api/medicine-data', {
+      method: 'POST',
+      body: JSON.stringify(medicineData),
+    });
+    return data.medicineData;
+  } catch (error) {
+    console.error('Failed to save medicine data to server:', error);
+    throw error;
+  }
+}
+
+export async function loadMedicineDataHybrid(userId?: string): Promise<any> {
+  if (!userId) {
+    return {
+      stock: safeGetItem('alephra.medicineStock', {}),
+      frequency: safeGetItem('alephra.customFrequency', {}),
+      favorites: safeGetItem('alephra.favoriteMedicines', [])
+    };
+  }
+  
+  try {
+    const serverData = await loadMedicineDataFromServer();
+    
+    // If server has no data, try to migrate local data
+    const localStock = safeGetItem('alephra.medicineStock', {});
+    const localFrequency = safeGetItem('alephra.customFrequency', {});
+    const localFavorites = safeGetItem('alephra.favoriteMedicines', []);
+    
+    const hasLocalData = Object.keys(localStock).length > 0 || 
+                         Object.keys(localFrequency).length > 0 || 
+                         localFavorites.length > 0;
+    
+    const hasServerData = Object.keys(serverData.stock || {}).length > 0 || 
+                          Object.keys(serverData.frequency || {}).length > 0 || 
+                          (serverData.favorites || []).length > 0;
+    
+    if (!hasServerData && hasLocalData) {
+      const dataToSync = {
+        stock: localStock,
+        frequency: localFrequency,
+        favorites: localFavorites
+      };
+      await saveMedicineDataToServer(dataToSync);
+      return dataToSync;
+    }
+    
+    return serverData;
+  } catch (error) {
+    console.error('Server unavailable, using localStorage:', error);
+    return {
+      stock: safeGetItem('alephra.medicineStock', {}),
+      frequency: safeGetItem('alephra.customFrequency', {}),
+      favorites: safeGetItem('alephra.favoriteMedicines', [])
+    };
+  }
+}
