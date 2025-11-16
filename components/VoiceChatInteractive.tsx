@@ -87,7 +87,6 @@ export function VoiceChatInteractive({
       })));
       animationRef.current = requestAnimationFrame(animateParticles);
     };
-
     animationRef.current = requestAnimationFrame(animateParticles);
     return () => {
       if (animationRef.current) {
@@ -95,7 +94,6 @@ export function VoiceChatInteractive({
       }
     };
   }, []);
-
   // Timer and waveform simulation
   useEffect(() => {
     const shouldAnimate = demoMode ? isListening : actualIsListening;
@@ -161,7 +159,6 @@ export function VoiceChatInteractive({
       // Repeat demo
       setTimeout(demoSequence, 2000);
     };
-
     const timeout = setTimeout(demoSequence, 1000);
     return () => clearTimeout(timeout);
   }, [demoMode, onStart, onStop, duration]);
@@ -176,7 +173,6 @@ export function VoiceChatInteractive({
       onStart?.();
     }
   };
-
   // Sync with external state changes
   useEffect(() => {
     if (!demoMode) {
@@ -186,27 +182,23 @@ export function VoiceChatInteractive({
       setIsSpeaking(externalIsPlaying);
     }
   }, [externalIsRecording, externalIsProcessing, externalIsPlaying, demoMode]);
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
-
   const getStatusText = () => {
     if (actualIsListening) return "Listening...";
     if (actualIsProcessing) return "Processing...";
     if (actualIsSpeaking) return "Speaking...";
     return "Tap to speak";
   };
-
   const getStatusColor = () => {
     if (actualIsListening) return "text-blue-400";
     if (actualIsProcessing) return "text-yellow-400";
     if (actualIsSpeaking) return "text-green-400";
     return "text-muted-foreground";
   };
-
   return (
     <div className={cn("relative w-full h-full overflow-hidden", className)}>
       {/* Spline Animation - Top layer for pointer interaction */}
@@ -352,7 +344,6 @@ export function VoiceChatInteractive({
             )}
           </AnimatePresence>
         </motion.div>
-
         {/* Original Status text, now only for idle state - positioned to the right of mic */}
         {!actualIsListening && !actualIsProcessing && !actualIsSpeaking && (
           <motion.p
@@ -366,7 +357,6 @@ export function VoiceChatInteractive({
             Tap to speak
           </motion.p>
         )}
-
         {/* Stop button - only show when speaking, positioned to the right */}
         <AnimatePresence>
           {actualIsSpeaking && (
@@ -389,7 +379,6 @@ export function VoiceChatInteractive({
           )}
         </AnimatePresence>
       </div>
-
       {/* Waveform visualizer - positioned higher up */}
       <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-20 flex items-center justify-center space-x-1 h-12">
         {waveformData.map((height, index) => (
@@ -413,7 +402,6 @@ export function VoiceChatInteractive({
           />
         ))}
       </div>
-
       {/* AI indicator - positioned at bottom right */}
       <motion.div
         className="absolute bottom-4 right-4 flex items-center space-x-2 text-xs text-white bg-black px-3 py-2 rounded-lg shadow-lg border border-gray-700"
@@ -431,5 +419,4 @@ export function VoiceChatInteractive({
     </div>
   );
 }
-
 export default VoiceChatInteractive;

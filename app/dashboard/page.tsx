@@ -18,6 +18,7 @@ import { useSession } from "next-auth/react";
 import { SignInPromptModal } from "@/components/ui/signin-prompt-modal";
 import { safeGetItem, safeSetItem, safeRemoveItem, clearAllAlephraData, isLocalStorageAvailable } from "@/lib/localStorage";
 import { toast } from "@/components/ui/use-toast";
+import { PrescriptionRecord, prescriptionStorage } from "@/lib/prescription-storage";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { TimeRangeSelector, TimeRange, filterDataByRange } from "@/components/ui/time-range-selector";
 import { ExportButton } from "@/components/ui/export-button";
@@ -71,50 +72,56 @@ const timeline = [
 const medicineCategories = [
   {
     name: "Pain Relief",
+    icon: "💊",
     medicines: [
-      { name: "Paracetamol", dose: "500mg", frequency: "3 times daily", price: 25, category: "Pain Relief" },
-      { name: "Ibuprofen", dose: "400mg", frequency: "2 times daily", price: 35, category: "Pain Relief" },
-      { name: "Aspirin", dose: "75mg", frequency: "Once daily", price: 20, category: "Pain Relief" },
+      { name: "Paracetamol", dose: "500mg", frequency: "3 times daily", price: 25, category: "Pain Relief", uses: "Fever, headache, body pain", stock: "In Stock" },
+      { name: "Ibuprofen", dose: "400mg", frequency: "2 times daily", price: 35, category: "Pain Relief", uses: "Inflammation, pain relief", stock: "In Stock" },
+      { name: "Aspirin", dose: "75mg", frequency: "Once daily", price: 20, category: "Pain Relief", uses: "Blood thinning, heart health", stock: "Low Stock" },
     ]
   },
   {
     name: "Antibiotics",
+    icon: "🦠",
     medicines: [
-      { name: "Amoxicillin", dose: "500mg", frequency: "3 times daily", price: 45, category: "Antibiotics" },
-      { name: "Azithromycin", dose: "250mg", frequency: "Once daily", price: 60, category: "Antibiotics" },
-      { name: "Ciprofloxacin", dose: "500mg", frequency: "2 times daily", price: 55, category: "Antibiotics" },
+      { name: "Amoxicillin", dose: "500mg", frequency: "3 times daily", price: 45, category: "Antibiotics", uses: "Bacterial infections", stock: "In Stock" },
+      { name: "Azithromycin", dose: "250mg", frequency: "Once daily", price: 60, category: "Antibiotics", uses: "Respiratory infections", stock: "In Stock" },
+      { name: "Ciprofloxacin", dose: "500mg", frequency: "2 times daily", price: 55, category: "Antibiotics", uses: "UTI, bacterial infections", stock: "In Stock" },
     ]
   },
   {
     name: "Cardiovascular",
+    icon: "❤️",
     medicines: [
-      { name: "Amlodipine", dose: "5mg", frequency: "Once daily", price: 40, category: "Cardiovascular" },
-      { name: "Metoprolol", dose: "50mg", frequency: "2 times daily", price: 30, category: "Cardiovascular" },
-      { name: "Lisinopril", dose: "10mg", frequency: "Once daily", price: 35, category: "Cardiovascular" },
+      { name: "Amlodipine", dose: "5mg", frequency: "Once daily", price: 40, category: "Cardiovascular", uses: "High blood pressure", stock: "In Stock" },
+      { name: "Metoprolol", dose: "50mg", frequency: "2 times daily", price: 30, category: "Cardiovascular", uses: "Heart rate control", stock: "In Stock" },
+      { name: "Lisinopril", dose: "10mg", frequency: "Once daily", price: 35, category: "Cardiovascular", uses: "Blood pressure, heart failure", stock: "In Stock" },
     ]
   },
   {
     name: "Diabetes",
+    icon: "🩸",
     medicines: [
-      { name: "Metformin", dose: "500mg", frequency: "2 times daily", price: 25, category: "Diabetes" },
-      { name: "Glibenclamide", dose: "5mg", frequency: "Once daily", price: 30, category: "Diabetes" },
-      { name: "Insulin", dose: "10 units", frequency: "As prescribed", price: 120, category: "Diabetes" },
+      { name: "Metformin", dose: "500mg", frequency: "2 times daily", price: 25, category: "Diabetes", uses: "Type 2 diabetes control", stock: "In Stock" },
+      { name: "Glibenclamide", dose: "5mg", frequency: "Once daily", price: 30, category: "Diabetes", uses: "Blood sugar regulation", stock: "In Stock" },
+      { name: "Insulin", dose: "10 units", frequency: "As prescribed", price: 120, category: "Diabetes", uses: "Blood glucose management", stock: "In Stock" },
     ]
   },
   {
     name: "Respiratory",
+    icon: "🫁",
     medicines: [
-      { name: "Salbutamol", dose: "100mcg", frequency: "As needed", price: 50, category: "Respiratory" },
-      { name: "Budesonide", dose: "200mcg", frequency: "2 times daily", price: 80, category: "Respiratory" },
-      { name: "Montelukast", dose: "10mg", frequency: "Once daily", price: 45, category: "Respiratory" },
+      { name: "Salbutamol", dose: "100mcg", frequency: "As needed", price: 50, category: "Respiratory", uses: "Asthma, breathing difficulty", stock: "In Stock" },
+      { name: "Budesonide", dose: "200mcg", frequency: "2 times daily", price: 80, category: "Respiratory", uses: "Asthma prevention", stock: "Low Stock" },
+      { name: "Montelukast", dose: "10mg", frequency: "Once daily", price: 45, category: "Respiratory", uses: "Asthma, allergies", stock: "In Stock" },
     ]
   },
   {
     name: "Gastrointestinal",
+    icon: "🫃",
     medicines: [
-      { name: "Omeprazole", dose: "20mg", frequency: "Once daily", price: 40, category: "Gastrointestinal" },
-      { name: "Ranitidine", dose: "150mg", frequency: "2 times daily", price: 25, category: "Gastrointestinal" },
-      { name: "Domperidone", dose: "10mg", frequency: "3 times daily", price: 30, category: "Gastrointestinal" },
+      { name: "Omeprazole", dose: "20mg", frequency: "Once daily", price: 40, category: "Gastrointestinal", uses: "Acid reflux, ulcers", stock: "In Stock" },
+      { name: "Ranitidine", dose: "150mg", frequency: "2 times daily", price: 25, category: "Gastrointestinal", uses: "Heartburn, acid reduction", stock: "Out of Stock" },
+      { name: "Domperidone", dose: "10mg", frequency: "3 times daily", price: 30, category: "Gastrointestinal", uses: "Nausea, vomiting", stock: "In Stock" },
     ]
   }
 ];
@@ -617,6 +624,56 @@ export default function DashboardPage() {
   const [showCart, setShowCart] = useState<boolean>(false);
   // Dropdown state for medicine categories
   const [expandedCategories, setExpandedCategories] = useState<boolean[]>(new Array(medicineCategories.length).fill(false));
+  const [medicineSearch, setMedicineSearch] = useState<string>("");
+  const [favoriteMedicines, setFavoriteMedicines] = useState<string[]>([]);
+  const [selectedMedicine, setSelectedMedicine] = useState<any>(null);
+  const [medicineStock, setMedicineStock] = useState<{[key: string]: {status: string, quantity: number}}>({});
+  const [customFrequency, setCustomFrequency] = useState<{[key: string]: string}>({});
+  const [showFrequencyModal, setShowFrequencyModal] = useState(false);
+  const [frequencyMedicine, setFrequencyMedicine] = useState<any>(null);
+  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+  
+  // Prescription tracking
+  interface Medicine {
+    id: string;
+    name: string;
+    dosage: string;
+    frequency: string;
+    duration: string;
+    instructions?: string;
+  }
+  
+  interface PrescriptionEntry {
+    id: string;
+    doctorName: string;
+    reason: string;
+    prescriptionDate: string;
+    medicines: Medicine[];
+    reportId?: string;
+    reportName?: string;
+    comments?: string;
+    takenLog: Array<{medicineId: string; date: string; time: string}>;
+  }
+  
+  const [prescriptions, setPrescriptions] = useState<PrescriptionEntry[]>([]);
+  const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
+  const [currentMedicines, setCurrentMedicines] = useState<Medicine[]>([]);
+  const [newMedicine, setNewMedicine] = useState({
+    name: '',
+    dosage: '',
+    frequency: '2 times daily',
+    duration: '',
+    instructions: ''
+  });
+  const [newPrescription, setNewPrescription] = useState({
+    doctorName: '',
+    reason: '',
+    prescriptionDate: new Date().toISOString().split('T')[0],
+    reportId: '',
+    comments: ''
+  });
+  const [uploadedReports, setUploadedReports] = useState<PrescriptionRecord[]>([]);
+  const [selectedPrescriptionView, setSelectedPrescriptionView] = useState<PrescriptionEntry | null>(null);
   // Flag to prevent saving empty data on initial load
   const [isInitialized, setIsInitialized] = useState(false);
   // Show all labs or just recent ones
@@ -643,6 +700,10 @@ export default function DashboardPage() {
         const localReminders = safeGetItem<Reminder[]>("alephra.reminders", []);
         const localAppointments = safeGetItem<Array<{id: string, title: string, date: string, time: string}>>("alephra.appointments", []);
         const localCart = safeGetItem<any[]>("alephra.cart", []);
+        const localMedicineStock = safeGetItem<{[key: string]: {status: string, quantity: number}}>("alephra.medicineStock", {});
+        const localCustomFrequency = safeGetItem<{[key: string]: string}>("alephra.customFrequency", {});
+        const localFavorites = safeGetItem<string[]>("alephra.favoriteMedicines", []);
+        const localPrescriptions = safeGetItem<PrescriptionEntry[]>("alephra.prescriptions", []);
         
         // Filter out old data (before 2025) and remove duplicates
         const filteredVitals = localVitals.filter((v: VitalsPoint) => {
@@ -676,6 +737,10 @@ export default function DashboardPage() {
         setReminders(localReminders);
         setAppointments(localAppointments);
         setCartItems(localCart);
+        setMedicineStock(localMedicineStock);
+        setCustomFrequency(localCustomFrequency);
+        setFavoriteMedicines(localFavorites);
+        setPrescriptions(localPrescriptions);
       }
       
       // Then sync with server in background if logged in (no blocking)
@@ -732,6 +797,20 @@ export default function DashboardPage() {
     loadData();
   }, [session, isInitialized]);
 
+  // Load uploaded reports from prescription storage
+  useEffect(() => {
+    const loadReports = async () => {
+      try {
+        const reports = await prescriptionStorage.getAllPrescriptions();
+        const sortedReports = reports.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+        setUploadedReports(sortedReports);
+      } catch (error) {
+        console.error('Error loading reports:', error);
+      }
+    };
+    loadReports();
+  }, []);
+
   useEffect(() => {
     if (isInitialized && isLocalStorageAvailable()) {
       const success = safeSetItem("alephra.reminders", reminders);
@@ -774,6 +853,31 @@ export default function DashboardPage() {
       }
     }
   }, [appointments, isInitialized]);
+
+  // Save medicine-related data to localStorage
+  useEffect(() => {
+    if (isInitialized && isLocalStorageAvailable()) {
+      safeSetItem("alephra.medicineStock", medicineStock);
+    }
+  }, [medicineStock, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized && isLocalStorageAvailable()) {
+      safeSetItem("alephra.customFrequency", customFrequency);
+    }
+  }, [customFrequency, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized && isLocalStorageAvailable()) {
+      safeSetItem("alephra.favoriteMedicines", favoriteMedicines);
+    }
+  }, [favoriteMedicines, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized && isLocalStorageAvailable()) {
+      safeSetItem("alephra.prescriptions", prescriptions);
+    }
+  }, [prescriptions, isInitialized]);
 
   // Update health score when vitals or labs change
   useEffect(() => {
@@ -2401,17 +2505,63 @@ export default function DashboardPage() {
           <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <div className="text-lg font-semibold text-black dark:text-white">Medicine Categories</div>
+                <div>
+                  <div className="text-lg font-semibold text-black dark:text-white">Medicine Categories</div>
+                  <div className="text-sm text-gray-500 mt-1">Browse and manage your medicines</div>
+                </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500">Selected: {cartItems.length} items</span>
                   <button 
                     onClick={() => setShowCart(!showCart)}
-                    className="h-8 px-3 rounded-lg bg-cyan-600 text-white text-sm hover:opacity-90 transition"
+                    className="h-8 px-3 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-sm hover:opacity-90 transition shadow-md"
                   >
                     View List
                   </button>
                 </div>
               </div>
+
+              {/* Search Bar */}
+              <div className="mb-6">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search medicines by name, category, or use..."
+                    value={medicineSearch}
+                    onChange={(e) => setMedicineSearch(e.target.value)}
+                    className="w-full h-12 pl-12 pr-4 rounded-lg border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-gray-400 focus:border-cyan-500 dark:focus:border-cyan-400 focus:outline-none transition-colors"
+                  />
+                  <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Favorites Section */}
+              {favoriteMedicines.length > 0 && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="font-semibold text-amber-800 dark:text-amber-200">Favorite Medicines</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {medicineCategories.flatMap(cat => cat.medicines).filter(med => favoriteMedicines.includes(med.name)).map((med, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          if (!cartItems.find(item => item.name === med.name)) {
+                            addToCart(med);
+                          }
+                        }}
+                        className="px-3 py-1.5 bg-white dark:bg-zinc-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
+                      >
+                        {med.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Cart Popup Modal */}
               {showCart && (
@@ -2512,55 +2662,492 @@ export default function DashboardPage() {
 
               {/* Medicine Categories Dropdown */}
               <div className="space-y-4">
-                {medicineCategories.map((category, categoryIndex) => (
-                  <div key={categoryIndex} className="border border-gray-300 dark:border-gray-700 rounded-lg">
-                    <button
-                      onClick={() => {
-                        const newExpanded = [...expandedCategories];
-                        newExpanded[categoryIndex] = !newExpanded[categoryIndex];
-                        setExpandedCategories(newExpanded);
-                      }}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="text-sm font-semibold text-black dark:text-white">{category.name}</div>
-                        <Badge variant="secondary">{category.medicines.length} medicines</Badge>
-                      </div>
-                      <div className={`transform transition-transform ${expandedCategories[categoryIndex] ? 'rotate-180' : ''}`}>
-                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </button>
-                    
-                    {expandedCategories[categoryIndex] && (
-                      <div className="border-t border-gray-300 dark:border-gray-700 p-4 bg-gray-50 dark:bg-zinc-800">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {category.medicines.map((medicine, medicineIndex) => (
-                            <div key={medicineIndex} className="flex items-center justify-between p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900">
-                              <div className="flex-1">
-                                <div className="text-sm font-medium text-black dark:text-white">{medicine.name}</div>
-                                <div className="text-xs text-gray-500">{medicine.dose} • {medicine.frequency}</div>
-                                <div className="text-xs text-cyan-600">₹{medicine.price}</div>
+                {medicineCategories.map((category, categoryIndex) => {
+                  const filteredMedicines = category.medicines.filter(med => 
+                    medicineSearch === "" || 
+                    med.name.toLowerCase().includes(medicineSearch.toLowerCase()) ||
+                    med.category.toLowerCase().includes(medicineSearch.toLowerCase()) ||
+                    med.uses.toLowerCase().includes(medicineSearch.toLowerCase())
+                  );
+                  
+                  if (filteredMedicines.length === 0 && medicineSearch !== "") return null;
+                  
+                  return (
+                    <div key={categoryIndex} className="border-2 border-gray-300 dark:border-gray-700 rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => {
+                          const newExpanded = [...expandedCategories];
+                          newExpanded[categoryIndex] = !newExpanded[categoryIndex];
+                          setExpandedCategories(newExpanded);
+                        }}
+                        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors bg-gradient-to-r from-white to-gray-50 dark:from-zinc-900 dark:to-zinc-800"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{category.icon}</span>
+                          <div>
+                            <div className="text-base font-bold text-black dark:text-white">{category.name}</div>
+                            <div className="text-xs text-gray-500">{filteredMedicines.length} {filteredMedicines.length === 1 ? 'medicine' : 'medicines'}</div>
+                          </div>
+                        </div>
+                        <div className={`transform transition-transform ${expandedCategories[categoryIndex] ? 'rotate-180' : ''}`}>
+                          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </button>
+                      
+                      {expandedCategories[categoryIndex] && (
+                        <div className="border-t-2 border-gray-300 dark:border-gray-700 p-4 bg-gray-50 dark:bg-zinc-800">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filteredMedicines.map((medicine, medicineIndex) => (
+                              <div key={medicineIndex} className="group relative p-4 rounded-xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 hover:shadow-lg transition-all duration-200 hover:border-cyan-500 dark:hover:border-cyan-400">
+                                {/* Favorite Star */}
+                                <button
+                                  onClick={() => {
+                                    if (favoriteMedicines.includes(medicine.name)) {
+                                      setFavoriteMedicines(prev => prev.filter(n => n !== medicine.name));
+                                    } else {
+                                      setFavoriteMedicines(prev => [...prev, medicine.name]);
+                                    }
+                                  }}
+                                  className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                >
+                                  <svg className={`w-5 h-5 ${favoriteMedicines.includes(medicine.name) ? 'text-amber-500 fill-amber-500' : 'text-gray-400'}`} fill={favoriteMedicines.includes(medicine.name) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                  </svg>
+                                </button>
+
+                                <div className="flex-1 mb-3">
+                                  <div className="text-base font-bold text-black dark:text-white mb-1">{medicine.name}</div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Badge className="text-xs">{medicine.dose}</Badge>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const currentStock = medicineStock[medicine.name] || { status: medicine.stock, quantity: 30 };
+                                        const statuses = ['In Stock', 'Low Stock', 'Out of Stock'];
+                                        const currentIndex = statuses.indexOf(currentStock.status);
+                                        const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+                                        setMedicineStock({
+                                          ...medicineStock,
+                                          [medicine.name]: { 
+                                            status: nextStatus, 
+                                            quantity: nextStatus === 'Out of Stock' ? 0 : nextStatus === 'Low Stock' ? 5 : 30 
+                                          }
+                                        });
+                                      }}
+                                      className={`text-xs px-2 py-0.5 rounded-full cursor-pointer hover:scale-105 transition-transform ${
+                                        (medicineStock[medicine.name]?.status || medicine.stock) === 'In Stock' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                        (medicineStock[medicine.name]?.status || medicine.stock) === 'Low Stock' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                        'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                      }`}
+                                      title="Click to update stock status"
+                                    >
+                                      {medicineStock[medicine.name]?.status || medicine.stock}
+                                      {medicineStock[medicine.name]?.quantity !== undefined && ` (${medicineStock[medicine.name].quantity})`}
+                                    </button>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setFrequencyMedicine(medicine);
+                                      setShowFrequencyModal(true);
+                                      setSelectedTimes([]);
+                                    }}
+                                    className="text-xs text-gray-600 dark:text-gray-400 mb-2 hover:text-cyan-600 dark:hover:text-cyan-400 underline decoration-dotted cursor-pointer transition-colors"
+                                    title="Click to customize frequency"
+                                  >
+                                    📅 {customFrequency[medicine.name] || medicine.frequency}
+                                  </button>
+                                  <div className="text-xs text-gray-500 italic">{medicine.uses}</div>
+                                </div>
+                                
+                                <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                  <div className="text-sm font-bold text-cyan-600">₹{medicine.price}</div>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => setSelectedMedicine(medicine)}
+                                      className="px-3 py-1.5 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-xs font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                      title="View details"
+                                    >
+                                      ℹ️
+                                    </button>
+                                    <button 
+                                      onClick={() => addToCart(medicine)}
+                                      disabled={medicine.stock === 'Out of Stock'}
+                                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                        medicine.stock === 'Out of Stock' 
+                                          ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                                          : 'bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:shadow-md'
+                                      }`}
+                                    >
+                                      + Add
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
-                              <button 
-                                onClick={() => addToCart(medicine)}
-                                className="h-8 px-3 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:opacity-90 transition"
-                              >
-                                Add
-                              </button>
-                            </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Frequency Customization Modal */}
+              {showFrequencyModal && frequencyMedicine && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full shadow-2xl border-2 border-gray-300 dark:border-gray-700">
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-xl font-bold text-black dark:text-white mb-1">Customize Frequency</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{frequencyMedicine.name}</p>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setShowFrequencyModal(false);
+                            setFrequencyMedicine(null);
+                            setSelectedTimes([]);
+                          }}
+                          className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      {/* Preset Frequencies */}
+                      <div className="space-y-3 mb-4">
+                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Quick Select</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { label: 'Once daily', value: 'Once daily' },
+                            { label: 'Twice daily', value: '2 times daily' },
+                            { label: 'Three times', value: '3 times daily' },
+                            { label: 'Four times', value: '4 times daily' },
+                            { label: 'Every 8 hours', value: 'Every 8 hours' },
+                            { label: 'As needed', value: 'As needed' },
+                            { label: 'Before meals', value: 'Before meals' },
+                            { label: 'After meals', value: 'After meals' },
+                          ].map((freq) => (
+                            <button
+                              key={freq.value}
+                              onClick={() => {
+                                setCustomFrequency({
+                                  ...customFrequency,
+                                  [frequencyMedicine.name]: freq.value
+                                });
+                              }}
+                              className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                                (customFrequency[frequencyMedicine.name] || frequencyMedicine.frequency) === freq.value
+                                  ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400'
+                                  : 'border-gray-300 dark:border-gray-700 hover:border-cyan-400 text-gray-700 dark:text-gray-300'
+                              }`}
+                            >
+                              {freq.label}
+                            </button>
                           ))}
                         </div>
                       </div>
-                    )}
+
+                      {/* Custom Times */}
+                      <div className="space-y-3 mb-6">
+                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Set Reminder Times</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {['08:00', '12:00', '16:00', '20:00', '09:00', '13:00', '17:00', '21:00', '10:00'].map((time) => (
+                            <button
+                              key={time}
+                              onClick={() => {
+                                if (selectedTimes.includes(time)) {
+                                  setSelectedTimes(selectedTimes.filter(t => t !== time));
+                                } else {
+                                  setSelectedTimes([...selectedTimes, time]);
+                                }
+                              }}
+                              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                                selectedTimes.includes(time)
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                              }`}
+                            >
+                              ⏰ {time}
+                            </button>
+                          ))}
+                        </div>
+                        {selectedTimes.length > 0 && (
+                          <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <p className="text-xs text-blue-700 dark:text-blue-400 font-medium">
+                              {selectedTimes.length} reminder{selectedTimes.length > 1 ? 's' : ''} set: {selectedTimes.sort().join(', ')}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            setShowFrequencyModal(false);
+                            setFrequencyMedicine(null);
+                            setSelectedTimes([]);
+                          }}
+                          className="flex-1 h-11 rounded-lg font-medium bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-zinc-700 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => {
+                            // Set reminders for selected times
+                            if (selectedTimes.length > 0) {
+                              selectedTimes.forEach(time => {
+                                const reminder: Reminder = {
+                                  id: Date.now().toString() + Math.random(),
+                                  text: `Take ${frequencyMedicine.name} (${frequencyMedicine.dose})`,
+                                  time: time,
+                                  done: false
+                                };
+                                setReminders(prev => [...prev, reminder]);
+                              });
+                            }
+                            setShowFrequencyModal(false);
+                            setFrequencyMedicine(null);
+                            setSelectedTimes([]);
+                          }}
+                          className="flex-1 h-11 rounded-lg font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:shadow-lg transition-all"
+                        >
+                          Save & Set Reminders
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
+
+              {/* Medicine Details Modal */}
+              {selectedMedicine && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full shadow-2xl border-2 border-gray-300 dark:border-gray-700">
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-2xl font-bold text-black dark:text-white mb-1">{selectedMedicine.name}</h3>
+                          <Badge className="text-sm">{selectedMedicine.category}</Badge>
+                        </div>
+                        <button 
+                          onClick={() => setSelectedMedicine(null)}
+                          className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Dosage</div>
+                          <div className="text-base text-black dark:text-white">{selectedMedicine.dose}</div>
+                        </div>
+
+                        <div>
+                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Frequency</div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-base text-black dark:text-white">
+                              {customFrequency[selectedMedicine.name] || selectedMedicine.frequency}
+                            </div>
+                            <button
+                              onClick={() => {
+                                setFrequencyMedicine(selectedMedicine);
+                                setShowFrequencyModal(true);
+                                setSelectedMedicine(null);
+                                setSelectedTimes([]);
+                              }}
+                              className="text-xs px-2 py-1 rounded bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 hover:bg-cyan-200 dark:hover:bg-cyan-900/50 transition-colors"
+                            >
+                              ✏️ Change
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Uses</div>
+                          <div className="text-base text-black dark:text-white">{selectedMedicine.uses}</div>
+                        </div>
+
+                        <div>
+                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Availability</div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm px-3 py-1 rounded-full ${
+                              (medicineStock[selectedMedicine.name]?.status || selectedMedicine.stock) === 'In Stock' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                              (medicineStock[selectedMedicine.name]?.status || selectedMedicine.stock) === 'Low Stock' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                              'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            }`}>
+                              {medicineStock[selectedMedicine.name]?.status || selectedMedicine.stock}
+                              {medicineStock[selectedMedicine.name]?.quantity !== undefined && ` (${medicineStock[selectedMedicine.name].quantity} pills)`}
+                            </span>
+                            <button
+                              onClick={() => {
+                                const currentStock = medicineStock[selectedMedicine.name] || { status: selectedMedicine.stock, quantity: 30 };
+                                const statuses = ['In Stock', 'Low Stock', 'Out of Stock'];
+                                const currentIndex = statuses.indexOf(currentStock.status);
+                                const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+                                setMedicineStock({
+                                  ...medicineStock,
+                                  [selectedMedicine.name]: { 
+                                    status: nextStatus, 
+                                    quantity: nextStatus === 'Out of Stock' ? 0 : nextStatus === 'Low Stock' ? 5 : 30 
+                                  }
+                                });
+                              }}
+                              className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+                            >
+                              🔄 Update
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Price</div>
+                          <div className="text-2xl font-bold text-cyan-600">₹{selectedMedicine.price}</div>
+                          <div className="text-xs text-gray-500 mt-1">* Approximate price for reference</div>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 flex gap-3">
+                        <button
+                          onClick={() => {
+                            addToCart(selectedMedicine);
+                            setSelectedMedicine(null);
+                          }}
+                          disabled={selectedMedicine.stock === 'Out of Stock'}
+                          className={`flex-1 h-12 rounded-lg font-semibold transition-all ${
+                            selectedMedicine.stock === 'Out of Stock'
+                              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                              : 'bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:shadow-lg'
+                          }`}
+                        >
+                          Add to List
+                        </button>
+                        <button
+                          onClick={() => {
+                            addMedicineReminder(selectedMedicine);
+                            setSelectedMedicine(null);
+                          }}
+                          className="flex-1 h-12 rounded-lg font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                        >
+                          ⏰ Set Reminder
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
+        {/* Prescription Tracking Section */}
+        <div className="mb-8">
+          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <div className="text-lg font-semibold text-black dark:text-white">My Prescriptions</div>
+                  <div className="text-sm text-gray-500 mt-1">Track your medications and dosage schedule</div>
+                </div>
+                <button 
+                  onClick={() => {
+                    setShowPrescriptionForm(true);
+                    setCurrentMedicines([]);
+                    setNewMedicine({ name: '', dosage: '', frequency: '2 times daily', duration: '', instructions: '' });
+                    setNewPrescription({ doctorName: '', reason: '', prescriptionDate: new Date().toISOString().split('T')[0], reportId: '', comments: '' });
+                  }}
+                  className="h-10 px-4 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition shadow-md border-2 border-black dark:border-white"
+                >
+                  + Add Prescription
+                </button>
+              </div>
+
+              {/* Prescriptions Preview Grid */}
+              {prescriptions.length === 0 ? (
+                <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl">
+                  <div className="text-4xl mb-3">📋</div>
+                  <div className="text-gray-500 text-lg mb-2">No prescriptions added yet</div>
+                  <div className="text-gray-400 text-sm">Add your first prescription to start tracking</div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {prescriptions.map((prescription) => {
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayLog = prescription.takenLog.filter(log => log.date === today);
+                    
+                    return (
+                      <div 
+                        key={prescription.id} 
+                        onClick={() => setSelectedPrescriptionView(prescription)}
+                        className="relative bg-white dark:bg-zinc-900 border-4 border-black dark:border-white rounded-none p-5 shadow-lg font-mono cursor-pointer hover:shadow-2xl hover:scale-102 transition-all duration-200"
+                      >
+                        {/* Delete Button */}
+                        <div className="absolute top-2 right-2 z-10">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm('Delete this prescription?')) {
+                                setPrescriptions(prev => prev.filter(p => p.id !== prescription.id));
+                              }
+                            }}
+                            className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                        
+                        {/* Preview Card Content */}
+                        <div className="text-3xl font-bold mb-2 text-black dark:text-white">℞</div>
+                        <div className="border-b-2 border-black dark:border-white pb-3 mb-3">
+                          <div className="text-base font-bold text-black dark:text-white mb-1">Dr. {prescription.doctorName}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{new Date(prescription.prescriptionDate).toLocaleDateString()}</div>
+                        </div>
+
+                        <div className="mb-3">
+                          <div className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">DIAGNOSIS</div>
+                          <div className="text-sm font-semibold text-black dark:text-white line-clamp-2">{prescription.reason}</div>
+                        </div>
+
+                        <div className="mb-3">
+                          <div className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">MEDICINES</div>
+                          <div className="space-y-1">
+                            {prescription.medicines.slice(0, 3).map((med) => (
+                              <div key={med.id} className="text-xs text-black dark:text-white">
+                                • {med.name} - {med.dosage}
+                              </div>
+                            ))}
+                            {prescription.medicines.length > 3 && (
+                              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                +{prescription.medicines.length - 3} more...
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mt-4 pt-3 border-t-2 border-dashed border-gray-300 dark:border-gray-600">
+                          <div className="text-xs font-bold text-center text-gray-500 dark:text-gray-400">
+                            Click to view full prescription →
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Additional functional placeholders (UI only, no handlers) */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
@@ -2910,6 +3497,443 @@ export default function DashboardPage() {
         }}
         storageKey="alephra-onboarding-completed"
       />
+
+      {/* Add Prescription Form Modal */}
+      {showPrescriptionForm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white dark:bg-zinc-900 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-4 border-black dark:border-white rounded-none">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-black dark:bg-white text-white dark:text-black p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold mb-1">℞ New Prescription</div>
+                  <p className="text-sm opacity-75">Fill in the prescription details</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowPrescriptionForm(false);
+                    setCurrentMedicines([]);
+                    setNewMedicine({ name: '', dosage: '', frequency: '2 times daily', duration: '', instructions: '' });
+                    setNewPrescription({ doctorName: '', reason: '', prescriptionDate: new Date().toISOString().split('T')[0], reportId: '', comments: '' });
+                  }}
+                  className="p-2 hover:bg-gray-800 dark:hover:bg-gray-200 rounded-full transition"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Form Content */}
+            <div className="p-6 space-y-6 font-mono">
+              {/* Prescription Header Info */}
+              <div className="space-y-4 pb-6 border-b-2 border-gray-300 dark:border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-black dark:text-white mb-2">
+                      DOCTOR NAME *
+                    </label>
+                    <input
+                      type="text"
+                      value={newPrescription.doctorName}
+                      onChange={(e) => setNewPrescription({ ...newPrescription, doctorName: e.target.value })}
+                      placeholder="Dr. John Doe"
+                      className="w-full px-3 py-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-black dark:text-white mb-2">
+                      PRESCRIPTION DATE *
+                    </label>
+                    <input
+                      type="date"
+                      value={newPrescription.prescriptionDate}
+                      onChange={(e) => setNewPrescription({ ...newPrescription, prescriptionDate: e.target.value })}
+                      className="w-full px-3 py-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-bold text-black dark:text-white mb-2">
+                    DIAGNOSIS / REASON FOR PRESCRIPTION *
+                  </label>
+                  <textarea
+                    value={newPrescription.reason}
+                    onChange={(e) => setNewPrescription({ ...newPrescription, reason: e.target.value })}
+                    placeholder="e.g., High Blood Pressure, Diabetes Management"
+                    rows={2}
+                    className="w-full px-3 py-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-black dark:text-white mb-2">
+                    LINK TO MEDICAL REPORT (Optional)
+                  </label>
+                  <select
+                    value={newPrescription.reportId}
+                    onChange={(e) => setNewPrescription({ ...newPrescription, reportId: e.target.value })}
+                    className="w-full px-3 py-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  >
+                    <option value="">No report linked</option>
+                    {uploadedReports.map((report) => (
+                      <option key={report.id} value={report.id}>
+                        {report.fileName} - {new Date(report.uploadedAt).toLocaleDateString()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Medicines Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm font-bold text-black dark:text-white underline">MEDICATIONS</div>
+                  <div className="text-xs text-gray-500">Added: {currentMedicines.length}</div>
+                </div>
+
+                {/* Added Medicines List */}
+                {currentMedicines.length > 0 && (
+                  <div className="mb-4 border-2 border-black dark:border-white p-3 bg-gray-50 dark:bg-zinc-800">
+                    <table className="w-full text-xs">
+                      <thead className="border-b-2 border-black dark:border-white">
+                        <tr>
+                          <th className="text-left p-1 font-bold">Medicine</th>
+                          <th className="text-left p-1 font-bold">Dosage</th>
+                          <th className="text-left p-1 font-bold">Frequency</th>
+                          <th className="text-left p-1 font-bold">Duration</th>
+                          <th className="w-8"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentMedicines.map((med) => (
+                          <tr key={med.id} className="border-t border-gray-300 dark:border-gray-600">
+                            <td className="p-1 font-semibold">{med.name}</td>
+                            <td className="p-1">{med.dosage}</td>
+                            <td className="p-1">{med.frequency}</td>
+                            <td className="p-1">{med.duration}</td>
+                            <td className="p-1">
+                              <button
+                                onClick={() => setCurrentMedicines(currentMedicines.filter(m => m.id !== med.id))}
+                                className="text-red-600 hover:text-red-800 font-bold"
+                              >
+                                ×
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Add Medicine Form */}
+                <div className="border-2 border-gray-400 dark:border-gray-600 p-4 bg-gray-50 dark:bg-zinc-800 space-y-3">
+                  <div className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-3">+ Add Medicine</div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-black dark:text-white mb-1">Medicine Name *</label>
+                    <input
+                      type="text"
+                      value={newMedicine.name}
+                      onChange={(e) => setNewMedicine({ ...newMedicine, name: e.target.value })}
+                      placeholder="e.g., Aspirin"
+                      className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-black dark:text-white mb-1">Dosage *</label>
+                      <input
+                        type="text"
+                        value={newMedicine.dosage}
+                        onChange={(e) => setNewMedicine({ ...newMedicine, dosage: e.target.value })}
+                        placeholder="500mg"
+                        className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-black dark:text-white mb-1">Duration *</label>
+                      <input
+                        type="text"
+                        value={newMedicine.duration}
+                        onChange={(e) => setNewMedicine({ ...newMedicine, duration: e.target.value })}
+                        placeholder="7 days"
+                        className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-black dark:text-white mb-1">Frequency *</label>
+                    <select
+                      value={newMedicine.frequency}
+                      onChange={(e) => setNewMedicine({ ...newMedicine, frequency: e.target.value })}
+                      className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
+                    >
+                      <option>Once daily</option>
+                      <option>2 times daily</option>
+                      <option>3 times daily</option>
+                      <option>4 times daily</option>
+                      <option>Every 6 hours</option>
+                      <option>Every 8 hours</option>
+                      <option>Every 12 hours</option>
+                      <option>As needed</option>
+                      <option>Before meals</option>
+                      <option>After meals</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-black dark:text-white mb-1">Special Instructions (Optional)</label>
+                    <input
+                      type="text"
+                      value={newMedicine.instructions}
+                      onChange={(e) => setNewMedicine({ ...newMedicine, instructions: e.target.value })}
+                      placeholder="e.g., Take with food"
+                      className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
+                    />
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      if (!newMedicine.name.trim() || !newMedicine.dosage.trim() || !newMedicine.duration.trim()) {
+                        alert('Please fill in medicine name, dosage, and duration');
+                        return;
+                      }
+                      const medicine: Medicine = {
+                        id: Date.now().toString(),
+                        name: newMedicine.name,
+                        dosage: newMedicine.dosage,
+                        frequency: newMedicine.frequency,
+                        duration: newMedicine.duration,
+                        instructions: newMedicine.instructions || undefined
+                      };
+                      setCurrentMedicines([...currentMedicines, medicine]);
+                      setNewMedicine({ name: '', dosage: '', frequency: '2 times daily', duration: '', instructions: '' });
+                    }}
+                    className="w-full py-2 text-sm bg-black dark:bg-white text-white dark:text-black font-bold hover:opacity-80 transition"
+                  >
+                    + Add to List
+                  </button>
+                </div>
+              </div>
+
+              {/* Additional Comments */}
+              <div>
+                <label className="block text-xs font-bold text-black dark:text-white mb-2">
+                  ADDITIONAL COMMENTS (Optional)
+                </label>
+                <textarea
+                  value={newPrescription.comments}
+                  onChange={(e) => setNewPrescription({ ...newPrescription, comments: e.target.value })}
+                  placeholder="Any additional notes or comments..."
+                  rows={3}
+                  className="w-full px-3 py-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t-2 border-gray-300 dark:border-gray-700">
+                <button
+                  onClick={() => {
+                    setShowPrescriptionForm(false);
+                    setCurrentMedicines([]);
+                    setNewMedicine({ name: '', dosage: '', frequency: '2 times daily', duration: '', instructions: '' });
+                    setNewPrescription({ doctorName: '', reason: '', prescriptionDate: new Date().toISOString().split('T')[0], reportId: '', comments: '' });
+                  }}
+                  className="flex-1 h-12 border-2 border-black dark:border-white text-black dark:text-white font-bold hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (!newPrescription.doctorName.trim() || !newPrescription.reason.trim()) {
+                      alert('Please fill in doctor name and reason for prescription');
+                      return;
+                    }
+                    
+                    if (currentMedicines.length === 0) {
+                      alert('Please add at least one medicine to the prescription');
+                      return;
+                    }
+                    
+                    const linkedReport = uploadedReports.find(report => report.id === newPrescription.reportId);
+                    const prescription: PrescriptionEntry = {
+                      id: Date.now().toString(),
+                      doctorName: newPrescription.doctorName,
+                      reason: newPrescription.reason,
+                      prescriptionDate: newPrescription.prescriptionDate,
+                      medicines: currentMedicines,
+                      reportId: newPrescription.reportId || undefined,
+                      reportName: linkedReport ? `${linkedReport.fileName} (${new Date(linkedReport.uploadedAt).toLocaleDateString()})` : undefined,
+                      comments: newPrescription.comments || undefined,
+                      takenLog: []
+                    };
+
+                    setPrescriptions(prev => [prescription, ...prev]);
+                    setShowPrescriptionForm(false);
+                    setCurrentMedicines([]);
+                    setNewMedicine({ name: '', dosage: '', frequency: '2 times daily', duration: '', instructions: '' });
+                    setNewPrescription({ doctorName: '', reason: '', prescriptionDate: new Date().toISOString().split('T')[0], reportId: '', comments: '' });
+                    
+                    toast({
+                      title: "Prescription Added",
+                      description: `Prescription from Dr. ${prescription.doctorName} with ${prescription.medicines.length} medicine(s) added.`
+                    });
+                  }}
+                  className="flex-1 h-12 bg-black dark:bg-white text-white dark:text-black font-bold hover:opacity-80 transition shadow-lg"
+                >
+                  Save Prescription
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prescription View Modal */}
+      {selectedPrescriptionView && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm" onClick={() => setSelectedPrescriptionView(null)}>
+          <div className="bg-white dark:bg-zinc-900 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-4 border-black dark:border-white rounded-none" onClick={(e) => e.stopPropagation()}>
+            {/* Full Prescription Display */}
+            <div className="relative p-8 font-mono">
+              <button
+                onClick={() => setSelectedPrescriptionView(null)}
+                className="absolute top-4 right-4 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition z-10"
+              >
+                <svg className="w-6 h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="border-b-4 border-black dark:border-white pb-4 mb-6">
+                <div className="text-5xl font-bold mb-2 text-black dark:text-white">℞</div>
+                <div className="text-2xl font-bold text-black dark:text-white mb-1">Dr. {selectedPrescriptionView.doctorName}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Date: {new Date(selectedPrescriptionView.prescriptionDate).toLocaleDateString()}</div>
+              </div>
+
+              {/* Patient Details / Reason */}
+              <div className="mb-6 bg-gray-50 dark:bg-zinc-800 p-4 border-2 border-black dark:border-white">
+                <div className="text-xs font-bold text-gray-600 dark:text-gray-400 mb-1">DIAGNOSIS / REASON</div>
+                <div className="text-base font-semibold text-black dark:text-white">{selectedPrescriptionView.reason}</div>
+                {selectedPrescriptionView.reportName && (
+                  <div className="text-xs text-gray-500 mt-2">
+                    📄 Related Report: {selectedPrescriptionView.reportName}
+                  </div>
+                )}
+              </div>
+
+              {/* Medicines Table */}
+              <div className="mb-6">
+                <div className="text-sm font-bold text-black dark:text-white mb-3 underline">MEDICATIONS:</div>
+                <div className="border-2 border-black dark:border-white">
+                  <table className="w-full">
+                    <thead className="bg-black dark:bg-white text-white dark:text-black">
+                      <tr>
+                        <th className="text-left p-2 text-xs font-bold border-r-2 border-white dark:border-black">S.No</th>
+                        <th className="text-left p-2 text-xs font-bold border-r-2 border-white dark:border-black">Medicine Name</th>
+                        <th className="text-left p-2 text-xs font-bold border-r-2 border-white dark:border-black">Dosage</th>
+                        <th className="text-left p-2 text-xs font-bold border-r-2 border-white dark:border-black">Frequency</th>
+                        <th className="text-left p-2 text-xs font-bold">Duration</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedPrescriptionView.medicines.map((med, idx) => (
+                        <tr key={med.id} className="border-t-2 border-black dark:border-white">
+                          <td className="p-2 text-sm font-bold border-r-2 border-black dark:border-white text-black dark:text-white">{idx + 1}</td>
+                          <td className="p-2 text-sm font-semibold border-r-2 border-black dark:border-white text-black dark:text-white">{med.name}</td>
+                          <td className="p-2 text-sm border-r-2 border-black dark:border-white text-black dark:text-white">{med.dosage}</td>
+                          <td className="p-2 text-sm border-r-2 border-black dark:border-white text-black dark:text-white">{med.frequency}</td>
+                          <td className="p-2 text-sm text-black dark:text-white">{med.duration}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Individual medicine instructions */}
+                {selectedPrescriptionView.medicines.some(m => m.instructions) && (
+                  <div className="mt-3 space-y-1">
+                    <div className="text-xs font-bold text-black dark:text-white">Special Instructions:</div>
+                    {selectedPrescriptionView.medicines.map((med) => 
+                      med.instructions ? (
+                        <div key={med.id} className="text-xs text-gray-700 dark:text-gray-300">
+                          • {med.name}: <span className="italic">{med.instructions}</span>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Comments */}
+              {selectedPrescriptionView.comments && (
+                <div className="mb-6 border-l-4 border-black dark:border-white pl-4">
+                  <div className="text-xs font-bold text-gray-600 dark:text-gray-400 mb-1">ADDITIONAL COMMENTS:</div>
+                  <div className="text-sm italic text-gray-700 dark:text-gray-300">{selectedPrescriptionView.comments}</div>
+                </div>
+              )}
+
+              {/* Tracking Today's Intake */}
+              <div className="mt-6 pt-4 border-t-2 border-dashed border-gray-400 dark:border-gray-600">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold text-black dark:text-white">TODAY&apos;S INTAKE LOG:</span>
+                  <span className="text-xs text-gray-500">{new Date().toLocaleDateString()}</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {selectedPrescriptionView.medicines.map((med) => {
+                    const today = new Date().toISOString().split('T')[0];
+                    const medLogs = selectedPrescriptionView.takenLog.filter(log => log.medicineId === med.id && log.date === today);
+                    return (
+                      <div key={med.id} className="border-2 border-gray-300 dark:border-gray-600 p-2 rounded">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-black dark:text-white truncate">{med.name}</span>
+                          <button
+                            onClick={() => {
+                              const now = new Date();
+                              const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+                              setPrescriptions(prev => prev.map(p => {
+                                if (p.id === selectedPrescriptionView.id) {
+                                  const updated = {
+                                    ...p,
+                                    takenLog: [...p.takenLog, { medicineId: med.id, date: today, time: timeStr }]
+                                  };
+                                  setSelectedPrescriptionView(updated);
+                                  return updated;
+                                }
+                                return p;
+                              }));
+                            }}
+                            className="text-xs px-2 py-1 bg-black dark:bg-white text-white dark:text-black font-bold hover:opacity-80 transition"
+                          >
+                            ✓
+                          </button>
+                        </div>
+                        {medLogs.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {medLogs.map((log, idx) => (
+                              <span key={idx} className="text-xs px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-black dark:text-white">
+                                {log.time}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-400">Not taken yet</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
