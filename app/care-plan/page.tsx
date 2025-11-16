@@ -375,19 +375,19 @@ export default function CarePlanPage() {
     <div className="min-h-screen bg-white dark:bg-black pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Minimal Header */}
-        <div className="py-8 border-b-2 border-gray-200 dark:border-gray-800 mb-8">
+        <div className="py-8 border-b-2 border-black dark:border-white mb-8">
           <div className="flex items-end justify-between">
             <div>
-              <h1 className="text-5xl font-bold text-black dark:text-white tracking-tight">
-                My Health Space
+              <h1 className="text-3xl md:text-4xl font-bold font-mono text-black dark:text-white tracking-tight">
+                MY HEALTH SPACE
               </h1>
-              <p className="text-base text-gray-500 dark:text-gray-500 mt-2">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              <p className="text-base font-mono text-black dark:text-white uppercase tracking-wide opacity-70 mt-2">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}
               </p>
             </div>
             {session && (
-              <div className="text-sm text-gray-500 dark:text-gray-500">
-                Last updated: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              <div className="text-sm font-mono text-black dark:text-white opacity-60">
+                LAST UPDATED: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
               </div>
             )}
           </div>
@@ -405,8 +405,8 @@ export default function CarePlanPage() {
               key={index}
               className="bg-white dark:bg-black p-6 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
             >
-              <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-500 mb-2">
-                {stat.label}
+              <div className="text-xs font-bold font-mono uppercase tracking-wider text-black dark:text-white opacity-60 mb-2">
+                {stat.label.toUpperCase()}
               </div>
               <div className="text-3xl font-bold text-black dark:text-white">
                 {stat.value}
@@ -419,29 +419,29 @@ export default function CarePlanPage() {
         <div className="space-y-12">
           {/* Medications Section */}
           <div>
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-black dark:bg-white flex items-center justify-center">
+                <div className="w-8 h-8 bg-black dark:bg-white flex items-center justify-center border-2 border-black dark:border-white">
                   <Pill className="w-4 h-4 text-white dark:text-black" />
                 </div>
-                <h2 className="text-2xl font-semibold text-black dark:text-white">
-                  Today&apos;s Medications
+                <h2 className="text-2xl font-bold font-mono text-black dark:text-white">
+                  TODAY&apos;S MEDICATIONS
                 </h2>
               </div>
               <Button
                 onClick={() => setShowMedicationForm(!showMedicationForm)}
                 size="sm"
                 variant="outline"
-                className="border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                className="border-2 border-black dark:border-white text-black dark:text-white bg-white dark:bg-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add New
+                ADD NEW
               </Button>
             </div>
 
             {showMedicationForm && (
-              <div className="p-5 rounded-lg bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 mb-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Add New Medication</h3>
+              <div className="p-5 bg-white dark:bg-black border-2 border-black dark:border-white mb-4">
+                <h3 className="font-bold font-mono text-black dark:text-white mb-4">ADD NEW MEDICATION</h3>
                 <form onSubmit={async (e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
@@ -464,36 +464,36 @@ export default function CarePlanPage() {
                   setShowMedicationForm(false);
                 }} className="space-y-3">
                   <div>
-                    <Label htmlFor="name" className="text-sm text-gray-700 dark:text-gray-300">Medication Name</Label>
-                    <Input id="name" name="name" required className="mt-1" placeholder="e.g., Metformin" />
+                    <Label htmlFor="name" className="text-xs font-bold font-mono text-black dark:text-white uppercase">MEDICATION NAME</Label>
+                    <Input id="name" name="name" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="E.G., METFORMIN" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label htmlFor="dosage" className="text-sm text-gray-700 dark:text-gray-300">Dosage</Label>
-                      <Input id="dosage" name="dosage" required className="mt-1" placeholder="e.g., 500mg" />
+                      <Label htmlFor="dosage" className="text-xs font-bold font-mono text-black dark:text-white uppercase">DOSAGE</Label>
+                      <Input id="dosage" name="dosage" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="E.G., 500MG" />
                     </div>
                     <div>
-                      <Label htmlFor="frequency" className="text-sm text-gray-700 dark:text-gray-300">Frequency</Label>
-                      <Input id="frequency" name="frequency" required className="mt-1" placeholder="e.g., Twice daily" />
+                      <Label htmlFor="frequency" className="text-xs font-bold font-mono text-black dark:text-white uppercase">FREQUENCY</Label>
+                      <Input id="frequency" name="frequency" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="E.G., TWICE DAILY" />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="time" className="text-sm text-gray-700 dark:text-gray-300">Time(s) - comma separated</Label>
-                    <Input id="time" name="time" required className="mt-1" placeholder="e.g., 08:00, 20:00" />
+                    <Label htmlFor="time" className="text-xs font-bold font-mono text-black dark:text-white uppercase">TIME(S) - COMMA SEPARATED</Label>
+                    <Input id="time" name="time" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="E.G., 08:00, 20:00" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label htmlFor="startDate" className="text-sm text-gray-700 dark:text-gray-300">Start Date</Label>
-                      <Input id="startDate" name="startDate" type="date" required className="mt-1" />
+                      <Label htmlFor="startDate" className="text-xs font-bold font-mono text-black dark:text-white uppercase">START DATE</Label>
+                      <Input id="startDate" name="startDate" type="date" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" />
                     </div>
                     <div>
-                      <Label htmlFor="endDate" className="text-sm text-gray-700 dark:text-gray-300">End Date (optional)</Label>
-                      <Input id="endDate" name="endDate" type="date" className="mt-1" />
+                      <Label htmlFor="endDate" className="text-xs font-bold font-mono text-black dark:text-white uppercase">END DATE (OPTIONAL)</Label>
+                      <Input id="endDate" name="endDate" type="date" className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" />
                     </div>
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <Button type="submit" className="flex-1">Add Medication</Button>
-                    <Button type="button" variant="outline" onClick={() => setShowMedicationForm(false)}>Cancel</Button>
+                    <Button type="submit" className="flex-1 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white font-bold font-mono text-xs">ADD MEDICATION</Button>
+                    <Button type="button" variant="outline" onClick={() => setShowMedicationForm(false)} className="border-2 border-black dark:border-white text-black dark:text-white bg-white dark:bg-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs">CANCEL</Button>
                   </div>
                 </form>
               </div>
@@ -501,24 +501,24 @@ export default function CarePlanPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {medications.length === 0 && !showMedicationForm && (
-                <div className="col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
-                  No medications added yet. Click &quot;Add New&quot; to add one.
+                <div className="col-span-2 text-center py-8 text-black dark:text-white opacity-70">
+                  <p className="font-bold font-mono">NO MEDICATIONS ADDED YET. CLICK &quot;ADD NEW&quot; TO ADD ONE.</p>
                 </div>
               )}
               {medications.map((med) => (
                 <div
                   key={med.id}
-                  className="p-5 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:border-black dark:hover:border-white transition-all group"
+                  className="p-5 border-2 border-black dark:border-white bg-white dark:bg-black hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] transition-all group"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-black dark:text-white mb-1">
-                        {med.name}
+                      <h3 className="font-bold font-mono text-lg text-black dark:text-white mb-1">
+                        {med.name.toUpperCase()}
                       </h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-500">
-                        <span>{med.dosage}</span>
+                      <div className="flex items-center gap-2 text-sm font-mono text-black dark:text-white opacity-60">
+                        <span>{med.dosage.toUpperCase()}</span>
                         <span>•</span>
-                        <span>{med.frequency}</span>
+                        <span>{med.frequency.toUpperCase()}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -569,9 +569,9 @@ export default function CarePlanPage() {
                       </Button>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 flex items-center gap-1">
+                  <div className="text-xs font-mono text-black dark:text-white opacity-60 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {getNextDose(med)}
+                    {getNextDose(med).toUpperCase()}
                   </div>
                 </div>
               ))}
@@ -579,35 +579,35 @@ export default function CarePlanPage() {
           </div>
 
           {/* Health Goals Section */}
-          <Card className="mt-6">
+          <Card className="mt-6 bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-black dark:bg-white flex items-center justify-center">
+                    <div className="w-10 h-10 bg-black dark:bg-white flex items-center justify-center border-2 border-black dark:border-white">
                       <Target className="w-5 h-5 text-white dark:text-black" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                        Health Goals
+                      <h2 className="text-xl font-bold font-mono text-black dark:text-white">
+                        HEALTH GOALS
                       </h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Track your progress
+                      <p className="text-sm font-mono text-black dark:text-white opacity-70 uppercase">
+                        TRACK YOUR PROGRESS
                       </p>
                     </div>
                   </div>
                   <Button
                     onClick={() => setShowGoalForm(!showGoalForm)}
                     size="sm"
-                    className="bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black"
+                    className="bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white font-bold font-mono text-xs"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Goal
+                    ADD GOAL
                   </Button>
                 </div>
 
                 {showGoalForm && (
-                  <div className="p-5 rounded-lg bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 mb-4">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Add New Health Goal</h3>
+                  <div className="p-5 bg-white dark:bg-black border-2 border-black dark:border-white mb-4">
+                    <h3 className="font-bold font-mono text-black dark:text-white mb-4">ADD NEW HEALTH GOAL</h3>
                     <form onSubmit={async (e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
@@ -632,43 +632,43 @@ export default function CarePlanPage() {
                       setShowGoalForm(false);
                     }} className="space-y-3">
                       <div>
-                        <Label htmlFor="title" className="text-sm text-gray-700 dark:text-gray-300">Goal Title</Label>
-                        <Input id="title" name="title" required className="mt-1" placeholder="e.g., Reduce Blood Pressure" />
+                        <Label htmlFor="title" className="text-xs font-bold font-mono text-black dark:text-white uppercase">GOAL TITLE</Label>
+                        <Input id="title" name="title" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="E.G., REDUCE BLOOD PRESSURE" />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label htmlFor="current" className="text-sm text-gray-700 dark:text-gray-300">Current Value</Label>
-                          <Input id="current" name="current" required className="mt-1" placeholder="e.g., 135/85 mmHg" />
+                          <Label htmlFor="current" className="text-xs font-bold font-mono text-black dark:text-white uppercase">CURRENT VALUE</Label>
+                          <Input id="current" name="current" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="E.G., 135/85 MMHG" />
                         </div>
                         <div>
-                          <Label htmlFor="target" className="text-sm text-gray-700 dark:text-gray-300">Target Value</Label>
-                          <Input id="target" name="target" required className="mt-1" placeholder="e.g., 120/80 mmHg" />
+                          <Label htmlFor="target" className="text-xs font-bold font-mono text-black dark:text-white uppercase">TARGET VALUE</Label>
+                          <Input id="target" name="target" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="E.G., 120/80 MMHG" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label htmlFor="category" className="text-sm text-gray-700 dark:text-gray-300">Category</Label>
+                          <Label htmlFor="category" className="text-xs font-bold font-mono text-black dark:text-white uppercase">CATEGORY</Label>
                           <select 
                             id="category" 
                             name="category" 
                             required 
-                            className="mt-1 w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="mt-1 w-full h-10 px-3 border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white font-mono"
                           >
-                            <option value="vitals">Vitals</option>
-                            <option value="weight">Weight</option>
-                            <option value="exercise">Exercise</option>
-                            <option value="diet">Diet</option>
-                            <option value="other">Other</option>
+                            <option value="vitals">VITALS</option>
+                            <option value="weight">WEIGHT</option>
+                            <option value="exercise">EXERCISE</option>
+                            <option value="diet">DIET</option>
+                            <option value="other">OTHER</option>
                           </select>
                         </div>
                         <div>
-                          <Label htmlFor="deadline" className="text-sm text-gray-700 dark:text-gray-300">Deadline</Label>
-                          <Input id="deadline" name="deadline" type="date" required className="mt-1" />
+                          <Label htmlFor="deadline" className="text-xs font-bold font-mono text-black dark:text-white uppercase">DEADLINE</Label>
+                          <Input id="deadline" name="deadline" type="date" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" />
                         </div>
                       </div>
                       <div className="flex gap-2 pt-2">
-                        <Button type="submit" className="flex-1">Add Goal</Button>
-                        <Button type="button" variant="outline" onClick={() => setShowGoalForm(false)}>Cancel</Button>
+                        <Button type="submit" className="flex-1 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white font-bold font-mono text-xs">ADD GOAL</Button>
+                        <Button type="button" variant="outline" onClick={() => setShowGoalForm(false)} className="border-2 border-black dark:border-white text-black dark:text-white bg-white dark:bg-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs">CANCEL</Button>
                       </div>
                     </form>
                   </div>
@@ -676,45 +676,45 @@ export default function CarePlanPage() {
 
                 <div className="space-y-4">
                   {healthGoals.length === 0 && !showGoalForm && (
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      No health goals set yet. Click &quot;Add Goal&quot; to create one.
+                    <div className="text-center py-8 text-black dark:text-white opacity-70">
+                      <p className="font-bold font-mono">NO HEALTH GOALS SET YET. CLICK &quot;ADD GOAL&quot; TO CREATE ONE.</p>
                     </div>
                   )}
                   {healthGoals.map((goal) => (
                     <div
                       key={goal.id}
-                      className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                      className="p-4 border-2 border-black dark:border-white bg-white dark:bg-black hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] transition-all"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-gray-900 dark:text-white">
-                              {goal.title}
+                            <h3 className="font-bold font-mono text-black dark:text-white">
+                              {goal.title.toUpperCase()}
                             </h3>
-                            <Badge className={getCategoryColor(goal.category)}>
-                              {goal.category}
+                            <Badge className={`${getCategoryColor(goal.category)} font-bold font-mono text-xs uppercase`}>
+                              {goal.category.toUpperCase()}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                            <span>Current: <strong>{goal.current}</strong></span>
+                          <div className="flex items-center gap-4 text-sm font-mono text-black dark:text-white opacity-70">
+                            <span>CURRENT: <strong>{goal.current.toUpperCase()}</strong></span>
                             <span>→</span>
-                            <span>Target: <strong>{goal.target}</strong></span>
+                            <span>TARGET: <strong>{goal.target.toUpperCase()}</strong></span>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                            <div className="text-2xl font-bold font-mono text-black dark:text-white">
                               {Math.round(calculateProgress(goal.current, goal.target))}%
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {getDaysUntil(goal.deadline)} days left
+                            <div className="text-xs font-mono text-black dark:text-white opacity-60">
+                              {getDaysUntil(goal.deadline)} DAYS LEFT
                             </div>
                           </div>
                           <Button
                             onClick={() => deleteHealthGoal(goal.id)}
                             size="sm"
                             variant="ghost"
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            className="text-red-600 hover:bg-red-600 hover:text-white border-2 border-red-600 font-bold font-mono"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -722,9 +722,9 @@ export default function CarePlanPage() {
                       </div>
                       
                       {/* Progress Bar */}
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
+                      <div className="w-full bg-gray-200 dark:bg-gray-800 h-2 mt-3 border border-black dark:border-white">
                         <div
-                          className="bg-green-500 dark:bg-green-400 h-2 rounded-full transition-all duration-300"
+                          className="bg-black dark:bg-white h-2 transition-all duration-300"
                           style={{ width: `${Math.round(calculateProgress(goal.current, goal.target))}%` }}
                         />
                       </div>
@@ -737,16 +737,16 @@ export default function CarePlanPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Upcoming Appointments */}
-            <Card>
+            <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-black dark:bg-white flex items-center justify-center">
+                    <div className="w-10 h-10 bg-black dark:bg-white flex items-center justify-center border-2 border-black dark:border-white">
                       <Calendar className="w-5 h-5 text-white dark:text-black" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                        Appointments
+                      <h2 className="text-lg font-bold font-mono text-black dark:text-white">
+                        APPOINTMENTS
                       </h2>
                     </div>
                   </div>
@@ -754,15 +754,15 @@ export default function CarePlanPage() {
                     onClick={() => setShowAppointmentForm(!showAppointmentForm)}
                     size="sm"
                     variant="outline"
-                    className="border-gray-300 dark:border-gray-600"
+                    className="border-2 border-black dark:border-white text-black dark:text-white bg-white dark:bg-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
 
                 {showAppointmentForm && (
-                  <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 mb-4">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Add New Appointment</h3>
+                  <div className="p-4 bg-white dark:bg-black border-2 border-black dark:border-white mb-4">
+                    <h3 className="font-bold font-mono text-black dark:text-white mb-4">ADD NEW APPOINTMENT</h3>
                     <form onSubmit={async (e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
@@ -790,34 +790,34 @@ export default function CarePlanPage() {
                       setShowAppointmentForm(false);
                     }} className="space-y-3">
                       <div>
-                        <Label htmlFor="doctor" className="text-sm text-gray-700 dark:text-gray-300">Doctor Name</Label>
-                        <Input id="doctor" name="doctor" required className="mt-1" placeholder="Dr. John Smith" />
+                        <Label htmlFor="doctor" className="text-xs font-bold font-mono text-black dark:text-white uppercase">DOCTOR NAME</Label>
+                        <Input id="doctor" name="doctor" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="DR. JOHN SMITH" />
                       </div>
                       <div>
-                        <Label htmlFor="specialty" className="text-sm text-gray-700 dark:text-gray-300">Specialty</Label>
-                        <Input id="specialty" name="specialty" required className="mt-1" placeholder="Cardiologist" />
+                        <Label htmlFor="specialty" className="text-xs font-bold font-mono text-black dark:text-white uppercase">SPECIALTY</Label>
+                        <Input id="specialty" name="specialty" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="CARDIOLOGIST" />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label htmlFor="date" className="text-sm text-gray-700 dark:text-gray-300">Date</Label>
-                          <Input id="date" name="date" type="date" required className="mt-1" />
+                          <Label htmlFor="date" className="text-xs font-bold font-mono text-black dark:text-white uppercase">DATE</Label>
+                          <Input id="date" name="date" type="date" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" />
                         </div>
                         <div>
-                          <Label htmlFor="time" className="text-sm text-gray-700 dark:text-gray-300">Time</Label>
-                          <Input id="time" name="time" type="time" required className="mt-1" />
+                          <Label htmlFor="time" className="text-xs font-bold font-mono text-black dark:text-white uppercase">TIME</Label>
+                          <Input id="time" name="time" type="time" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" />
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor="location" className="text-sm text-gray-700 dark:text-gray-300">Location</Label>
-                        <Input id="location" name="location" required className="mt-1" placeholder="City Hospital, Room 204" />
+                        <Label htmlFor="location" className="text-xs font-bold font-mono text-black dark:text-white uppercase">LOCATION</Label>
+                        <Input id="location" name="location" required className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="CITY HOSPITAL, ROOM 204" />
                       </div>
                       <div>
-                        <Label htmlFor="notes" className="text-sm text-gray-700 dark:text-gray-300">Notes (optional)</Label>
-                        <Input id="notes" name="notes" className="mt-1" placeholder="Follow-up visit" />
+                        <Label htmlFor="notes" className="text-xs font-bold font-mono text-black dark:text-white uppercase">NOTES (OPTIONAL)</Label>
+                        <Input id="notes" name="notes" className="mt-1 border-2 border-black dark:border-white bg-white dark:bg-black font-mono" placeholder="FOLLOW-UP VISIT" />
                       </div>
                       <div className="flex gap-2 pt-2">
-                        <Button type="submit" className="flex-1">Add Appointment</Button>
-                        <Button type="button" variant="outline" onClick={() => setShowAppointmentForm(false)}>Cancel</Button>
+                        <Button type="submit" className="flex-1 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white font-bold font-mono text-xs">ADD APPOINTMENT</Button>
+                        <Button type="button" variant="outline" onClick={() => setShowAppointmentForm(false)} className="border-2 border-black dark:border-white text-black dark:text-white bg-white dark:bg-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs">CANCEL</Button>
                       </div>
                     </form>
                   </div>
@@ -825,24 +825,24 @@ export default function CarePlanPage() {
 
                 <div className="space-y-4">
                   {appointments.length === 0 && !showAppointmentForm && (
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      No appointments scheduled. Click + to add one.
+                    <div className="text-center py-8 text-black dark:text-white opacity-70">
+                      <p className="font-bold font-mono">NO APPOINTMENTS SCHEDULED. CLICK + TO ADD ONE.</p>
                     </div>
                   )}
                   {appointments.map((apt) => (
                     <div
                       key={apt.id}
-                      className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700"
+                      className="p-4 bg-white dark:bg-black border-2 border-black dark:border-white hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] transition-all"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-start gap-3">
-                          <Stethoscope className="w-5 h-5 text-gray-700 dark:text-gray-300 mt-0.5" />
+                          <Stethoscope className="w-5 h-5 text-black dark:text-white mt-0.5" strokeWidth={2.5} />
                           <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 dark:text-white">
-                              {apt.doctor}
+                            <h3 className="font-bold font-mono text-black dark:text-white">
+                              {apt.doctor.toUpperCase()}
                             </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {apt.specialty}
+                            <p className="text-sm font-mono text-black dark:text-white opacity-60">
+                              {apt.specialty.toUpperCase()}
                             </p>
                           </div>
                         </div>
@@ -887,16 +887,16 @@ export default function CarePlanPage() {
                           </Button>
                         </div>
                       </div>
-                      <div className="ml-8 space-y-1 text-sm">
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                          <Calendar className="w-3 h-3" />
+                      <div className="ml-8 space-y-1 text-sm font-mono">
+                        <div className="flex items-center gap-2 text-black dark:text-white opacity-70">
+                          <Calendar className="w-3 h-3" strokeWidth={2.5} />
                           {new Date(apt.date).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric',
                             year: 'numeric'
                           })} at {apt.time}
                         </div>
-                        <div className="text-gray-600 dark:text-gray-400">
+                        <div className="text-black dark:text-white opacity-60">
                           📍 {apt.location}
                         </div>
                         {apt.notes && (

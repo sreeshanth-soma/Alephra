@@ -26,25 +26,34 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 90) return "from-green-500 to-emerald-600";
-    if (score >= 70) return "from-yellow-500 to-orange-600";
-    return "from-red-500 to-rose-600";
+    if (score >= 90) return "bg-green-300 dark:bg-green-800";
+    if (score >= 70) return "bg-yellow-300 dark:bg-yellow-800";
+    return "bg-red-300 dark:bg-red-800";
+  };
+
+  const getMetricCardBgColor = (status: string) => {
+    switch (status) {
+      case "normal": return "bg-green-200 dark:bg-green-900";
+      case "warning": return "bg-yellow-200 dark:bg-yellow-900";
+      case "critical": return "bg-red-200 dark:bg-red-900";
+      default: return "bg-white dark:bg-black";
+    }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "normal": return "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400";
-      case "warning": return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400";
-      case "critical": return "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400";
-      default: return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400";
+      case "normal": return "bg-green-600 dark:bg-green-400 text-white dark:text-black";
+      case "warning": return "bg-yellow-600 dark:bg-yellow-400 text-white dark:text-black";
+      case "critical": return "bg-red-600 dark:bg-red-400 text-white dark:text-black";
+      default: return "bg-black dark:bg-white text-white dark:text-black";
     }
   };
 
   const getTrendIcon = (trend?: string) => {
     switch (trend) {
-      case "up": return <TrendingUp className="w-4 h-4 text-green-600" />;
-      case "down": return <TrendingDown className="w-4 h-4 text-red-600" />;
-      case "stable": return <Minus className="w-4 h-4 text-gray-600" />;
+      case "up": return <TrendingUp className="w-4 h-4 text-black dark:text-white" strokeWidth={2.5} />;
+      case "down": return <TrendingDown className="w-4 h-4 text-black dark:text-white" strokeWidth={2.5} />;
+      case "stable": return <Minus className="w-4 h-4 text-black dark:text-white" strokeWidth={2.5} />;
       default: return null;
     }
   };
@@ -52,32 +61,31 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Overall Health Score */}
-      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${getScoreBgColor(overallScore)} p-8 text-white shadow-2xl`}>
-        <div className="absolute inset-0 bg-black/10" />
+      <div className={`relative overflow-hidden rounded-xl border-2 border-black dark:border-white ${getScoreBgColor(overallScore)} p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]`}>
         <div className="relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                <Heart className="w-8 h-8" />
+              <div className={`w-16 h-16 rounded-lg border-2 border-black dark:border-white flex items-center justify-center ${overallScore >= 90 ? 'bg-green-600 dark:bg-green-400' : overallScore >= 70 ? 'bg-yellow-600 dark:bg-yellow-400' : 'bg-red-600 dark:bg-red-400'}`}>
+                <Heart className="w-8 h-8 text-white dark:text-black" strokeWidth={2.5} />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-white drop-shadow-lg">Overall Health Score</h3>
-                <p className="text-base text-white/90 mt-1">Based on latest vitals & labs</p>
+                <h3 className="text-2xl font-extrabold font-mono text-black dark:text-white uppercase tracking-tight">Overall Health Score</h3>
+                <p className="text-sm font-mono text-black dark:text-white opacity-70 mt-1 uppercase">Based on latest vitals & labs</p>
               </div>
             </div>
           </div>
 
           <div className="flex items-baseline gap-3 mb-6">
-            <span className="text-7xl font-bold drop-shadow-2xl">{overallScore}</span>
-            <span className="text-3xl font-semibold opacity-90">/100</span>
+            <span className={`text-7xl font-extrabold font-mono ${overallScore >= 90 ? 'text-green-600 dark:text-green-400' : overallScore >= 70 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>{overallScore}</span>
+            <span className="text-3xl font-bold font-mono text-black dark:text-white opacity-60">/100</span>
           </div>
 
           <div className="mt-6 flex items-center gap-3 text-base">
-            <Activity className="w-5 h-5" />
-            <span className="font-semibold drop-shadow-md">
-              {overallScore >= 90 ? "Excellent health! Keep up the great work!" :
-               overallScore >= 70 ? "Good health, continue monitoring trends" :
-               "Attention needed - please consult your doctor"}
+            <Activity className="w-5 h-5 text-black dark:text-white" strokeWidth={2.5} />
+            <span className="font-bold font-mono text-black dark:text-white uppercase">
+              {overallScore >= 90 ? "EXCELLENT HEALTH! KEEP UP THE GREAT WORK!" :
+               overallScore >= 70 ? "GOOD HEALTH, CONTINUE MONITORING TRENDS" :
+               "ATTENTION NEEDED - PLEASE CONSULT YOUR DOCTOR"}
             </span>
           </div>
         </div>
@@ -88,36 +96,36 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
         {metrics.map((metric, index) => (
           <div
             key={index}
-            className="p-6 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/90 hover:shadow-xl hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 hover:-translate-y-1"
+            className={`p-6 rounded-xl border-2 border-black dark:border-white ${getMetricCardBgColor(metric.status)} shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] transition`}
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-base font-semibold text-gray-700 dark:text-gray-200">
+                <p className="text-sm font-bold font-mono text-black dark:text-white uppercase">
                   {metric.label}
                 </p>
               </div>
-              <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${getStatusColor(metric.status)}`}>
-                {metric.status === "normal" ? "Normal" :
-                 metric.status === "warning" ? "Elevated" :
-                 "Critical"}
+              <span className={`px-2 py-1 rounded-lg text-xs font-bold font-mono border-2 border-black dark:border-white uppercase ${getStatusColor(metric.status)}`}>
+                {metric.status === "normal" ? "NORMAL" :
+                 metric.status === "warning" ? "ELEVATED" :
+                 "CRITICAL"}
               </span>
             </div>
 
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-4xl font-bold text-gray-900 dark:text-white">
+              <span className="text-4xl font-bold font-mono text-black dark:text-white">
                 {metric.value}
               </span>
               {metric.unit && (
-                <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
+                <span className="text-base font-bold font-mono text-black dark:text-white opacity-60">
                   {metric.unit}
                 </span>
               )}
             </div>
 
             {metric.trend && metric.change && (
-              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t-2 border-black dark:border-white">
                 {getTrendIcon(metric.trend)}
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <span className="text-xs font-bold font-mono text-black dark:text-white opacity-70 uppercase">
                   {metric.change}
                 </span>
               </div>

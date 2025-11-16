@@ -35,18 +35,18 @@ interface Props {
 
 const HealthScoreBadge = ({ score }: { score: number }) => {
   const getColor = () => {
-    if (score >= 90) return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-    if (score >= 80) return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
-    if (score >= 70) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-    return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    if (score >= 90) return 'bg-green-600 text-white dark:bg-green-400 dark:text-black border-green-600 dark:border-green-400';
+    if (score >= 80) return 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white';
+    if (score >= 70) return 'bg-yellow-600 text-white dark:bg-yellow-400 dark:text-black border-yellow-600 dark:border-yellow-400';
+    return 'bg-red-600 text-white dark:bg-red-400 dark:text-black border-red-600 dark:border-red-400';
   };
   const getLabel = () => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 80) return 'Good';
-    if (score >= 70) return 'Fair';
-    return 'Poor';
+    if (score >= 90) return 'EXCELLENT';
+    if (score >= 80) return 'GOOD';
+    if (score >= 70) return 'FAIR';
+    return 'POOR';
   }
-  return <Badge className={`text-xs font-semibold ${getColor()}`}>{getLabel()}</Badge>;
+  return <Badge className={`text-xs font-bold font-mono border-2 rounded-lg ${getColor()}`}>{getLabel()}</Badge>;
 };
 
 
@@ -103,15 +103,15 @@ const EnhancedHistoryList = ({
   };
 
   return (
-    <Card className="h-full flex flex-col bg-white dark:bg-black border-gray-200 dark:border-gray-700">
-      <CardHeader>
-        <CardTitle className="text-gray-900 dark:text-white">Report History</CardTitle>
-        <div className="flex items-center gap-2 pt-2">
+    <Card className="h-full flex flex-col bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
+      <CardHeader className="pb-4 border-b-2 border-black dark:border-white">
+        <CardTitle className="text-base font-bold font-mono text-black dark:text-white">REPORT HISTORY</CardTitle>
+        <div className="flex items-center gap-2 pt-4">
           <div className="relative flex-grow">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-black dark:text-white" strokeWidth={2.5} />
             <Input 
-              placeholder="Search reports..." 
-              className="pl-8 w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              placeholder="SEARCH REPORTS..." 
+              className="pl-8 w-full border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 font-mono text-sm"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -119,20 +119,20 @@ const EnhancedHistoryList = ({
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className="px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                    className="px-3 h-10 border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white text-xs font-bold font-mono"
                   >
-                    <option value="date">Sort by Date</option>
-                    <option value="file_name">Sort by Name</option>
+                    <option value="date">SORT BY DATE</option>
+                    <option value="file_name">SORT BY NAME</option>
                   </select>
         </div>
       </CardHeader>
       <CardContent className="flex-grow overflow-y-auto space-y-3 pr-3">
         {filteredPrescriptions.length === 0 ? (
-          <div className="text-center text-gray-500 dark:text-gray-400 py-12">
-            <FileText className="mx-auto h-12 w-12" />
-            <p className="mt-4 font-semibold text-gray-900 dark:text-white">No Reports Found</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {searchTerm ? "Try a different search term." : "Upload a report to get started."}
+          <div className="text-center py-12">
+            <FileText className="mx-auto h-12 w-12 text-black dark:text-white" strokeWidth={2.5} />
+            <p className="mt-4 font-bold font-mono text-black dark:text-white">NO REPORTS FOUND</p>
+            <p className="text-sm font-mono text-black dark:text-white opacity-70 mt-2">
+              {searchTerm ? "TRY A DIFFERENT SEARCH TERM." : "UPLOAD A REPORT TO GET STARTED."}
             </p>
           </div>
         ) : (
@@ -142,25 +142,25 @@ const EnhancedHistoryList = ({
               <div
                 key={p.id}
                 onClick={() => onSelectPrescription(p)}
-                        className={`p-3 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer transition-all ${selectedPrescriptionId === p.id ? 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-500' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                        className={`p-3 border-2 border-black dark:border-white bg-white dark:bg-black cursor-pointer transition-all ${selectedPrescriptionId === p.id ? 'shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]' : 'hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]'}`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-grow truncate">
-                    <p className="font-semibold truncate text-gray-900 dark:text-white">{p.fileName}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{p.summary}</p>
+                    <p className="font-bold font-mono truncate text-black dark:text-white uppercase">{p.fileName}</p>
+                    <p className="text-sm font-mono text-black dark:text-white opacity-70 line-clamp-2 mt-1">{p.summary}</p>
                   </div>
                   {score && (
                     <div className="ml-4 text-right flex-shrink-0">
-                      <p className="font-bold text-lg text-gray-900 dark:text-white">{score}</p>
+                      <p className="font-bold text-lg font-mono text-black dark:text-white">{score}</p>
                       <HealthScoreBadge score={score} />
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  <span>{getTimeAgo(p.uploadedAt)}</span>
+                <div className="flex items-center justify-between mt-2 text-xs font-mono text-black dark:text-white opacity-60">
+                  <span className="uppercase">{getTimeAgo(p.uploadedAt)}</span>
                   <div className="flex items-center gap-2">
-                            <button onClick={(e) => { e.stopPropagation(); onExport(p); }} className="hover:text-gray-900 dark:hover:text-white"><Download className="h-4 w-4" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(p.id); }} className="hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onExport(p); }} className="hover:opacity-100 text-black dark:text-white"><Download className="h-4 w-4" strokeWidth={2.5} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); onDelete(p.id); }} className="hover:opacity-100 text-black dark:text-white"><Trash2 className="h-4 w-4" strokeWidth={2.5} /></button>
                   </div>
                 </div>
               </div>
@@ -169,10 +169,15 @@ const EnhancedHistoryList = ({
         )}
       </CardContent>
       {prescriptions.length > 0 && (
-          <div className="p-4 border-t">
-              <Button variant="outline" size="sm" className="w-full" onClick={() => setShowClearModal(true)}>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Clear All History
+          <div className="p-4 border-t-2 border-black dark:border-white">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full h-10 px-4 bg-black dark:bg-white text-white dark:text-black text-xs font-bold font-mono hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition border-2 border-black dark:border-white rounded-lg"
+                onClick={() => setShowClearModal(true)}
+              >
+                  <Trash2 className="h-4 w-4 mr-2" strokeWidth={2.5} />
+                  CLEAR ALL HISTORY
               </Button>
           </div>
       )}
@@ -180,18 +185,30 @@ const EnhancedHistoryList = ({
       <BasicModal
         isOpen={showClearModal}
         onClose={() => setShowClearModal(false)}
-        title="Clear All Reports"
+        title="CLEAR ALL REPORTS"
         size="md"
       >
         <div className="text-center">
-            <AlertTriangle className="mx-auto h-12 w-12 text-destructive" />
-            <h3 className="mt-4 text-lg font-semibold">Are you absolutely sure?</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              This action cannot be undone. This will permanently delete all {prescriptions.length} reports and their associated health data.
+            <AlertTriangle className="mx-auto h-12 w-12 text-red-600 dark:text-red-400" strokeWidth={2.5} />
+            <h3 className="mt-4 text-lg font-bold font-mono text-black dark:text-white">ARE YOU ABSOLUTELY SURE?</h3>
+            <p className="mt-2 text-sm font-mono text-black dark:text-white opacity-70">
+              THIS ACTION CANNOT BE UNDONE. THIS WILL PERMANENTLY DELETE ALL {prescriptions.length} REPORTS AND THEIR ASSOCIATED HEALTH DATA.
             </p>
             <div className="mt-6 flex justify-center gap-4">
-              <Button variant="outline" onClick={() => setShowClearModal(false)}>Cancel</Button>
-              <Button variant="destructive" onClick={confirmClearAll}>Yes, delete all</Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowClearModal(false)}
+                className="px-4 py-2 text-xs font-bold font-mono border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition rounded-lg"
+              >
+                CANCEL
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={confirmClearAll}
+                className="px-4 py-2 text-xs font-bold font-mono border-2 border-red-600 text-red-600 bg-white dark:bg-black hover:bg-red-600 hover:text-white transition rounded-lg"
+              >
+                YES, DELETE ALL
+              </Button>
             </div>
         </div>
       </BasicModal>

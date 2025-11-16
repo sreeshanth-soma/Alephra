@@ -131,8 +131,8 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
   };
     
   return (
-    <div className="h-[600px] bg-white dark:bg-black relative flex flex-col rounded-none border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
-      <div className="absolute -top-3 left-6 z-20 px-4 py-2 bg-white dark:bg-black border-2 border-black dark:border-white">
+    <div className="h-[600px] bg-white dark:bg-black relative flex flex-col rounded-xl border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
+      <div className="absolute -top-3 left-6 z-20 px-4 py-2 rounded-lg bg-white dark:bg-black border-2 border-black dark:border-white">
         <Badge 
           variant="secondary" 
           className={`text-xs font-bold font-mono transition-all duration-200 cursor-pointer ${
@@ -164,7 +164,7 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
             onClick={() => setShowClearModal(true)}
             size="sm"
             variant="outline"
-            className="h-8 px-3 bg-white dark:bg-black border-2 border-black dark:border-white hover:bg-red-600 hover:text-white hover:border-red-600 dark:hover:bg-red-600 dark:hover:text-white dark:hover:border-red-600 transition-all text-black dark:text-white font-bold font-mono text-xs"
+            className="h-8 px-3 rounded-lg bg-white dark:bg-black border-2 border-black dark:border-white hover:bg-red-600 hover:text-white hover:border-red-600 dark:hover:bg-red-600 dark:hover:text-white dark:hover:border-red-600 transition-all text-black dark:text-white font-bold font-mono text-xs"
             title="Clear chat history"
           >
             <Trash2 className="h-3 w-3 mr-1" strokeWidth={2.5} />

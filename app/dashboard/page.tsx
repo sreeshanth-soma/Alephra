@@ -564,7 +564,7 @@ const HealthMetricsChart: React.FC<HealthMetricsChartProps> = ({ vitalsData }) =
 
 const MetricCard = ({ label, value, unit, accent }: { label: string; value: string; unit?: string; accent?: string }) => (
   <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }} whileHover={{ y: -2 }}>
-    <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition">
+    <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] transition">
       <CardContent className="p-4">
         <div className="text-sm font-bold font-mono text-black dark:text-white mb-1 uppercase opacity-70">{label}</div>
         <div className="text-2xl font-semibold text-black dark:text-white">
@@ -1613,11 +1613,11 @@ export default function DashboardPage() {
         </div>
         {/* Hero banner */}
         <div className="mb-8">
-          <div className="relative overflow-hidden rounded-2xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-black">
+          <div className="relative overflow-hidden border-2 border-black dark:border-white bg-white dark:bg-black rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
             <div className="px-6 py-8 md:px-8 md:py-10 text-center">
-                <div className="text-base font-medium text-black dark:text-white opacity-70 mb-3">Welcome</div>
-              <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white leading-tight">Your health at a glance</div>
-              <div className="mt-4 text-base md:text-lg text-black dark:text-white opacity-70">Track vitals, labs and care progress in one place.</div>
+                <div className="text-base font-bold font-mono text-black dark:text-white opacity-70 mb-3 uppercase tracking-wide">Welcome</div>
+              <div className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-mono text-black dark:text-white leading-tight uppercase tracking-tight">Your health at a glance</div>
+              <div className="mt-4 text-base md:text-lg font-mono text-black dark:text-white opacity-70 uppercase tracking-wide">Track vitals, labs and care progress in one place.</div>
             </div>
           </div>
         </div>
@@ -1625,30 +1625,20 @@ export default function DashboardPage() {
         {/* Quick actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Upload Report", description: "Simple upload & chat", classes: "text-white bg-[#26A69A] hover:bg-[#219187] dark:text-white dark:bg-[#1E88E5] dark:hover:bg-[#1976D2]", href: "/report" },
-            { label: "Health Analytics", description: "View health insights", classes: "text-black bg-[#B0BEC5] hover:bg-[#9aa8b0] dark:text-white dark:bg-[#43A047] dark:hover:bg-[#388E3C]", href: "/history" },
-            { label: "Voice Assistant", description: "Talk to AI assistant", classes: "text-white bg-[#3F51B5] hover:bg-[#3546a6] dark:text-white dark:bg-[#7B1FA2] dark:hover:bg-[#6A1B9A]", href: "/voice" },
-            { label: "My Health Space", description: "Medications & appointments", classes: "text-white bg-[#607D8B] hover:bg-[#546e7a] dark:text-white dark:bg-[#F57C00] dark:hover:bg-[#EF6C00]", href: "/care-plan" },
+            { label: "Upload Report", description: "Simple upload & chat", classes: "text-white bg-[#26A69A]/70 hover:bg-[#26A69A]/80 dark:text-white dark:bg-[#1E88E5]/70 dark:hover:bg-[#1E88E5]/80", href: "/report" },
+            { label: "Health Analytics", description: "View health insights", classes: "text-black bg-[#B0BEC5]/70 hover:bg-[#B0BEC5]/80 dark:text-white dark:bg-[#43A047]/70 dark:hover:bg-[#43A047]/80", href: "/history" },
+            { label: "Voice Assistant", description: "Talk to AI assistant", classes: "text-white bg-[#3F51B5]/70 hover:bg-[#3F51B5]/80 dark:text-white dark:bg-[#7B1FA2]/70 dark:hover:bg-[#7B1FA2]/80", href: "/voice" },
+            { label: "My Health Space", description: "Medications & appointments", classes: "text-white bg-[#607D8B]/70 hover:bg-[#607D8B]/80 dark:text-white dark:bg-[#F57C00]/70 dark:hover:bg-[#F57C00]/80", href: "/care-plan" },
           ].map((b, i) => (
             <a key={i} href={b.href} className="block relative group">
               <motion.button 
-                className={`relative w-full h-16 rounded-xl font-medium shadow px-6 border border-gray-300 dark:border-gray-700 overflow-hidden ${b.classes}`} 
+                className={`relative w-full h-16 rounded-xl font-bold border-2 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] transition px-6 overflow-hidden ${b.classes}`} 
                 whileHover={{ scale: 1.02 }} 
                 whileTap={{ scale: 0.98 }}
               >
-                <GlowingEffect
-                  disabled={false}
-                  glow={true}
-                  proximity={50}
-                  spread={30}
-                  blur={0}
-                  movementDuration={1.5}
-                  borderWidth={2}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                />
                 <div className="relative z-10 text-center">
-                  <div className="font-semibold">{b.label}</div>
-                  <div className="text-xs opacity-80 mt-1">{b.description}</div>
+                  <div className="font-bold uppercase text-sm">{b.label}</div>
+                  <div className="text-xs uppercase opacity-90 mt-1">{b.description}</div>
                 </div>
               </motion.button>
             </a>
@@ -1656,7 +1646,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Time Range Selector & Export Buttons */}
-        <div className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white dark:bg-gray-900 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700">
+        <div className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white dark:bg-black p-4 rounded-xl border-2 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
           <TimeRangeSelector 
             selected={timeRange} 
             onChange={setTimeRange}
@@ -1771,7 +1761,7 @@ export default function DashboardPage() {
 
         {/* Vitals Input Form - Moved here for better proximity to vital metrics */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
                 <div className="flex items-center gap-3">
@@ -1981,7 +1971,7 @@ export default function DashboardPage() {
 
         {/* Medical Reminders */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
                 <div className="text-base font-bold font-mono text-black dark:text-white">MEDICAL REMINDERS</div>
@@ -2114,7 +2104,7 @@ export default function DashboardPage() {
 
         {/* Appointments */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
                 <div className="text-base font-bold font-mono text-black dark:text-white">APPOINTMENTS</div>
@@ -2282,7 +2272,7 @@ export default function DashboardPage() {
 
         {/* Lipid Profile Snapshot */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                 <div className="flex items-center gap-3">
@@ -2368,7 +2358,7 @@ export default function DashboardPage() {
                     </div>
                     
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] xl:col-span-3">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] xl:col-span-3">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
                 <div className="text-base font-bold font-mono text-black dark:text-white">HEART RATE & SPO2</div>
@@ -2382,7 +2372,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
                 <div className="text-base font-bold font-mono text-black dark:text-white">LAB RESULTS</div>
@@ -2626,7 +2616,7 @@ export default function DashboardPage() {
 
         {/* Medicine Categories Section */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                 <div>
@@ -3175,7 +3165,7 @@ export default function DashboardPage() {
 
         {/* Prescription Tracking Section */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                 <div>
@@ -3239,7 +3229,7 @@ export default function DashboardPage() {
                       <div 
                         key={prescription.id} 
                         onClick={() => setSelectedPrescriptionView(prescription)}
-                        className="relative bg-white dark:bg-zinc-900 border-4 border-black dark:border-white rounded-none p-5 shadow-lg font-mono cursor-pointer hover:shadow-2xl hover:scale-102 transition-all duration-200"
+                        className="relative bg-white dark:bg-zinc-900 border-4 border-black dark:border-white rounded-xl p-5 shadow-lg font-mono cursor-pointer hover:shadow-2xl hover:scale-102 transition-all duration-200"
                       >
                         {/* Delete Button */}
                         <div className="absolute top-2 right-2 z-10">
@@ -3684,7 +3674,7 @@ export default function DashboardPage() {
       {/* Add Prescription Form Modal */}
       {showPrescriptionForm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white dark:bg-zinc-900 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-4 border-black dark:border-white rounded-none">
+          <div className="bg-white dark:bg-zinc-900 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-4 border-black dark:border-white rounded-xl">
             {/* Modal Header */}
             <div className="sticky top-0 bg-black dark:bg-white text-white dark:text-black p-6">
               <div className="flex items-center justify-between">
@@ -3999,7 +3989,7 @@ export default function DashboardPage() {
       {/* Prescription View Modal */}
       {selectedPrescriptionView && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm" onClick={() => setSelectedPrescriptionView(null)}>
-          <div className="bg-white dark:bg-zinc-900 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-4 border-black dark:border-white rounded-none" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-zinc-900 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-4 border-black dark:border-white rounded-xl" onClick={(e) => e.stopPropagation()}>
             {/* Full Prescription Display */}
             <div className="relative p-8 font-mono">
               <button

@@ -379,7 +379,7 @@ const AnalysisPage = () => {
             </div>
             
             <div className="w-full">
-              <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] overflow-hidden">
+              <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden">
                 <div className="p-6 border-b-2 border-black dark:border-white">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-black dark:text-white tracking-tight font-mono">
@@ -387,7 +387,7 @@ const AnalysisPage = () => {
                     </h3>
                     <Link 
                       href="/history"
-                      className="inline-flex items-center px-4 py-2 text-sm font-bold font-mono bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-all"
+                      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold font-mono bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-all"
                     >
                       <BarChart3 className="h-4 w-4 mr-2" />
                       ANALYTICS
@@ -401,7 +401,7 @@ const AnalysisPage = () => {
                       placeholder="SEARCH REPORTS..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-0 font-mono text-sm"
+                      className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-0 font-mono text-sm"
                     />
                     <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
