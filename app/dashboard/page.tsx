@@ -158,7 +158,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4">
-        <p className="font-semibold text-gray-900 dark:text-white mb-2">
+        <p className="font-semibold text-black dark:text-white mb-2">
           {new Date(label).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -219,7 +219,7 @@ const DetailCard: React.FC<{
         </div>
         
         <div className="space-y-3">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-sm text-black dark:text-white opacity-60">
             {new Date(data.date).toLocaleDateString('en-US', {
               weekday: 'long',
               year: 'numeric',
@@ -235,7 +235,7 @@ const DetailCard: React.FC<{
             </div>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-black dark:text-white">{data.heartRate}</span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">bpm</span>
+              <span className="text-sm text-black dark:text-white opacity-60">bpm</span>
             </div>
             <div className={cn("text-sm font-medium", hrStatus.color)}>
               {hrStatus.status}
@@ -249,7 +249,7 @@ const DetailCard: React.FC<{
             </div>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-black dark:text-white">{data.spo2}</span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">%</span>
+              <span className="text-sm text-black dark:text-white opacity-60">%</span>
             </div>
             <div className={cn("text-sm font-medium", spo2Status.color)}>
               {spo2Status.status}
@@ -435,7 +435,7 @@ const HealthMetricsChart: React.FC<HealthMetricsChartProps> = ({ vitalsData }) =
                   ? '🔄 Click to return to your real data' 
                   : '⚡ Preview with sample health data'}
               </div>
-              <div className="text-xs text-gray-300 dark:text-gray-400">
+              <div className="text-xs text-black dark:text-white opacity-40 dark:text-black dark:text-white opacity-50">
                 {isDemoMode 
                   ? 'Your real data is safely preserved' 
                   : 'Your real data will be preserved'}
@@ -453,12 +453,12 @@ const HealthMetricsChart: React.FC<HealthMetricsChartProps> = ({ vitalsData }) =
         {data.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-20 h-20 mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <Heart className="w-10 h-10 text-gray-400" />
+              <Heart className="w-10 h-10 text-black dark:text-white opacity-50" />
             </div>
-            <div className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="text-lg font-semibold text-black dark:text-white mb-2">
               No health data yet
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <div className="text-sm text-black dark:text-white opacity-60 mb-4">
               Add vitals data below to start tracking your heart rate and SpO2
             </div>
           </div>
@@ -548,7 +548,7 @@ const HealthMetricsChart: React.FC<HealthMetricsChartProps> = ({ vitalsData }) =
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex items-center justify-center gap-6 text-xs text-black dark:text-white opacity-60">
         <div className="flex items-center gap-2">
           <div className="w-3 h-0.5 bg-red-500"></div>
           <span>Heart Rate (60-100 bpm normal)</span>
@@ -564,11 +564,11 @@ const HealthMetricsChart: React.FC<HealthMetricsChartProps> = ({ vitalsData }) =
 
 const MetricCard = ({ label, value, unit, accent }: { label: string; value: string; unit?: string; accent?: string }) => (
   <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }} whileHover={{ y: -2 }}>
-    <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow-sm hover:shadow-md transition">
+    <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition">
       <CardContent className="p-4">
-        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</div>
+        <div className="text-sm font-bold font-mono text-black dark:text-white mb-1 uppercase opacity-70">{label}</div>
         <div className="text-2xl font-semibold text-black dark:text-white">
-          {value} {unit && <span className="text-sm text-gray-500">{unit}</span>}
+          {value} {unit && <span className="text-base text-black dark:text-white opacity-60">{unit}</span>}
         </div>
         {accent && (
           <Badge variant="secondary" className="mt-2 text-xs">
@@ -1545,7 +1545,7 @@ export default function DashboardPage() {
       
       {/* Subtle grid background */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.08] dark:opacity-[0.15] z-5 text-gray-400 dark:text-gray-600"
+        className="pointer-events-none absolute inset-0 opacity-[0.08] dark:opacity-[0.15] z-5 text-black dark:text-white opacity-50 dark:text-black dark:text-white opacity-70"
         style={{
           backgroundImage:
             "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
@@ -1559,9 +1559,9 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 rounded-xl bg-black dark:bg-white flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg">
                 <svg 
-                  className="w-8 h-8 text-white dark:text-black" 
+                  className="w-8 h-8 text-black" 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -1576,8 +1576,8 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-black dark:text-white"><span className="bg-gradient-to-r from-gray-600 to-black dark:from-gray-300 dark:to-white bg-clip-text text-transparent">Alephra</span> My Health Space</h1>
-                <p className="text-gray-600 dark:text-gray-400">Overview of vitals, labs, meds, and care timeline</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-black dark:text-white font-mono tracking-tight"><span className="bg-black dark:bg-white text-white dark:text-black px-2 py-1">ALEPHRA</span> MY HEALTH SPACE</h1>
+                <p className="text-base font-mono text-black dark:text-white mt-2 uppercase tracking-wide opacity-70">OVERVIEW OF VITALS, LABS, MEDS, AND CARE TIMELINE</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -1615,9 +1615,9 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="relative overflow-hidden rounded-2xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-black">
             <div className="px-6 py-8 md:px-8 md:py-10 text-center">
-                <div className="text-base font-medium text-gray-600 dark:text-gray-400 mb-3">Welcome</div>
+                <div className="text-base font-medium text-black dark:text-white opacity-70 mb-3">Welcome</div>
               <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white leading-tight">Your health at a glance</div>
-              <div className="mt-4 text-base md:text-lg text-gray-600 dark:text-gray-400">Track vitals, labs and care progress in one place.</div>
+              <div className="mt-4 text-base md:text-lg text-black dark:text-white opacity-70">Track vitals, labs and care progress in one place.</div>
             </div>
           </div>
         </div>
@@ -1738,7 +1738,7 @@ export default function DashboardPage() {
                           {urgencyText}
                         </Badge>
                         {daysUntil > 0 && (
-                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                          <span className="text-sm font-semibold text-black dark:text-white opacity-70">
                             in {daysUntil} {daysUntil === 1 ? 'day' : 'days'}
                           </span>
                         )}
@@ -1746,7 +1746,7 @@ export default function DashboardPage() {
                       <h3 className="text-2xl font-bold text-black dark:text-white mb-1">
                         {nextApt.title}
                       </h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-4 text-sm text-black dark:text-white opacity-70">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
                           <span>{new Date(nextApt.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
@@ -1757,7 +1757,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       {upcomingAppointments.length > 1 && (
-                        <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="mt-3 text-sm text-black dark:text-white opacity-60">
                           + {upcomingAppointments.length - 1} more upcoming {upcomingAppointments.length === 2 ? 'appointment' : 'appointments'}
                         </div>
                       )}
@@ -1771,16 +1771,16 @@ export default function DashboardPage() {
 
         {/* Vitals Input Form - Moved here for better proximity to vital metrics */}
         <div className="mb-8">
-          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-4">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-pink-500">
-                    <Heart className="h-5 w-5 text-white" />
+                  <div className="flex items-center justify-center w-10 h-10 bg-black dark:bg-white border-2 border-black dark:border-white">
+                    <Heart className="h-5 w-5 text-white dark:text-black" />
                   </div>
                   <div>
-                    <div className="text-lg font-semibold text-black dark:text-white">Record Vitals</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">Track your health metrics</div>
+                    <div className="text-lg font-bold font-mono text-black dark:text-white">RECORD VITALS</div>
+                    <div className="text-sm font-mono text-black dark:text-white uppercase opacity-70">TRACK YOUR HEALTH METRICS</div>
                   </div>
                 </div>
                 <button
@@ -1799,7 +1799,7 @@ export default function DashboardPage() {
                   className={`
                     px-5 py-2.5 text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105
                     ${showVitalsForm 
-                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' 
+                      ? 'bg-gray-100 dark:bg-gray-800 text-black dark:text-white opacity-80 hover:bg-gray-200 dark:hover:bg-gray-700' 
                       : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
                     }
                     flex items-center gap-2
@@ -1843,7 +1843,7 @@ export default function DashboardPage() {
                         className="mt-1 pr-10 cursor-pointer"
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <CalendarDays className="h-4 w-4 text-gray-400" />
+                        <CalendarDays className="h-4 w-4 text-black dark:text-white opacity-50" />
                       </div>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -1861,7 +1861,7 @@ export default function DashboardPage() {
                           yesterday.setDate(yesterday.getDate() - 1);
                           setNewHrDate(yesterday.toISOString().split('T')[0]);
                         }}
-                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="text-xs text-black dark:text-white opacity-70 hover:text-gray-800 dark:text-black dark:text-white opacity-50 dark:hover:text-black dark:text-white opacity-40 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         Yesterday
                       </button>
@@ -1956,7 +1956,7 @@ export default function DashboardPage() {
                   <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-3">
                     <button
                       onClick={() => setShowVitalsForm(false)}
-                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-black dark:text-white opacity-80 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                     >
                       Cancel
                     </button>
@@ -1981,16 +1981,16 @@ export default function DashboardPage() {
 
         {/* Medical Reminders */}
         <div className="mb-8">
-          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-sm font-medium text-black dark:text-white">Medical Reminders</div>
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
+                <div className="text-base font-bold font-mono text-black dark:text-white">MEDICAL REMINDERS</div>
                 <div className="flex items-center gap-3 flex-wrap">
                   <button
                     onClick={clearAllReminders}
-                    className="text-xs px-2 py-1 rounded border border-rose-300 text-red-900 dark:text-red-300 hover:bg-rose-50 dark:border-rose-800 dark:hover:bg-rose-900/20 transition-all duration-200"
+                    className="text-xs font-bold font-mono px-3 py-2 border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white transition-all"
                   >
-                    Remove all
+                    REMOVE ALL
                   </button>
                   {isSignedIn ? (
                     <div className="text-xs text-green-600 dark:text-green-400">✅ Synced with Google Calendar</div>
@@ -2012,8 +2012,8 @@ export default function DashboardPage() {
                       <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
                     </div>
                     <div>
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Are you sure?</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">This will permanently delete all reminders.</p>
+                      <h4 className="text-lg font-semibold text-black dark:text-white">Are you sure?</h4>
+                      <p className="text-sm text-black dark:text-white opacity-70">This will permanently delete all reminders.</p>
                     </div>
                   </div>
                   
@@ -2050,13 +2050,13 @@ export default function DashboardPage() {
 
               <div className="space-y-2">
                 {reminders.length === 0 && (
-                  <div className="text-sm text-gray-500">No reminders yet. Add your first one above.</div>
+                  <div className="text-sm text-black dark:text-white opacity-60">No reminders yet. Add your first one above.</div>
                 )}
                 {reminders.slice(0, 3).map(r => (
                   <div key={r.id} className="flex items-center justify-between rounded-lg border border-gray-300 dark:border-gray-700 p-3">
                     <div className="flex items-center gap-3">
                       <input type="checkbox" checked={r.done} onChange={() => toggleReminder(r.id)} className="h-4 w-4" />
-                      <div className={`text-sm ${r.done ? 'line-through text-gray-400' : 'text-black dark:text-white'}`}>{r.text}</div>
+                      <div className={`text-sm ${r.done ? 'line-through text-black dark:text-white opacity-50' : 'text-black dark:text-white'}`}>{r.text}</div>
                       {r.time && <Badge variant="secondary" className="text-xs">{r.time}</Badge>}
                     </div>
                     <button onClick={() => removeReminder(r.id)} className="text-xs text-rose-600 hover:text-rose-700 hover:underline transition-colors duration-200">Remove</button>
@@ -2070,7 +2070,7 @@ export default function DashboardPage() {
                     View {reminders.length - 3} more
                   </button>
                 )}
-                {remindersStatus && <div className="text-xs text-gray-500">{remindersStatus}</div>}
+                {remindersStatus && <div className="text-xs text-black dark:text-white opacity-60">{remindersStatus}</div>}
               </div>
             </CardContent>
           </Card>
@@ -2090,7 +2090,7 @@ export default function DashboardPage() {
                   Remove all
                 </button>
 
-                  <button onClick={() => setShowRemindersModal(false)} className="text-xs text-gray-600 dark:text-gray-300 hover:underline">Close</button>
+                  <button onClick={() => setShowRemindersModal(false)} className="text-xs text-black dark:text-white opacity-70 hover:underline">Close</button>
                 </div>
               </div>
               <div className="space-y-2 max-h-[60vh] overflow-y-auto">
@@ -2098,14 +2098,14 @@ export default function DashboardPage() {
                   <div key={r.id} className="flex items-center justify-between rounded-lg border border-gray-300 dark:border-gray-700 p-3">
                     <div className="flex items-center gap-3">
                       <input type="checkbox" checked={r.done} onChange={() => toggleReminder(r.id)} className="h-4 w-4" />
-                      <div className={`text-sm ${r.done ? 'line-through text-gray-400' : 'text-black dark:text-white'}`}>{r.text}</div>
+                      <div className={`text-sm ${r.done ? 'line-through text-black dark:text-white opacity-50' : 'text-black dark:text-white'}`}>{r.text}</div>
                       {r.time && <Badge variant="secondary" className="text-xs">{r.time}</Badge>}
                     </div>
                     <button onClick={() => removeReminder(r.id)} className="text-xs text-rose-600 hover:text-rose-700 hover:underline transition-colors duration-200">Remove</button>
                   </div>
                 ))}
                 {reminders.length === 0 && (
-                  <div className="text-sm text-gray-500">No reminders yet.</div>
+                  <div className="text-sm text-black dark:text-white opacity-60">No reminders yet.</div>
                 )}
               </div>
             </div>
@@ -2114,16 +2114,16 @@ export default function DashboardPage() {
 
         {/* Appointments */}
         <div className="mb-8">
-          <Card className="bg-white/80 dark:bg-zinc-900/70 backdrop-blur border-gray-300 dark:border-gray-700 shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-sm font-medium text-black dark:text-white">Appointments</div>
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
+                <div className="text-base font-bold font-mono text-black dark:text-white">APPOINTMENTS</div>
                 <div className="flex items-center gap-3 flex-wrap">
                   <button
                     onClick={() => setShowAppointmentsConfirm(true)}
-                    className="text-xs px-2 py-1 rounded border border-rose-300 text-red-900 dark:text-red-300 hover:bg-rose-50 dark:border-rose-800 dark:hover:bg-rose-900/20 transition-all duration-200"
+                    className="text-xs font-bold font-mono px-3 py-2 border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white transition-all"
                   >
-                    Remove all
+                    REMOVE ALL
                   </button>
                   {isSignedIn ? (
                     <span className="text-xs text-green-600 dark:text-green-400">✅ Connected to Google Calendar</span>
@@ -2145,8 +2145,8 @@ export default function DashboardPage() {
                       <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
                     </div>
                     <div>
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Are you sure?</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">This will permanently delete all appointments.</p>
+                      <h4 className="text-lg font-semibold text-black dark:text-white">Are you sure?</h4>
+                      <p className="text-sm text-black dark:text-white opacity-70">This will permanently delete all appointments.</p>
                     </div>
                   </div>
                   
@@ -2212,7 +2212,7 @@ export default function DashboardPage() {
                     </button>
                   </div>
                   {appointmentsStatus && (
-                    <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                    <div className="mt-2 text-xs text-black dark:text-white opacity-70">
                       {appointmentsStatus}
                     </div>
                   )}
@@ -2223,13 +2223,13 @@ export default function DashboardPage() {
                   <div className="text-sm font-medium text-black dark:text-white mb-2">Upcoming Appointments</div>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {appointments.length === 0 ? (
-                      <div className="text-xs text-gray-500 dark:text-gray-400 italic">No appointments scheduled</div>
+                      <div className="text-xs text-black dark:text-white opacity-60 italic">No appointments scheduled</div>
                     ) : (
                       appointments.map((appointment) => (
                         <div key={appointment.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
                           <div className="flex-1">
                             <div className="text-sm font-medium text-black dark:text-white">{appointment.title}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                            <div className="text-xs text-black dark:text-white opacity-60">
                               {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
                             </div>
                           </div>
@@ -2282,20 +2282,20 @@ export default function DashboardPage() {
 
         {/* Lipid Profile Snapshot */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-black dark:bg-white flex items-center justify-center">
+                  <div className="w-10 h-10 bg-black dark:bg-white border-2 border-black dark:border-white flex items-center justify-center">
                     <Heart className="w-5 h-5 text-white dark:text-black" />
                 </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-black dark:text-white">Lipid Profile Snapshot</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Latest cholesterol and triglyceride levels</p>
+                    <h3 className="text-lg font-bold font-mono text-black dark:text-white">LIPID PROFILE SNAPSHOT</h3>
+                    <p className="text-sm font-mono text-black dark:text-white uppercase opacity-70">LATEST CHOLESTEROL AND TRIGLYCERIDE LEVELS</p>
               </div>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Last updated: {labData.length > 0 ? new Date(labData[0].date).toLocaleDateString() : 'No data'}
+                <div className="text-sm font-mono text-black dark:text-white opacity-60">
+                  LAST UPDATED: {labData.length > 0 ? new Date(labData[0].date).toLocaleDateString() : 'NO DATA'}
               </div>
                   </div>
                   
@@ -2306,8 +2306,8 @@ export default function DashboardPage() {
                   if (!lipidData) {
                     return (
                       <div key={lipidType} className="p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800">
-                        <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{lipidType}</div>
-                        <div className="text-xs text-gray-400">No data</div>
+                        <div className="text-sm font-medium text-black dark:text-white opacity-60 mb-1">{lipidType}</div>
+                        <div className="text-xs text-black dark:text-white opacity-50">No data</div>
                     </div>
                     );
                   }
@@ -2328,14 +2328,14 @@ export default function DashboardPage() {
                         }`}></div>
                         </div>
                       <div className="text-2xl font-bold text-black dark:text-white mb-1">
-                        {lipidData.value} <span className="text-sm text-gray-500">{lipidData.unit}</span>
+                        {lipidData.value} <span className="text-sm text-black dark:text-white opacity-60">{lipidData.unit}</span>
                       </div>
                       <div className={`text-xs font-medium ${
                         isNormal ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {isNormal ? '✓ Normal' : '⚠ Abnormal'}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="text-xs text-black dark:text-white opacity-60 mt-1">
                         Range: {lipidData.normalRange.min}-{lipidData.normalRange.max}
                       </div>
                     </div>
@@ -2368,10 +2368,10 @@ export default function DashboardPage() {
                     </div>
                     
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700 xl:col-span-3">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-sm font-medium text-black dark:text-white">Heart Rate & SpO2</div>
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] xl:col-span-3">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
+                <div className="text-base font-bold font-mono text-black dark:text-white">HEART RATE & SPO2</div>
                 <div className="flex items-center gap-2">
                   {/* <a href="/dashboard/vitals" className="text-xs text-cyan-600">View details →</a> */}
                     </div>
@@ -2382,24 +2382,24 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-sm font-medium text-black dark:text-white">Lab Results</div>
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-black dark:border-white">
+                <div className="text-base font-bold font-mono text-black dark:text-white">LAB RESULTS</div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => exportLabsToCSV(labData)}
-                    className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition"
+                    className="px-3 py-1.5 text-xs font-bold font-mono bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition"
                     title="Export labs to CSV"
                   >
-                    Export
+                    EXPORT
                   </button>
                   {labData.length > 3 && (
                       <button
                       onClick={() => setShowLabsModal(true)}
-                      className="text-xs text-cyan-600 hover:text-cyan-700 font-medium"
+                      className="text-xs font-bold font-mono text-black dark:text-white hover:underline"
                     >
-                      View All ({labData.length})
+                      VIEW ALL ({labData.length})
                       </button>
                   )}
                   {/* <a href="/dashboard/labs" className="text-xs text-cyan-600">View details →</a> */}
@@ -2441,7 +2441,7 @@ export default function DashboardPage() {
                             {isNormal ? '✓ Normal' : '⚠ Abnormal'}
                           </div>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-black dark:text-white opacity-60">
                           {new Date(lab.date).toLocaleDateString('en-US', {
                             weekday: 'short',
                             month: 'short',
@@ -2452,9 +2452,9 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-3">
                         <div className="text-right">
                           <div className="text-sm font-bold text-black dark:text-white">
-                            {lab.value} <span className="text-xs text-gray-500 font-normal">{lab.unit}</span>
+                            {lab.value} <span className="text-xs text-black dark:text-white opacity-60 font-normal">{lab.unit}</span>
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className="text-xs text-black dark:text-white opacity-60">
                             Range: {lab.normalRange.min}-{lab.normalRange.max}
                           </div>
                         </div>
@@ -2476,7 +2476,7 @@ export default function DashboardPage() {
                 {labData.length > 3 && !showAllLabs && (
                   <div className="text-center py-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors cursor-pointer"
                        onClick={() => setShowAllLabs(true)}>
-                    <div className="text-gray-500 dark:text-gray-400 text-xs">
+                    <div className="text-black dark:text-white opacity-60 text-xs">
                       +{labData.length - 3} more results
                     </div>
                     <div className="text-cyan-600 hover:text-cyan-700 text-xs font-medium mt-0.5">
@@ -2486,7 +2486,7 @@ export default function DashboardPage() {
                 )}
                 
                 {labData.length === 0 && (
-                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-12 text-black dark:text-white opacity-60">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -2503,7 +2503,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-sm font-semibold text-black dark:text-white">Lab Trends</h4>
                   <div className="flex items-center gap-2">
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-black dark:text-white opacity-60">
                       {labData.length} results
                     </div>
                     <div className="flex gap-1">
@@ -2512,7 +2512,7 @@ export default function DashboardPage() {
                         className={`px-2 py-1 text-xs rounded-full ${
                           selectedLabType === 'all'
                             ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                            : 'bg-gray-100 text-black dark:text-white opacity-70 dark:bg-gray-700 dark:text-black dark:text-white opacity-50'
                         }`}
                       >
                         All
@@ -2522,7 +2522,7 @@ export default function DashboardPage() {
                         className={`px-2 py-1 text-xs rounded-full ${
                           selectedLabType === 'HDL'
                             ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                            : 'bg-gray-100 text-black dark:text-white opacity-70 dark:bg-gray-700 dark:text-black dark:text-white opacity-50'
                         }`}
                       >
                         HDL
@@ -2532,7 +2532,7 @@ export default function DashboardPage() {
                         className={`px-2 py-1 text-xs rounded-full ${
                           selectedLabType === 'LDL'
                             ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                            : 'bg-gray-100 text-black dark:text-white opacity-70 dark:bg-gray-700 dark:text-black dark:text-white opacity-50'
                         }`}
                       >
                         LDL
@@ -2616,7 +2616,7 @@ export default function DashboardPage() {
                     </LineChart>
                 </ResponsiveContainer>
                 </div>
-                <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+                <div className="mt-3 text-xs text-black dark:text-white opacity-60 text-center">
                   Hover over lines to see detailed values • Click filter buttons to view specific lab types
                 </div>
               </div>
@@ -2626,20 +2626,20 @@ export default function DashboardPage() {
 
         {/* Medicine Categories Section */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                 <div>
-                  <div className="text-lg font-semibold text-black dark:text-white">Medicine Categories</div>
-                  <div className="text-sm text-gray-500 mt-1">Browse and manage your medicines</div>
+                <div className="text-lg font-bold font-mono text-black dark:text-white">MEDICINE CATEGORIES</div>
+                  <div className="text-sm font-mono text-black dark:text-white mt-1 uppercase opacity-70">BROWSE AND MANAGE YOUR MEDICINES</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">Selected: {cartItems.length} items</span>
+                  <span className="text-sm font-bold font-mono text-black dark:text-white opacity-70">SELECTED: {cartItems.length} ITEMS</span>
                   <button 
                     onClick={() => setShowCart(!showCart)}
-                    className="h-8 px-3 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-sm hover:opacity-90 transition shadow-md"
+                    className="h-8 px-3 bg-black dark:bg-white text-white dark:text-black text-xs font-bold font-mono hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition border-2 border-black dark:border-white"
                   >
-                    View List
+                    VIEW LIST
                   </button>
                 </div>
               </div>
@@ -2649,12 +2649,12 @@ export default function DashboardPage() {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search medicines by name, category, or use..."
+                    placeholder="SEARCH MEDICINES BY NAME, CATEGORY, OR USE..."
                     value={medicineSearch}
                     onChange={(e) => setMedicineSearch(e.target.value)}
-                    className="w-full h-12 pl-12 pr-4 rounded-lg border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-gray-400 focus:border-cyan-500 dark:focus:border-cyan-400 focus:outline-none transition-colors"
+                    className="w-full h-12 pl-12 pr-4 border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none font-mono text-sm"
                   />
-                  <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black dark:text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
@@ -2678,7 +2678,7 @@ export default function DashboardPage() {
                             addToCart(med);
                           }
                         }}
-                        className="px-3 py-1.5 bg-white dark:bg-zinc-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
+                        className="px-3 py-1.5 bg-white dark:bg-zinc-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm font-medium text-black dark:text-white opacity-80 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
                       >
                         {med.name}
                       </button>
@@ -2696,7 +2696,7 @@ export default function DashboardPage() {
                       <h2 className="text-xl font-semibold text-black dark:text-white">Selected Medicines</h2>
                       <button 
                         onClick={() => setShowCart(false)}
-                        className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        className="text-black dark:text-white opacity-60 hover:text-black dark:text-white opacity-80 dark:hover:text-black dark:text-white opacity-40"
                       >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2708,8 +2708,8 @@ export default function DashboardPage() {
                     <div className="p-6 overflow-y-auto flex-1">
                       {cartItems.length === 0 ? (
                         <div className="text-center py-12">
-                          <div className="text-gray-500 text-lg mb-2">No medicines selected</div>
-                          <div className="text-gray-400 text-sm">Select medicines from categories below</div>
+                          <div className="text-black dark:text-white opacity-60 text-lg mb-2">No medicines selected</div>
+                          <div className="text-black dark:text-white opacity-50 text-sm">Select medicines from categories below</div>
                         </div>
                       ) : (
                         <div className="space-y-4">
@@ -2720,8 +2720,8 @@ export default function DashboardPage() {
                                   <div className="text-sm font-semibold text-black dark:text-white">{item.name}</div>
                                   <Badge variant="secondary">{item.dose}</Badge>
                                 </div>
-                                <div className="text-xs text-gray-500 mb-1">{item.frequency}</div>
-                                <div className="text-xs text-gray-500">{item.category}</div>
+                                <div className="text-xs text-black dark:text-white opacity-60 mb-1">{item.frequency}</div>
+                                <div className="text-xs text-black dark:text-white opacity-60">{item.category}</div>
                               </div>
                               <div className="flex items-center gap-3">
                                 <div className="text-right">
@@ -2754,11 +2754,11 @@ export default function DashboardPage() {
                     {cartItems.length > 0 && (
                       <div className="border-t border-gray-300 dark:border-gray-700 p-6 sticky bottom-0 bg-white dark:bg-zinc-900 z-10">
                         <div className="space-y-3">
-                          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex justify-between text-sm text-black dark:text-white opacity-70">
                             <span>Total ({cartItems.length} items)</span>
                             <span className="text-lg font-semibold text-cyan-600">₹{cartItems.reduce((sum, item) => sum + item.price, 0)}</span>
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 italic">
+                          <div className="text-xs text-black dark:text-white opacity-60 italic">
                             * Approximate prices for reference only
                           </div>
                         </div>
@@ -2773,7 +2773,7 @@ export default function DashboardPage() {
                           </button>
                           <button 
                             onClick={() => setCartItems([])}
-                            className="w-full h-12 rounded-lg bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-300 dark:hover:bg-zinc-700 transition-colors"
+                            className="w-full h-12 rounded-lg bg-gray-200 dark:bg-zinc-800 text-black dark:text-white opacity-80 font-medium hover:bg-gray-300 dark:hover:bg-zinc-700 transition-colors"
                           >
                             Clear List
                           </button>
@@ -2798,29 +2798,29 @@ export default function DashboardPage() {
                   
                   return (
                     <div key={categoryIndex} className="border-2 border-gray-300 dark:border-gray-700 rounded-xl overflow-hidden">
-                      <button
-                        onClick={() => {
-                          const newExpanded = [...expandedCategories];
-                          newExpanded[categoryIndex] = !newExpanded[categoryIndex];
-                          setExpandedCategories(newExpanded);
-                        }}
+                    <button
+                      onClick={() => {
+                        const newExpanded = [...expandedCategories];
+                        newExpanded[categoryIndex] = !newExpanded[categoryIndex];
+                        setExpandedCategories(newExpanded);
+                      }}
                         className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors bg-gradient-to-r from-white to-gray-50 dark:from-zinc-900 dark:to-zinc-800"
-                      >
-                        <div className="flex items-center gap-3">
+                    >
+                      <div className="flex items-center gap-3">
                           <span className="text-2xl">{category.icon}</span>
                           <div>
                             <div className="text-base font-bold text-black dark:text-white">{category.name}</div>
-                            <div className="text-xs text-gray-500">{filteredMedicines.length} {filteredMedicines.length === 1 ? 'medicine' : 'medicines'}</div>
+                            <div className="text-xs text-black dark:text-white opacity-60">{filteredMedicines.length} {filteredMedicines.length === 1 ? 'medicine' : 'medicines'}</div>
                           </div>
-                        </div>
-                        <div className={`transform transition-transform ${expandedCategories[categoryIndex] ? 'rotate-180' : ''}`}>
-                          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
-                      </button>
-                      
-                      {expandedCategories[categoryIndex] && (
+                      </div>
+                      <div className={`transform transition-transform ${expandedCategories[categoryIndex] ? 'rotate-180' : ''}`}>
+                        <svg className="w-5 h-5 text-black dark:text-white opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </button>
+                    
+                    {expandedCategories[categoryIndex] && (
                         <div className="border-t-2 border-gray-300 dark:border-gray-700 p-4 bg-gray-50 dark:bg-zinc-800">
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredMedicines.map((medicine, medicineIndex) => (
@@ -2836,7 +2836,7 @@ export default function DashboardPage() {
                                   }}
                                   className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
                                 >
-                                  <svg className={`w-5 h-5 ${favoriteMedicines.includes(medicine.name) ? 'text-amber-500 fill-amber-500' : 'text-gray-400'}`} fill={favoriteMedicines.includes(medicine.name) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className={`w-5 h-5 ${favoriteMedicines.includes(medicine.name) ? 'text-amber-500 fill-amber-500' : 'text-black dark:text-white opacity-50'}`} fill={favoriteMedicines.includes(medicine.name) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                                   </svg>
                                 </button>
@@ -2870,7 +2870,7 @@ export default function DashboardPage() {
                                       {medicineStock[medicine.name]?.status || medicine.stock}
                                       {medicineStock[medicine.name]?.quantity !== undefined && ` (${medicineStock[medicine.name].quantity})`}
                                     </button>
-                                  </div>
+                              </div>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -2878,12 +2878,12 @@ export default function DashboardPage() {
                                       setShowFrequencyModal(true);
                                       setSelectedTimes([]);
                                     }}
-                                    className="text-xs text-gray-600 dark:text-gray-400 mb-2 hover:text-cyan-600 dark:hover:text-cyan-400 underline decoration-dotted cursor-pointer transition-colors"
+                                    className="text-xs text-black dark:text-white opacity-70 mb-2 hover:text-cyan-600 dark:hover:text-cyan-400 underline decoration-dotted cursor-pointer transition-colors"
                                     title="Click to customize frequency"
                                   >
                                     📅 {customFrequency[medicine.name] || medicine.frequency}
                                   </button>
-                                  <div className="text-xs text-gray-500 italic">{medicine.uses}</div>
+                                  <div className="text-xs text-black dark:text-white opacity-60 italic">{medicine.uses}</div>
                                 </div>
                                 
                                 <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
@@ -2896,25 +2896,25 @@ export default function DashboardPage() {
                                     >
                                       ℹ️
                                     </button>
-                                    <button 
-                                      onClick={() => addToCart(medicine)}
+                              <button 
+                                onClick={() => addToCart(medicine)}
                                       disabled={medicine.stock === 'Out of Stock'}
                                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                                         medicine.stock === 'Out of Stock' 
-                                          ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                                          ? 'bg-gray-300 dark:bg-gray-700 text-black dark:text-white opacity-60 cursor-not-allowed'
                                           : 'bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:shadow-md'
                                       }`}
                                     >
                                       + Add
-                                    </button>
+                              </button>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
+                            </div>
+                          ))}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
+                  </div>
                   );
                 })}
               </div>
@@ -2927,7 +2927,7 @@ export default function DashboardPage() {
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <h3 className="text-xl font-bold text-black dark:text-white mb-1">Customize Frequency</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{frequencyMedicine.name}</p>
+                          <p className="text-sm text-black dark:text-white opacity-70">{frequencyMedicine.name}</p>
                         </div>
                         <button 
                           onClick={() => {
@@ -2935,7 +2935,7 @@ export default function DashboardPage() {
                             setFrequencyMedicine(null);
                             setSelectedTimes([]);
                           }}
-                          className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                          className="text-black dark:text-white opacity-60 hover:text-black dark:text-white opacity-80 dark:hover:text-black dark:text-white opacity-40"
                         >
                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2945,7 +2945,7 @@ export default function DashboardPage() {
 
                       {/* Preset Frequencies */}
                       <div className="space-y-3 mb-4">
-                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Quick Select</label>
+                        <label className="text-sm font-semibold text-black dark:text-white opacity-80">Quick Select</label>
                         <div className="grid grid-cols-2 gap-2">
                           {[
                             { label: 'Once daily', value: 'Once daily' },
@@ -2968,18 +2968,18 @@ export default function DashboardPage() {
                               className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                                 (customFrequency[frequencyMedicine.name] || frequencyMedicine.frequency) === freq.value
                                   ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400'
-                                  : 'border-gray-300 dark:border-gray-700 hover:border-cyan-400 text-gray-700 dark:text-gray-300'
+                                  : 'border-gray-300 dark:border-gray-700 hover:border-cyan-400 text-black dark:text-white opacity-80'
                               }`}
                             >
                               {freq.label}
                             </button>
-                          ))}
-                        </div>
+                ))}
+              </div>
                       </div>
 
                       {/* Custom Times */}
                       <div className="space-y-3 mb-6">
-                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Set Reminder Times</label>
+                        <label className="text-sm font-semibold text-black dark:text-white opacity-80">Set Reminder Times</label>
                         <div className="grid grid-cols-3 gap-2">
                           {['08:00', '12:00', '16:00', '20:00', '09:00', '13:00', '17:00', '21:00', '10:00'].map((time) => (
                             <button
@@ -2994,7 +2994,7 @@ export default function DashboardPage() {
                               className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 selectedTimes.includes(time)
                                   ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                                  : 'bg-gray-100 dark:bg-zinc-800 text-black dark:text-white opacity-80 hover:bg-gray-200 dark:hover:bg-zinc-700'
                               }`}
                             >
                               ⏰ {time}
@@ -3018,7 +3018,7 @@ export default function DashboardPage() {
                             setFrequencyMedicine(null);
                             setSelectedTimes([]);
                           }}
-                          className="flex-1 h-11 rounded-lg font-medium bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-zinc-700 transition-colors"
+                          className="flex-1 h-11 rounded-lg font-medium bg-gray-200 dark:bg-zinc-800 text-black dark:text-white opacity-80 hover:bg-gray-300 dark:hover:bg-zinc-700 transition-colors"
                         >
                           Cancel
                         </button>
@@ -3062,7 +3062,7 @@ export default function DashboardPage() {
                         </div>
                         <button 
                           onClick={() => setSelectedMedicine(null)}
-                          className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                          className="text-black dark:text-white opacity-60 hover:text-black dark:text-white opacity-80 dark:hover:text-black dark:text-white opacity-40"
                         >
                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -3072,12 +3072,12 @@ export default function DashboardPage() {
 
                       <div className="space-y-4">
                         <div>
-                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Dosage</div>
+                          <div className="text-sm font-semibold text-black dark:text-white opacity-80 mb-1">Dosage</div>
                           <div className="text-base text-black dark:text-white">{selectedMedicine.dose}</div>
                         </div>
 
                         <div>
-                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Frequency</div>
+                          <div className="text-sm font-semibold text-black dark:text-white opacity-80 mb-2">Frequency</div>
                           <div className="flex items-center gap-2">
                             <div className="text-base text-black dark:text-white">
                               {customFrequency[selectedMedicine.name] || selectedMedicine.frequency}
@@ -3097,12 +3097,12 @@ export default function DashboardPage() {
                         </div>
 
                         <div>
-                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Uses</div>
+                          <div className="text-sm font-semibold text-black dark:text-white opacity-80 mb-1">Uses</div>
                           <div className="text-base text-black dark:text-white">{selectedMedicine.uses}</div>
                         </div>
 
                         <div>
-                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Availability</div>
+                          <div className="text-sm font-semibold text-black dark:text-white opacity-80 mb-2">Availability</div>
                           <div className="flex items-center gap-2">
                             <span className={`text-sm px-3 py-1 rounded-full ${
                               (medicineStock[selectedMedicine.name]?.status || selectedMedicine.stock) === 'In Stock' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
@@ -3126,7 +3126,7 @@ export default function DashboardPage() {
                                   }
                                 });
                               }}
-                              className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+                              className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 text-black dark:text-white opacity-80 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
                             >
                               🔄 Update
                             </button>
@@ -3134,9 +3134,9 @@ export default function DashboardPage() {
                         </div>
 
                         <div>
-                          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Price</div>
+                          <div className="text-sm font-semibold text-black dark:text-white opacity-80 mb-1">Price</div>
                           <div className="text-2xl font-bold text-cyan-600">₹{selectedMedicine.price}</div>
-                          <div className="text-xs text-gray-500 mt-1">* Approximate price for reference</div>
+                          <div className="text-xs text-black dark:text-white opacity-60 mt-1">* Approximate price for reference</div>
                         </div>
                       </div>
 
@@ -3149,7 +3149,7 @@ export default function DashboardPage() {
                           disabled={selectedMedicine.stock === 'Out of Stock'}
                           className={`flex-1 h-12 rounded-lg font-semibold transition-all ${
                             selectedMedicine.stock === 'Out of Stock'
-                              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                              ? 'bg-gray-300 dark:bg-gray-700 text-black dark:text-white opacity-60 cursor-not-allowed'
                               : 'bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:shadow-lg'
                           }`}
                         >
@@ -3175,35 +3175,35 @@ export default function DashboardPage() {
 
         {/* Prescription Tracking Section */}
         <div className="mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
+          <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                 <div>
-                  <div className="text-lg font-semibold text-black dark:text-white">My Prescriptions</div>
-                  <div className="text-sm text-gray-500 mt-1">Track your medications and dosage schedule</div>
+                  <div className="text-lg font-bold font-mono text-black dark:text-white">MY PRESCRIPTIONS</div>
+                  <div className="text-sm font-mono text-black dark:text-white mt-1 uppercase opacity-70">TRACK YOUR MEDICATIONS AND DOSAGE SCHEDULE</div>
                 </div>
                 <div className="flex gap-2">
                   {session?.user?.email && (
                     <button 
                       onClick={syncFromCloud}
                       disabled={isSyncing}
-                      className="h-10 px-4 rounded-lg bg-white dark:bg-zinc-900 text-black dark:text-white text-sm font-semibold hover:bg-gray-100 dark:hover:bg-zinc-800 transition shadow-md border-2 border-black dark:border-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-10 px-4 bg-black dark:bg-white text-white dark:text-black text-xs font-bold font-mono hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition border-2 border-black dark:border-white disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Sync from cloud"
                     >
                       {isSyncing ? (
                         <>
-                          <svg className="animate-spin h-4 w-4 inline-block mr-2" fill="none" viewBox="0 0 24 24">
+                          <svg className="animate-spin h-4 w-4 inline-block mr-2" fill="none" viewBox="0 0 24 24" strokeWidth={2.5}>
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          Syncing...
+                          SYNCING...
                         </>
                       ) : (
                         <>
-                          <svg className="h-4 w-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          <svg className="h-4 w-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                           </svg>
-                          Sync
+                          SYNC
                         </>
                       )}
                     </button>
@@ -3215,9 +3215,9 @@ export default function DashboardPage() {
                       setNewMedicine({ name: '', dosage: '', frequency: '2 times daily', duration: '', instructions: '' });
                       setNewPrescription({ doctorName: '', reason: '', prescriptionDate: new Date().toISOString().split('T')[0], reportId: '', comments: '' });
                     }}
-                    className="h-10 px-4 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition shadow-md border-2 border-black dark:border-white"
+                    className="h-10 px-4 bg-black dark:bg-white text-white dark:text-black text-xs font-bold font-mono hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition border-2 border-black dark:border-white"
                   >
-                    + Add Prescription
+                    + ADD PRESCRIPTION
                   </button>
                 </div>
               </div>
@@ -3226,8 +3226,8 @@ export default function DashboardPage() {
               {prescriptions.length === 0 ? (
                 <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl">
                   <div className="text-4xl mb-3">📋</div>
-                  <div className="text-gray-500 text-lg mb-2">No prescriptions added yet</div>
-                  <div className="text-gray-400 text-sm">Add your first prescription to start tracking</div>
+                  <div className="text-black dark:text-white opacity-60 text-lg mb-2">No prescriptions added yet</div>
+                  <div className="text-black dark:text-white opacity-50 text-sm">Add your first prescription to start tracking</div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -3275,7 +3275,7 @@ export default function DashboardPage() {
                               }
                             }}
                             disabled={deletingPrescriptionId === prescription.id}
-                            className="text-gray-400 hover:text-red-600 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="text-black dark:text-white opacity-50 hover:text-red-600 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {deletingPrescriptionId === prescription.id ? (
                               <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -3294,16 +3294,16 @@ export default function DashboardPage() {
                         <div className="text-3xl font-bold mb-2 text-black dark:text-white">℞</div>
                         <div className="border-b-2 border-black dark:border-white pb-3 mb-3">
                           <div className="text-base font-bold text-black dark:text-white mb-1">Dr. {prescription.doctorName}</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">{new Date(prescription.prescriptionDate).toLocaleDateString()}</div>
+                          <div className="text-xs text-black dark:text-white opacity-70">{new Date(prescription.prescriptionDate).toLocaleDateString()}</div>
                         </div>
 
                         <div className="mb-3">
-                          <div className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">DIAGNOSIS</div>
+                          <div className="text-xs font-bold text-black dark:text-white opacity-60 mb-1">DIAGNOSIS</div>
                           <div className="text-sm font-semibold text-black dark:text-white line-clamp-2">{prescription.reason}</div>
                         </div>
 
                         <div className="mb-3">
-                          <div className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">MEDICINES</div>
+                          <div className="text-xs font-bold text-black dark:text-white opacity-60 mb-1">MEDICINES</div>
                           <div className="space-y-1">
                             {prescription.medicines.slice(0, 3).map((med) => (
                               <div key={med.id} className="text-xs text-black dark:text-white">
@@ -3311,7 +3311,7 @@ export default function DashboardPage() {
                               </div>
                             ))}
                             {prescription.medicines.length > 3 && (
-                              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                              <div className="text-xs font-semibold text-black dark:text-white opacity-60">
                                 +{prescription.medicines.length - 3} more...
                               </div>
                             )}
@@ -3319,7 +3319,7 @@ export default function DashboardPage() {
                         </div>
 
                         <div className="mt-4 pt-3 border-t-2 border-dashed border-gray-300 dark:border-gray-600">
-                          <div className="text-xs font-bold text-center text-gray-500 dark:text-gray-400">
+                          <div className="text-xs font-bold text-center text-black dark:text-white opacity-60">
                             Click to view full prescription →
                           </div>
                         </div>
@@ -3354,7 +3354,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-black dark:text-white">Add Lab Result</h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Enter your lab test results to update your lipid profile</p>
+                  <p className="text-sm text-black dark:text-white opacity-70">Enter your lab test results to update your lipid profile</p>
                 </div>
               </div>
               <button 
@@ -3365,7 +3365,7 @@ export default function DashboardPage() {
                   setNewLabDate("");
                   setNewLabUnit("mg/dL");
                 }}
-                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className="text-black dark:text-white opacity-60 hover:text-black dark:text-white opacity-80 dark:hover:text-black dark:text-white opacity-40 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -3453,7 +3453,7 @@ export default function DashboardPage() {
                           yesterday.setDate(yesterday.getDate() - 1);
                           setNewLabDate(yesterday.toISOString().split('T')[0]);
                         }}
-                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="text-xs text-black dark:text-white opacity-70 hover:text-gray-800 dark:text-black dark:text-white opacity-50 dark:hover:text-black dark:text-white opacity-40 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         Yesterday
                       </button>
@@ -3464,7 +3464,7 @@ export default function DashboardPage() {
                           lastWeek.setDate(lastWeek.getDate() - 7);
                           setNewLabDate(lastWeek.toISOString().split('T')[0]);
                         }}
-                        className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="text-xs text-black dark:text-white opacity-70 hover:text-gray-800 dark:text-black dark:text-white opacity-50 dark:hover:text-black dark:text-white opacity-40 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         Last Week
                       </button>
@@ -3499,7 +3499,7 @@ export default function DashboardPage() {
                   setNewLabDate("");
                   setNewLabUnit("mg/dL");
                 }}
-                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-black dark:text-white opacity-80 text-sm rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
               >
                 Cancel
               </button>
@@ -3532,14 +3532,14 @@ export default function DashboardPage() {
             {/* Modal Header */}
             <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
               <div>
-                <h2 className="text-2xl font-bold text-black dark:text-white">All Lab Results</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Total: {labData.length} results</p>
+                <h2 className="text-2xl font-bold font-mono text-black dark:text-white tracking-tight">ALL LAB RESULTS</h2>
+                <p className="text-sm font-mono text-black dark:text-white mt-2 uppercase opacity-70">TOTAL: {labData.length} RESULTS</p>
               </div>
               <button
                 onClick={() => setShowLabsModal(false)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition"
               >
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-black dark:text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -3569,7 +3569,7 @@ export default function DashboardPage() {
                           }`}></div>
                           <div className="font-bold text-base text-black dark:text-white">{lab.name}</div>
                           {isLipid && (
-                            <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-full font-semibold">
+                            <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 text-black dark:text-white opacity-80 text-xs rounded-full font-semibold">
                               Lipid
                             </span>
                           )}
@@ -3600,7 +3600,7 @@ export default function DashboardPage() {
                               }
                             }
                           }}
-                          className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded transition flex-shrink-0"
+                          className="text-black dark:text-white opacity-50 hover:text-red-500 dark:hover:text-red-400 p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded transition flex-shrink-0"
                           title="Delete lab result"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -3609,22 +3609,22 @@ export default function DashboardPage() {
 
                       <div className="mb-2">
                         <div className="text-3xl font-bold text-black dark:text-white">
-                          {lab.value} <span className="text-lg font-medium text-gray-600 dark:text-gray-400">{lab.unit}</span>
+                          {lab.value} <span className="text-lg font-medium text-black dark:text-white opacity-70">{lab.unit}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between text-sm mb-2">
-                        <div className="text-gray-600 dark:text-gray-400">
+                        <div className="text-black dark:text-white opacity-70">
                           Normal: {lab.normalRange.min}-{lab.normalRange.max} {lab.unit}
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between text-sm">
-                        <div className="text-gray-500 dark:text-gray-500">
+                        <div className="text-black dark:text-white opacity-60 dark:text-black dark:text-white opacity-60">
                           {new Date(lab.date).toLocaleDateString()}
                         </div>
                         {lab.category && (
-                          <span className="px-2 py-1 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-full">
+                          <span className="px-2 py-1 bg-gray-200 dark:bg-gray-800 text-black dark:text-white opacity-80 text-xs rounded-full">
                             {lab.category}
                           </span>
                         )}
@@ -3635,7 +3635,7 @@ export default function DashboardPage() {
               </div>
 
               {labData.length === 0 && (
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <div className="text-center py-12 text-black dark:text-white opacity-60">
                   <p className="text-lg">No lab results yet</p>
                   <p className="text-sm mt-2">Add your first lab result to get started</p>
                 </div>
@@ -3652,7 +3652,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={() => setShowLabsModal(false)}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition font-medium"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white opacity-80 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition font-medium"
               >
                 Close
               </button>
@@ -3774,7 +3774,7 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-sm font-bold text-black dark:text-white underline">MEDICATIONS</div>
-                  <div className="text-xs text-gray-500">Added: {currentMedicines.length}</div>
+                  <div className="text-xs text-black dark:text-white opacity-60">Added: {currentMedicines.length}</div>
                 </div>
 
                 {/* Added Medicines List */}
@@ -3814,7 +3814,7 @@ export default function DashboardPage() {
 
                 {/* Add Medicine Form */}
                 <div className="border-2 border-gray-400 dark:border-gray-600 p-4 bg-gray-50 dark:bg-zinc-800 space-y-3">
-                  <div className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-3">+ Add Medicine</div>
+                  <div className="text-xs font-bold text-black dark:text-white opacity-80 mb-3">+ Add Medicine</div>
                   
                   <div>
                     <label className="block text-xs font-bold text-black dark:text-white mb-1">Medicine Name *</label>
@@ -4014,15 +4014,15 @@ export default function DashboardPage() {
               <div className="border-b-4 border-black dark:border-white pb-4 mb-6">
                 <div className="text-5xl font-bold mb-2 text-black dark:text-white">℞</div>
                 <div className="text-2xl font-bold text-black dark:text-white mb-1">Dr. {selectedPrescriptionView.doctorName}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Date: {new Date(selectedPrescriptionView.prescriptionDate).toLocaleDateString()}</div>
+                <div className="text-sm text-black dark:text-white opacity-70">Date: {new Date(selectedPrescriptionView.prescriptionDate).toLocaleDateString()}</div>
               </div>
 
               {/* Patient Details / Reason */}
               <div className="mb-6 bg-gray-50 dark:bg-zinc-800 p-4 border-2 border-black dark:border-white">
-                <div className="text-xs font-bold text-gray-600 dark:text-gray-400 mb-1">DIAGNOSIS / REASON</div>
+                <div className="text-xs font-bold text-black dark:text-white opacity-70 mb-1">DIAGNOSIS / REASON</div>
                 <div className="text-base font-semibold text-black dark:text-white">{selectedPrescriptionView.reason}</div>
                 {selectedPrescriptionView.reportName && (
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-xs text-black dark:text-white opacity-60 mt-2">
                     📄 Related Report: {selectedPrescriptionView.reportName}
                   </div>
                 )}
@@ -4062,7 +4062,7 @@ export default function DashboardPage() {
                     <div className="text-xs font-bold text-black dark:text-white">Special Instructions:</div>
                     {selectedPrescriptionView.medicines.map((med) => 
                       med.instructions ? (
-                        <div key={med.id} className="text-xs text-gray-700 dark:text-gray-300">
+                        <div key={med.id} className="text-xs text-black dark:text-white opacity-80">
                           • {med.name}: <span className="italic">{med.instructions}</span>
                         </div>
                       ) : null
@@ -4074,8 +4074,8 @@ export default function DashboardPage() {
               {/* Comments */}
               {selectedPrescriptionView.comments && (
                 <div className="mb-6 border-l-4 border-black dark:border-white pl-4">
-                  <div className="text-xs font-bold text-gray-600 dark:text-gray-400 mb-1">ADDITIONAL COMMENTS:</div>
-                  <div className="text-sm italic text-gray-700 dark:text-gray-300">{selectedPrescriptionView.comments}</div>
+                  <div className="text-xs font-bold text-black dark:text-white opacity-70 mb-1">ADDITIONAL COMMENTS:</div>
+                  <div className="text-sm italic text-black dark:text-white opacity-80">{selectedPrescriptionView.comments}</div>
                 </div>
               )}
 
@@ -4083,7 +4083,7 @@ export default function DashboardPage() {
               <div className="mt-6 pt-4 border-t-2 border-dashed border-gray-400 dark:border-gray-600">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold text-black dark:text-white">TODAY&apos;S INTAKE LOG:</span>
-                  <span className="text-xs text-gray-500">{new Date().toLocaleDateString()}</span>
+                  <span className="text-xs text-black dark:text-white opacity-60">{new Date().toLocaleDateString()}</span>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -4137,7 +4137,7 @@ export default function DashboardPage() {
                             ))}
                           </div>
                         ) : (
-                          <div className="text-xs text-gray-400">Not taken yet</div>
+                          <div className="text-xs text-black dark:text-white opacity-50">Not taken yet</div>
                         )}
                       </div>
                     );

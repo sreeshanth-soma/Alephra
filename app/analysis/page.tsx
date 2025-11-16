@@ -231,12 +231,12 @@ const AnalysisPage = () => {
           onClose={() => setLoading(false)}
         />
         
-        <div className="text-center mb-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-2 font-playfair">
-            Alephra
+        <div className="text-center mb-8">
+          <h1 className="text-5xl md:text-6xl font-bold text-black dark:text-white mb-3 font-mono tracking-tighter">
+            ALEPHRA
           </h1>
-          <p className="text-base md:text-lg text-black dark:text-gray-300 font-medium mb-4">
-            AI-powered medical report analysis
+          <p className="text-base md:text-lg font-mono text-black dark:text-white uppercase tracking-wide opacity-70">
+            AI-POWERED MEDICAL REPORT ANALYSIS
           </p>
           
           {/* Quick Actions - Enhanced User-Friendly Buttons */}
@@ -370,120 +370,146 @@ const AnalysisPage = () => {
           </div>
           <div id="history" className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-black dark:text-white mb-2">
-                Your Reports
+              <h2 className="text-3xl font-bold font-mono text-black dark:text-white mb-2 tracking-tight">
+                YOUR REPORTS
               </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Select a report to analyze or upload a new one
+              <p className="text-base font-mono text-black dark:text-white opacity-70">
+                SELECT A REPORT TO ANALYZE OR UPLOAD A NEW ONE
               </p>
             </div>
             
             <div className="w-full">
-              <div className="bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] overflow-hidden">
+                <div className="p-6 border-b-2 border-black dark:border-white">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Report History ({filteredPrescriptions.length})
+                    <h3 className="text-xl font-bold text-black dark:text-white tracking-tight font-mono">
+                      REPORT HISTORY · {filteredPrescriptions.length}
                     </h3>
-                    <div className="flex items-center gap-2">
-                      <Link 
-                        href="/history"
-                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-                      >
-                        <BarChart3 className="h-4 w-4 mr-1" />
-                        Analytics
-                      </Link>
-                    </div>
+                    <Link 
+                      href="/history"
+                      className="inline-flex items-center px-4 py-2 text-sm font-bold font-mono bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-all"
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      ANALYTICS
+                    </Link>
                   </div>
                   
                   {/* Search Bar */}
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="Search reports..."
+                      placeholder="SEARCH REPORTS..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      className="w-full pl-10 pr-4 py-3 border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-0 font-mono text-sm"
                     />
-                    <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
                 </div>
                 
-                <div className="max-h-96 overflow-y-auto">
+                <div className="max-h-96 overflow-y-auto bg-white dark:bg-black">
                   {filteredPrescriptions.length === 0 ? (
-                    <div className="text-center py-12">
-                      <BarChart3 className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                        {searchTerm ? "No matching reports" : "No reports yet"}
+                    <div className="text-center py-16 border-t-2 border-black dark:border-white">
+                      <BarChart3 className="mx-auto h-16 w-16 text-black dark:text-white mb-4" strokeWidth={2.5} />
+                      <h4 className="text-lg font-bold font-mono text-black dark:text-white mb-2">
+                        {searchTerm ? "NO MATCHING REPORTS" : "NO REPORTS YET"}
                       </h4>
-                      <p className="text-gray-500 dark:text-gray-400 mb-4">
-                        {searchTerm ? "Try a different search term" : "Upload your first medical report to get started"}
+                      <p className="text-sm font-mono text-black dark:text-white opacity-70 mb-4">
+                        {searchTerm ? "TRY A DIFFERENT SEARCH TERM" : "UPLOAD YOUR FIRST MEDICAL REPORT TO GET STARTED"}
                       </p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div className="divide-y-2 divide-black dark:divide-white">
                       {filteredPrescriptions.map((prescription) => (
                         <div
                           key={prescription.id}
                           onClick={() => handlePrescriptionSelect(prescription)}
-                          className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
+                          className={`p-5 cursor-pointer transition-all ${
                             selectedPrescriptionId === prescription.id 
-                              ? 'bg-primary/10 border-l-4 border-primary shadow-sm' 
-                              : 'hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+                              ? 'bg-black dark:bg-white text-white dark:text-black' 
+                              : 'hover:bg-gray-100 dark:hover:bg-gray-900'
                           }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              <div className="flex items-center gap-3 mb-2">
+                                <FileStack className="h-5 w-5 flex-shrink-0" strokeWidth={2.5} />
+                                <h4 className={`text-base font-bold font-mono truncate ${
+                                  selectedPrescriptionId === prescription.id 
+                                    ? 'text-white dark:text-black' 
+                                    : 'text-black dark:text-white'
+                                }`}>
                                   {prescription.fileName}
                                 </h4>
                                 {selectedPrescriptionId === prescription.id && (
-                                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                                  <div className="w-2 h-2 bg-white dark:bg-black rounded-full animate-pulse flex-shrink-0"></div>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+                              <p className={`text-sm font-mono mt-2 line-clamp-2 ${
+                                selectedPrescriptionId === prescription.id 
+                                  ? 'text-white dark:text-black opacity-70' 
+                                  : 'text-black dark:text-white opacity-70'
+                              }`}>
                                 {prescription.summary}
                               </p>
-                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                <span>{prescription.uploadedAt.toLocaleDateString()}</span>
+                              <div className={`flex items-center gap-4 mt-3 text-xs font-mono font-bold ${
+                                selectedPrescriptionId === prescription.id 
+                                  ? 'text-gray-400 dark:text-gray-600' 
+                                  : 'text-gray-500 dark:text-gray-500'
+                              }`}>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {prescription.uploadedAt.toLocaleDateString()}
+                                </span>
                                 <span>{prescription.uploadedAt.toLocaleTimeString()}</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 ml-4">
+                            <div className="flex items-center gap-1 ml-4">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setReportToShare(prescription);
                                   setShowSharing(true);
                                 }}
-                                className="p-1.5 text-gray-400 hover:text-cyan-600 transition-colors"
+                                className={`p-2 border-2 transition-all ${
+                                  selectedPrescriptionId === prescription.id
+                                    ? 'border-white dark:border-black hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white'
+                                    : 'border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
+                                }`}
                                 title="Share report"
                               >
-                                <Share2 className="h-4 w-4" />
+                                <Share2 className="h-4 w-4" strokeWidth={2.5} />
                               </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleExport(prescription);
                                 }}
-                                className="p-1.5 text-gray-400 hover:text-primary transition-colors"
+                                className={`p-2 border-2 transition-all ${
+                                  selectedPrescriptionId === prescription.id
+                                    ? 'border-white dark:border-black hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white'
+                                    : 'border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
+                                }`}
                                 title="Export report"
                               >
-                                <Upload className="h-4 w-4" />
+                                <Upload className="h-4 w-4" strokeWidth={2.5} />
                               </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDelete(prescription.id);
                                 }}
-                                className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                                className={`p-2 border-2 transition-all ${
+                                  selectedPrescriptionId === prescription.id
+                                    ? 'border-white dark:border-black hover:bg-red-600 hover:border-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:border-red-600 dark:hover:text-white'
+                                    : 'border-black dark:border-white hover:bg-red-600 hover:border-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:border-red-600 dark:hover:text-white'
+                                }`}
                                 title="Delete report"
                               >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                               </button>
                             </div>
@@ -495,12 +521,12 @@ const AnalysisPage = () => {
                 </div>
                 
                 {prescriptions.length > 0 && (
-                  <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                  <div className="p-4 border-t-2 border-black dark:border-white bg-white dark:bg-black">
                     <button
                       onClick={() => setShowClearModal(true)}
-                      className="w-full text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors"
+                      className="w-full py-3 text-sm font-bold font-mono bg-red-600 text-white border-2 border-red-600 hover:bg-white hover:text-red-600 dark:hover:bg-black dark:hover:text-red-600 transition-all"
                     >
-                      Clear All Reports
+                      CLEAR ALL REPORTS
                     </button>
                   </div>
                 )}

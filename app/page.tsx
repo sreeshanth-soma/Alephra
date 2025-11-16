@@ -133,9 +133,8 @@ export default function Home() {
                   </span>
                   {/* Shadow text below */}
                   <span 
-                    className="absolute top-0 left-0 text-5xl md:text-7xl lg:text-8xl font-extrabold leading-none -z-10"
+                    className="absolute top-0 left-0 text-5xl md:text-7xl lg:text-8xl font-extrabold leading-none -z-10 text-black dark:text-white"
                     style={{
-                      color: theme === 'dark' ? 'white' : 'black',
                       transform: 'translate(1px, 3px)'
                     }}
                   >

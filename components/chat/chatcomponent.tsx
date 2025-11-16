@@ -131,14 +131,14 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
   };
     
   return (
-    <div className="h-[600px] bg-white dark:bg-zinc-900 relative flex flex-col rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl">
-      <div className="absolute -top-3 left-6 z-20 px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-300 dark:border-gray-700 shadow-lg">
+    <div className="h-[600px] bg-white dark:bg-black relative flex flex-col rounded-none border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
+      <div className="absolute -top-3 left-6 z-20 px-4 py-2 bg-white dark:bg-black border-2 border-black dark:border-white">
         <Badge 
           variant="secondary" 
-          className={`text-sm font-semibold transition-all duration-200 cursor-pointer ${
+          className={`text-xs font-bold font-mono transition-all duration-200 cursor-pointer ${
             reportData || allReportsData
-              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700" 
-              : "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300 border-gray-200 dark:border-gray-700"
+              ? "bg-black dark:bg-white text-white dark:text-black border-0" 
+              : "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-0"
           }`}
           onClick={() => {
             if (localStorage.getItem('selectedReportId') || selectedReportId) {
@@ -148,12 +148,12 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
           }}
         >
           {selectedReportName 
-            ? `✓ ${selectedReportName}` 
+            ? `✓ ${selectedReportName.toUpperCase()}` 
             : reportData || (allReportsData && prescriptionCount === 1) 
-              ? "✓ Report Loaded" 
+              ? "✓ REPORT LOADED" 
               : allReportsData 
-                ? `✓ ${prescriptionCount} ${prescriptionCount === 1 ? 'Report' : 'Reports'} Available` 
-                : "No Report"}
+                ? `✓ ${prescriptionCount} ${prescriptionCount === 1 ? 'REPORT' : 'REPORTS'} AVAILABLE` 
+                : "NO REPORT"}
         </Badge>
       </div>
       
@@ -164,20 +164,20 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
             onClick={() => setShowClearModal(true)}
             size="sm"
             variant="outline"
-            className="h-8 px-3 bg-white dark:bg-zinc-800 border-gray-200 dark:border-gray-600 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 transition-all duration-200 text-gray-600 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 shadow-sm rounded-full"
+            className="h-8 px-3 bg-white dark:bg-black border-2 border-black dark:border-white hover:bg-red-600 hover:text-white hover:border-red-600 dark:hover:bg-red-600 dark:hover:text-white dark:hover:border-red-600 transition-all text-black dark:text-white font-bold font-mono text-xs"
             title="Clear chat history"
           >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Clear
+            <Trash2 className="h-3 w-3 mr-1" strokeWidth={2.5} />
+            CLEAR
           </Button>
         </div>
       )}
       
-      <div className="flex-1 px-6 pt-16 pb-2 overflow-hidden">
+      <div className="flex-1 px-6 pt-12 pb-4 overflow-y-auto">
         <Messages messages={messages} isLoading={isLoading} data={data} />
       </div>
       
-      <div className="px-6 pb-6 pt-2">
+      <div className="px-6 pb-6 pt-4">
         <PlaceholdersAndVanishInput
           placeholders={[
             "What do my lab results mean?",
@@ -248,24 +248,25 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
       <BasicModal
         isOpen={showClearModal}
         onClose={() => setShowClearModal(false)}
-        title="Clear Chat History"
+        title="CLEAR CHAT HISTORY"
       >
         <div className="space-y-4">
-          <p className="text-gray-600 dark:text-gray-400">
-            Are you sure you want to clear all chat messages? This action cannot be undone.
+          <p className="font-mono text-sm text-gray-600 dark:text-gray-400">
+            ARE YOU SURE YOU WANT TO CLEAR ALL CHAT MESSAGES? THIS ACTION CANNOT BE UNDONE.
           </p>
           <div className="flex justify-end space-x-3">
             <Button
               variant="outline"
               onClick={() => setShowClearModal(false)}
+              className="border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono"
             >
-              Cancel
+              CANCEL
             </Button>
             <Button
               onClick={clearChat}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-white hover:text-red-600 text-white border-2 border-red-600 font-bold font-mono"
             >
-              Clear Chat
+              CLEAR CHAT
             </Button>
           </div>
         </div>

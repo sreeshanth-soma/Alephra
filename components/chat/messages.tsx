@@ -35,13 +35,10 @@ const Messages = ({ messages, isLoading, data }: Props) => {
   }
 
   return (
-    <div className='flex flex-col gap-3 overflow-y-auto flex-1 custom-scrollbar max-h-[500px] relative'>
-      {/* Subtle animated background to match glassy chat */}
+    <div className='flex flex-col gap-4 h-full custom-scrollbar relative'>
+      {/* Subtle animated background to match brutalist theme */}
       <motion.div
-        className="absolute inset-0 -z-10 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-zinc-900 dark:via-black dark:to-zinc-900"
-        animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        style={{ backgroundSize: '200% 200%' }}
+        className="absolute inset-0 -z-10 bg-white dark:bg-black"
       />
       {messages.map((m, index) => {
         // Extract content from parts array or fallback to content string
@@ -60,16 +57,16 @@ const Messages = ({ messages, isLoading, data }: Props) => {
         if (item.type === "vector_conversion") {
           return (
             <div key={`vector-${index}`} className="flex justify-start">
-              <Card className="max-w-[85%] bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <Card className="max-w-[85%] bg-white dark:bg-black border-2 border-black dark:border-white">
                 <CardContent className="p-3">
                   <div className="flex items-center space-x-2 text-sm">
-                    <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    <span className="font-medium text-blue-800 dark:text-blue-200">
+                    <Zap className="h-4 w-4 text-black dark:text-white" strokeWidth={2.5} />
+                    <span className="font-bold font-mono text-black dark:text-white">
                       {item.message}
                     </span>
                   </div>
-                  <div className="mt-2 text-xs text-blue-600 dark:text-blue-300">
-                    Query: &quot;{item.query}&quot;
+                  <div className="mt-2 text-xs font-mono text-gray-600 dark:text-gray-400">
+                    QUERY: &quot;{item.query}&quot;
                   </div>
                 </CardContent>
               </Card>
@@ -80,32 +77,32 @@ const Messages = ({ messages, isLoading, data }: Props) => {
         if (item.type === "pinecone_results") {
           return (
             <div key={`pinecone-${index}`} className="flex justify-start">
-              <Card className="max-w-[85%] bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+              <Card className="max-w-[85%] bg-white dark:bg-black border-2 border-black dark:border-white">
                 <CardContent className="p-3">
                   <div className="flex items-center space-x-2 text-sm mb-2">
-                    <Database className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    <span className="font-medium text-green-800 dark:text-green-200">
+                    <Database className="h-4 w-4 text-black dark:text-white" strokeWidth={2.5} />
+                    <span className="font-bold font-mono text-black dark:text-white">
                       {item.message}
                     </span>
-                    <Badge variant="secondary" className="text-xs">
-                      {item.matchCount} matches
+                    <Badge variant="secondary" className="text-xs font-mono bg-black dark:bg-white text-white dark:text-black">
+                      {item.matchCount} MATCHES
                     </Badge>
                   </div>
                   {item.retrievals && !item.retrievals.includes("<nomatches>") && (
-                    <div className="text-xs text-green-600 dark:text-green-300 max-h-20 overflow-y-auto">
-                      <div className="font-medium mb-1">Retrieved findings:</div>
+                    <div className="text-xs font-mono text-gray-600 dark:text-gray-400 max-h-20 overflow-y-auto">
+                      <div className="font-bold mb-1">RETRIEVED FINDINGS:</div>
                       <div className="space-y-1">
                         {item.retrievals.split("Clinical Finding").slice(1).map((finding: string, idx: number) => (
-                          <div key={idx} className="text-xs bg-green-100 dark:bg-green-800/30 p-2 rounded">
-                            Finding {idx + 1}: {finding.substring(0, 100)}...
+                          <div key={idx} className="text-xs bg-gray-100 dark:bg-gray-900 p-2 border border-black dark:border-white">
+                            FINDING {idx + 1}: {finding.substring(0, 100)}...
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
                   {item.retrievals && item.retrievals.includes("<nomatches>") && (
-                    <div className="text-xs text-yellow-600 dark:text-yellow-300">
-                      No relevant clinical findings found in database
+                    <div className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                      NO RELEVANT CLINICAL FINDINGS FOUND IN DATABASE
                     </div>
                   )}
                 </CardContent>
@@ -117,16 +114,16 @@ const Messages = ({ messages, isLoading, data }: Props) => {
         if (item.type === "error") {
           return (
             <div key={`error-${index}`} className="flex justify-start">
-              <Card className="max-w-[85%] bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+              <Card className="max-w-[85%] bg-white dark:bg-black border-2 border-red-600">
                 <CardContent className="p-3">
                   <div className="flex items-center space-x-2 text-sm">
-                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                    <span className="font-medium text-red-800 dark:text-red-200">
+                    <AlertCircle className="h-4 w-4 text-red-600" strokeWidth={2.5} />
+                    <span className="font-bold font-mono text-red-600">
                       {item.message}
                     </span>
                   </div>
                   {item.error && (
-                    <div className="mt-1 text-xs text-red-600 dark:text-red-300">
+                    <div className="mt-1 text-xs font-mono text-red-600">
                       {item.error}
                     </div>
                   )}
@@ -141,16 +138,16 @@ const Messages = ({ messages, isLoading, data }: Props) => {
       
       {isLoading && (
         <motion.div
-          className="flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300"
+          className="flex items-center space-x-2 text-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.6, 1] }}
           transition={{ repeat: Infinity, duration: 1.2 }}
         >
-          <div className="flex items-center gap-1 px-3 py-2 rounded-xl max-w-[30%] bg-black/70 dark:bg-white/10 text-white backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse [animation-delay:200ms]"></span>
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse [animation-delay:400ms]"></span>
-            <span className="ml-2">Alephra is thinking...</span>
+          <div className="flex items-center gap-1 px-4 py-3 max-w-[40%] bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white font-mono font-bold">
+            <span className="w-2 h-2 bg-white dark:bg-black animate-pulse"></span>
+            <span className="w-2 h-2 bg-white dark:bg-black animate-pulse [animation-delay:200ms]"></span>
+            <span className="w-2 h-2 bg-white dark:bg-black animate-pulse [animation-delay:400ms]"></span>
+            <span className="ml-2">ALEPHRA IS THINKING...</span>
           </div>
         </motion.div>
       )}

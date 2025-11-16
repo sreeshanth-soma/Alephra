@@ -167,11 +167,13 @@ class PrescriptionStorage {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(serverReports));
         return serverReports;
       } else if (response.status === 401) {
-        // User is not authenticated - return empty array and clear cache
-        this.cache = [];
+        // User is not authenticated - use localStorage as fallback (don't clear local data)
+        const isDev = process.env.NODE_ENV !== 'production';
+        if (isDev) console.log('User not authenticated, using localStorage');
+        const localData = this.getAllPrescriptionsLocal();
+        this.cache = localData;
         this.cacheTimestamp = Date.now();
-        localStorage.removeItem(this.STORAGE_KEY);
-        return [];
+        return localData;
       } else {
         // Server error - use localStorage as fallback
         const localData = this.getAllPrescriptionsLocal();
@@ -180,8 +182,11 @@ class PrescriptionStorage {
         return localData;
       }
     } catch (error) {
-      // Network error, use localStorage
-      console.error('Failed to fetch from server, using localStorage:', error);
+      // Network error, use localStorage (suppress error for expected 401)
+      const isDev = process.env.NODE_ENV !== 'production';
+      if (isDev && !(error instanceof Error && error.message.includes('401'))) {
+        console.error('Failed to fetch from server, using localStorage:', error);
+      }
       const localData = this.getAllPrescriptionsLocal();
       this.cache = localData;
       this.cacheTimestamp = Date.now();
@@ -218,9 +223,17 @@ class PrescriptionStorage {
           extractedData: report.extractedData,
           category: report.category,
         };
+      } else if (response.status === 401) {
+        // User not authenticated - fall back to cache/localStorage silently
+        const isDev = process.env.NODE_ENV !== 'production';
+        if (isDev) console.log('User not authenticated, using local cache for report:', id);
       }
     } catch (error) {
-      console.error('Error fetching report by ID:', error);
+      // Suppress error for expected 401, log others
+      const isDev = process.env.NODE_ENV !== 'production';
+      if (isDev && !(error instanceof Error && error.message.includes('401'))) {
+        console.error('Error fetching report by ID:', error);
+      }
     }
     
     // Fallback to cache/localStorage (but reportText will be empty)

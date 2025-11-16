@@ -41,23 +41,15 @@ const GridItem = ({ area, icon, title, description, tags, center, tall, minH }: 
                 {description}
               </h2>
               {tags && tags.length > 0 && (
-                <div className="flex flex-wrap gap-2.5 mt-5">
-                  {tags.map((tag, idx) => {
-                    const gradients = [
-                      "bg-gradient-to-br from-blue-500/90 via-blue-600/90 to-indigo-600/90 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700",
-                      "bg-gradient-to-br from-purple-500/90 via-purple-600/90 to-pink-600/90 hover:from-purple-600 hover:via-purple-700 hover:to-pink-700",
-                      "bg-gradient-to-br from-emerald-500/90 via-teal-600/90 to-cyan-600/90 hover:from-emerald-600 hover:via-teal-700 hover:to-cyan-700",
-                    ];
-                    const gradient = gradients[idx % gradients.length];
-                    return (
-                      <span 
-                        key={idx} 
-                        className={`inline-flex items-center px-4 py-2 rounded-lg text-xs font-semibold text-white ${gradient} shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 backdrop-blur-sm border border-white/20`}
-                      >
-                        {tag}
-                      </span>
-                    );
-                  })}
+                <div className="flex flex-wrap gap-2 mt-5">
+                  {tags.map((tag, idx) => (
+                    <span 
+                      key={idx} 
+                      className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               )}
             </div>

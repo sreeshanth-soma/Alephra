@@ -202,7 +202,7 @@ export function VoiceChatInteractive({
   return (
     <div className={cn("relative w-full h-full overflow-hidden", className)}>
       {/* Spline Animation - Top layer for pointer interaction */}
-      <SplineBackground className="absolute top-8 left-0 right-0 bottom-0 z-20" />
+      <SplineBackground className="absolute top-0 left-0 right-0 bottom-16 z-20" />
 
       {/* Subtle overlay for better contrast */}
       <div className="absolute inset-0 z-25 bg-black/5" />
