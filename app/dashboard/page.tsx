@@ -1576,7 +1576,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-black dark:text-white font-mono tracking-tight"><span className="bg-black dark:bg-white text-white dark:text-black px-2 py-1">ALEPHRA</span> MY HEALTH SPACE</h1>
+                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-black dark:text-white"><span className="bg-black dark:bg-white text-white dark:text-black px-2 py-1">Alephra</span> My Health Space</h1>
                 <p className="text-base font-mono text-black dark:text-white mt-2 uppercase tracking-wide opacity-70">OVERVIEW OF VITALS, LABS, MEDS, AND CARE TIMELINE</p>
               </div>
             </div>

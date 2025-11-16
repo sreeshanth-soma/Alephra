@@ -232,10 +232,10 @@ const AnalysisPage = () => {
         />
         
         <div className="text-center mb-8">
-          <h1 className="text-5xl md:text-6xl font-bold text-black dark:text-white mb-3 font-mono tracking-tighter">
-            ALEPHRA
+          <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tight text-black dark:text-white mb-3">
+            Alephra
           </h1>
-          <p className="text-base md:text-lg font-mono text-black dark:text-white uppercase tracking-wide opacity-70">
+          <p className="text-base md:text-lg text-black dark:text-white uppercase tracking-wide opacity-70">
             AI-POWERED MEDICAL REPORT ANALYSIS
           </p>
           
