@@ -22,7 +22,22 @@ Respond with ONLY one of these options:
 - "VALID_MEDICAL_REPORT" if it is a medical/clinical report
 - "NOT_MEDICAL_REPORT: [brief reason]" if it is not a medical report (e.g., resume, invoice, general document, etc.)`;
 
-const extractionPrompt = `Attached is an image of a clinical report. 
+// Full text extraction prompt - extract ALL text from the report
+const fullTextExtractionPrompt = `Attached is an image of a clinical/medical report. 
+
+Extract ALL text content from this report exactly as it appears. Include:
+- All headers, titles, and section names
+- All test names, values, units, and reference ranges
+- All numerical values, dates, and measurements
+- All notes, comments, and observations
+- All formatting and structure (use line breaks to preserve layout)
+
+Preserve the original structure and formatting as much as possible. Do not summarize or abbreviate. Extract the complete, full text of the entire report.
+
+Output the complete extracted text:`;
+
+// Summary prompt - for generating a concise summary separately
+const summaryPrompt = `Attached is an image of a clinical report. 
 Go over the the clinical report and identify biomarkers that show slight or large abnormalities. Then summarize in 100 words. You may increase the word limit if the report has multiple pages. Do not output patient name, date etc. Make sure to include numerical values and key details from the report, including report title.
 ## Summary: `;
 
@@ -91,22 +106,22 @@ export async function POST(req: Request) {
             });
         }
 
-        // Step 2: Document is valid, proceed with extraction
-        console.log("Document validated as medical report. Processing with Gemini API...");
-        const textResponse = await generateContentWithRetry(filePart, extractionPrompt);
+        // Step 2: Document is valid, proceed with FULL TEXT extraction
+        console.log("Document validated as medical report. Extracting full report text with Gemini API...");
+        const fullTextResponse = await generateContentWithRetry(filePart, fullTextExtractionPrompt);
 
-        console.log("Successfully generated content");
+        console.log("Successfully extracted full report text");
         
         // Generate unique report ID
         const reportId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         
-        // Create and store vector embeddings
-        console.log("Creating vector embeddings...");
+        // Create and store vector embeddings using the full text
+        console.log("Creating vector embeddings from full report text...");
         const vectorSuccess = await createAndStoreVectorEmbeddings(
             pinecone,
             'med-rag', // index name
             'diagnosis2', // namespace
-            textResponse || '',
+            fullTextResponse || '',
             reportId
         );
         
@@ -116,8 +131,9 @@ export async function POST(req: Request) {
             console.warn("Failed to create vector embeddings, but text extraction succeeded");
         }
         
+        // Return the FULL extracted text (not a summary)
         return new Response(JSON.stringify({ 
-            text: textResponse,
+            text: fullTextResponse, // Full report text, not summary
             reportId: reportId,
             vectorStored: vectorSuccess,
             isValidMedicalReport: true

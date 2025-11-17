@@ -40,25 +40,19 @@ export async function POST(req: Request, res: Response) {
 
         const retrievals = await queryPineconeVectorStore(pinecone, indexName, namespace, query);
 
-        const finalPrompt = `Here is a summary of a patient's clinical report, and a user query. Some generic clinical findings are also provided that may or may not be relevant for the report.
-  Go through the clinical report and answer the user query.
-  Ensure the response is factually accurate, and demonstrates a thorough understanding of the query topic and the clinical report.
-  Before answering you may enrich your knowledge by going through the provided clinical findings. 
-  The clinical findings are generic insights and not part of the patient's medical report. Do not include any clinical finding if it is not relevant for the patient's case.
+        const finalPrompt = `You are a medical assistant. Answer the user's question about their clinical report concisely and directly.
 
-  \n\n**Patient's Clinical report summary:** \n${reportData}. 
-  \n**end of patient's clinical report** 
+**IMPORTANT:** Keep your response brief (2-4 sentences maximum). Focus only on what the user asked. Do not provide lengthy explanations or detailed medication analysis unless specifically requested.
 
-  \n\n**User Query:**\n${userQuestion}?
-  \n**end of user query** 
+**Patient's Clinical Report:** \n${reportData}
 
-  \n\n**Generic Clinical findings:**
-  \n\n${retrievals}. 
-  \n\n**end of generic clinical findings** 
+**User Question:** ${userQuestion}
 
-  \n\nProvide thorough justification for your answer.
-  \n\n**Answer:**
-  `;
+${retrievals !== "<nomatches>" ? `**Reference Information:**\n${retrievals}\n` : ''}
+
+Provide a brief, direct answer. If the question is about concerns or issues, mention only the key points (2-3 main concerns max).
+
+**Answer:**`;
 
         // Timeout wrapper for streaming
         const controller = new AbortController();

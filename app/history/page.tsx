@@ -27,6 +27,7 @@ export default function HistoryPage() {
   const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
   const [selected, setSelected] = useState<PrescriptionRecord | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview');
+  const [loadingFullReport, setLoadingFullReport] = useState<boolean>(false);
 
 
   useEffect(() => {
@@ -62,6 +63,34 @@ export default function HistoryPage() {
     prescriptionStorage.clearAllPrescriptions();
     setPrescriptions([]);
     setSelected(null);
+  };
+
+  const loadFullReport = async (reportId: string) => {
+    setLoadingFullReport(true);
+    try {
+      const fullReport = await prescriptionStorage.getPrescriptionById(reportId);
+      if (fullReport && fullReport.reportData) {
+        // Update the selected report with full data
+        setSelected(prev => prev ? {
+          ...prev,
+          reportData: fullReport.reportData,
+          summary: fullReport.summary || prev.summary
+        } : null);
+        
+        // Also update in prescriptions list
+        setPrescriptions(prev => prev.map(p => 
+          p.id === reportId ? {
+            ...p,
+            reportData: fullReport.reportData,
+            summary: fullReport.summary || p.summary
+          } : p
+        ));
+      }
+    } catch (error) {
+      console.error('Error loading full report:', error);
+    } finally {
+      setLoadingFullReport(false);
+    }
   };
 
   const handleExport = (prescription: PrescriptionRecord) => {
@@ -107,10 +136,14 @@ export default function HistoryPage() {
             <EnhancedHistoryList
               prescriptions={prescriptions}
               healthScores={new Map()}
-              onSelectPrescription={(prescription) => {
+              onSelectPrescription={async (prescription) => {
                 setSelected(prescription);
                 // Save the selected report ID to localStorage for chat context
                 localStorage.setItem('selectedReportId', prescription.id);
+                // If reportData is empty, fetch full report
+                if (!prescription.reportData || prescription.reportData.trim() === '') {
+                  await loadFullReport(prescription.id);
+                }
               }}
               selectedPrescriptionId={selected?.id}
               onClearAll={handleClearAll}
@@ -136,7 +169,13 @@ export default function HistoryPage() {
                         </div>
                         <div className="flex items-center gap-2">
                             <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>OVERVIEW</TabButton>
-                            <TabButton active={activeTab === 'details'} onClick={() => setActiveTab('details')}>DETAILS</TabButton>
+                            <TabButton active={activeTab === 'details'} onClick={async () => {
+                              setActiveTab('details');
+                              // Load full report when switching to details tab if not already loaded
+                              if (selected && (!selected.reportData || selected.reportData.trim() === '')) {
+                                await loadFullReport(selected.id);
+                              }
+                            }}>DETAILS</TabButton>
                         </div>
                     </div>
                 </CardHeader>
@@ -211,16 +250,41 @@ export default function HistoryPage() {
                     )}
                     {activeTab === 'details' && (
                         <div className="space-y-6">
+                            {loadingFullReport && (
+                                <div className="flex items-center justify-center py-8">
+                                    <div className="text-center">
+                                        <div className="w-8 h-8 border-4 border-gray-300 dark:border-gray-700 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-2"></div>
+                                        <p className="text-sm font-mono text-black dark:text-white opacity-70">Loading full report...</p>
+                                    </div>
+                                </div>
+                            )}
                             <div>
                                 <div className="flex items-center gap-2 mb-4">
                                     <FileText className="h-5 w-5 text-black dark:text-white" strokeWidth={2.5} />
                                     <h4 className="font-bold font-mono text-black dark:text-white">FULL REPORT DATA</h4>
                                 </div>
-                                <div className="max-h-[60vh] overflow-y-auto p-6 border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white custom-scrollbar font-mono text-sm">
-                                    <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-gray-100">
-                                        <Markdown text={selected.reportData} />
+                                {selected.reportData && selected.reportData.trim() !== '' ? (
+                                    <div className="max-h-[60vh] overflow-y-auto p-6 border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white custom-scrollbar font-mono text-sm">
+                                        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-gray-100">
+                                            <Markdown text={selected.reportData} />
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="p-6 border-2 border-black dark:border-white bg-white dark:bg-black text-center">
+                                        <p className="text-black dark:text-white opacity-60 font-mono text-sm">
+                                            {loadingFullReport ? 'Loading full report...' : 'Full report data not available. Click to load.'}
+                                        </p>
+                                        {!loadingFullReport && (
+                                            <Button
+                                                onClick={() => loadFullReport(selected.id)}
+                                                className="mt-4 border-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white font-bold font-mono text-xs"
+                                                variant="outline"
+                                            >
+                                                Load Full Report
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             
                             {/* Report Metadata */}
