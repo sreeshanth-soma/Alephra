@@ -200,7 +200,7 @@ const AnalysisPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black relative pt-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-black relative pt-12 md:pt-16">
       {/* Squares Background */}
       <div className="absolute inset-0 z-0">
         <Squares 
@@ -231,11 +231,8 @@ const AnalysisPage = () => {
           onClose={() => setLoading(false)}
         />
         
-        <div className="text-center mb-8">
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tight text-black dark:text-white mb-3">
-            Alephra
-          </h1>
-          <p className="text-base md:text-lg text-black dark:text-white uppercase tracking-wide opacity-70">
+        <div className="text-center mb-6">
+          <p className="text-base md:text-lg text-black dark:text-white uppercase tracking-wide">
             AI-POWERED MEDICAL REPORT ANALYSIS
           </p>
           
