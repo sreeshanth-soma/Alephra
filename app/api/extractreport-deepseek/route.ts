@@ -15,7 +15,8 @@ const pinecone = new Pinecone({
     apiKey: process.env.PINECONE_API_KEY ?? "",
 });
 
-// Initialize HF Inference client
+// Initialize HF Inference client with the new router endpoint
+process.env.HF_INFERENCE_ENDPOINT = 'https://router.huggingface.co/hf-inference'
 const hf = new HfInference(API_KEY);
 
 async function queryDeepSeekOCR(binaryData: Buffer) {

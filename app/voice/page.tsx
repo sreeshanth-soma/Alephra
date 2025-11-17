@@ -115,10 +115,14 @@ export default function VoiceAgentPage() {
   const [showParticles, setShowParticles] = useState(false);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
 
+  const MIN_TRANSCRIPT_LENGTH = 12;
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recognitionRef = useRef<any>(null);
+  const isProcessingRef = useRef<boolean>(false); // Prevent duplicate requests
+  const lastProcessedTranscriptRef = useRef<string>(''); // Track last processed transcript to prevent duplicates
 
   const languages = [
     { code: 'en-IN', name: 'English (India)', browserCode: 'en-IN', fallbackCode: 'en-US' },
@@ -331,11 +335,14 @@ export default function VoiceAgentPage() {
       return;
     }
     
-    // Prevent starting if already recording
-    if (isRecording) {
-      log('Already recording, ignoring start request');
+    // Prevent starting if already recording or processing
+    if (isRecording || isProcessingRef.current) {
+      log('Already recording or processing, ignoring start request');
       return;
     }
+    
+    // Reset last processed transcript when starting a new recording
+    lastProcessedTranscriptRef.current = '';
     
     setShowParticles(true);
     try {
@@ -357,10 +364,44 @@ export default function VoiceAgentPage() {
         };
 
         recognition.onresult = async (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          log('Browser speech recognition result:', transcript);
+          // Get the last result which should be the final one
+          const resultIndex = event.results.length - 1;
+          const result = event.results[resultIndex];
+          const isFinal = result.isFinal;
           
-          if (transcript.trim()) {
+          // Only process final results to avoid duplicate messages
+          if (!isFinal) {
+            log('Interim result ignored:', result[0].transcript);
+            return;
+          }
+          
+          const transcript = result[0].transcript.trim();
+          log('Browser speech recognition final result:', transcript);
+          
+          // Skip empty, duplicate, or very short transcripts
+          if (
+            !transcript ||
+            transcript.length < MIN_TRANSCRIPT_LENGTH ||
+            isProcessingRef.current ||
+            lastProcessedTranscriptRef.current === transcript
+          ) {
+            log(
+              'Skipping transcript. Reason:',
+              !transcript
+                ? 'empty'
+                : transcript.length < MIN_TRANSCRIPT_LENGTH
+                ? 'too short'
+                : isProcessingRef.current
+                ? 'already processing'
+                : 'duplicate'
+            );
+            return;
+          }
+          
+          // Mark this transcript as processed
+          lastProcessedTranscriptRef.current = transcript;
+          
+          if (transcript) {
             const userMessage: VoiceMessage = {
               id: Date.now().toString(),
               text: transcript,
@@ -378,6 +419,7 @@ export default function VoiceAgentPage() {
         recognition.onerror = (event: any) => {
       console.error('Browser speech recognition error:', event.error);
           setIsRecording(false);
+          isProcessingRef.current = false; // Reset processing flag
           // Fallback to MediaRecorder
           startMediaRecorder();
         };
@@ -387,6 +429,12 @@ export default function VoiceAgentPage() {
           setIsRecording(false);
           setShowParticles(false);
           recognitionRef.current = null;
+          // Reset last processed transcript after a delay to allow new recordings
+          setTimeout(() => {
+            lastProcessedTranscriptRef.current = '';
+          }, 1000);
+          // Don't reset isProcessingRef here - let generateAndSpeakResponse handle it
+          // The flag will be reset after the AI response is generated
         };
 
         recognition.start();
@@ -454,6 +502,7 @@ export default function VoiceAgentPage() {
           await processSpeechToText(audioBlob);
         } else {
           console.error('No audio data captured');
+          isProcessingRef.current = false; // Reset flag on error
           alert('No audio was captured. Please try again.');
         }
         
@@ -465,6 +514,7 @@ export default function VoiceAgentPage() {
       setSpeechMethod('sarvam');
     } catch (error) {
       console.error('Error starting MediaRecorder:', error);
+      isProcessingRef.current = false; // Reset processing flag on error
       alert('Could not access microphone. Please check permissions.');
     }
   };
@@ -496,6 +546,7 @@ export default function VoiceAgentPage() {
     
     setIsRecording(false);
     setShowParticles(false);
+    // Note: Don't reset isProcessingRef here - let generateAndSpeakResponse handle it
   };
 
   const processSpeechToText = async (audioBlob: Blob) => {
@@ -525,32 +576,60 @@ export default function VoiceAgentPage() {
       log('Speech-to-text result:', result);
 
       if (result.success) {
+        const transcript = (result.text || '').trim();
+        if (!transcript || transcript.length < MIN_TRANSCRIPT_LENGTH) {
+          log('Speech-to-text transcript too short or empty, ignoring:', transcript);
+          isProcessingRef.current = false;
+          setIsProcessing(false);
+          setShowParticles(false);
+          return;
+        }
+
+        // Prevent duplicate transcripts when using speech-to-text service
+        if (lastProcessedTranscriptRef.current === transcript) {
+          log('Speech-to-text transcript duplicate, ignoring:', transcript);
+          isProcessingRef.current = false;
+          setIsProcessing(false);
+          setShowParticles(false);
+          return;
+        }
+        lastProcessedTranscriptRef.current = transcript;
+
         const userMessage: VoiceMessage = {
           id: Date.now().toString(),
-          text: result.text,
+          text: transcript,
           timestamp: new Date(),
           type: 'user'
         };
         setMessages(prev => [...prev, userMessage]);
-        setCurrentText(result.text);
+        setCurrentText(transcript);
         
         // Generate AI response and convert to speech
         // Use detected language from speech-to-text, fallback to selectedLanguage
         const detectedLanguage = result.language || selectedLanguage;
         log('Using detected language:', detectedLanguage, 'from result:', result);
-        await generateAndSpeakResponse(result.text, detectedLanguage);
+        await generateAndSpeakResponse(transcript, detectedLanguage);
       } else {
         throw new Error(result.error || 'Speech recognition failed');
       }
     } catch (error) {
       console.error('Speech-to-text error:', error);
       alert(`Failed to process speech: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      isProcessingRef.current = false; // Reset on error
     } finally {
       setIsProcessing(false);
+      // Don't reset isProcessingRef here - let generateAndSpeakResponse handle it
     }
   };
 
   const generateAndSpeakResponse = async (userText: string, detectedLanguage?: string) => {
+    // Prevent duplicate calls
+    if (isProcessingRef.current && !isRecording) {
+      log('Already processing a response, ignoring duplicate call');
+      return;
+    }
+    
+    isProcessingRef.current = true; // Set processing flag
     try {
       // Add processing message
       const processingMessage: VoiceMessage = {
@@ -726,6 +805,9 @@ export default function VoiceAgentPage() {
           setMessages(prev => [...prev, assistantMessage]);
         });
       });
+    } finally {
+      // Reset processing flag after response is generated
+      isProcessingRef.current = false;
     }
   };
 

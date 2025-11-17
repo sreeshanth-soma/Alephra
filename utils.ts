@@ -4,8 +4,9 @@ import crypto from "crypto";
 import { HfInference } from '@huggingface/inference'
 
 const HF_TOKEN: string = process.env.HF_TOKEN ?? ""
-// The @huggingface/inference SDK will automatically use the correct endpoint
-// Version 2.6.7+ should handle the migration to the new Inference Providers API
+// Initialize HfInference - the SDK automatically uses the new router endpoint
+// Set environment variable to ensure correct endpoint is used
+process.env.HF_INFERENCE_ENDPOINT = 'https://router.huggingface.co/hf-inference'
 const hf = new HfInference(HF_TOKEN)
 
 // Local MCP embedding server client
