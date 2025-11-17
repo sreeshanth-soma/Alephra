@@ -26,23 +26,32 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 90) return "bg-green-300 dark:bg-green-800";
-    if (score >= 70) return "bg-yellow-300 dark:bg-yellow-800";
-    return "bg-red-300 dark:bg-red-800";
+    if (score >= 90) return "bg-green-50 dark:bg-green-950";
+    if (score >= 70) return "bg-yellow-50 dark:bg-yellow-950";
+    return "bg-red-50 dark:bg-red-950";
   };
 
   const getMetricCardBgColor = (status: string) => {
     switch (status) {
-      case "normal": return "bg-green-200 dark:bg-green-900";
-      case "warning": return "bg-yellow-200 dark:bg-yellow-900";
-      case "critical": return "bg-red-200 dark:bg-red-900";
+      case "normal": return "bg-white dark:bg-zinc-900";
+      case "warning": return "bg-white dark:bg-zinc-900";
+      case "critical": return "bg-white dark:bg-zinc-900";
       default: return "bg-white dark:bg-black";
+    }
+  };
+
+  const getMetricCardBorderColor = (status: string) => {
+    switch (status) {
+      case "normal": return "border-green-500";
+      case "warning": return "border-yellow-500";
+      case "critical": return "border-red-500";
+      default: return "border-gray-500";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "normal": return "bg-green-600 dark:bg-green-400 text-white dark:text-black";
+  case "normal": return "bg-emerald-600 dark:bg-emerald-400 text-white dark:text-black";
       case "warning": return "bg-yellow-600 dark:bg-yellow-400 text-white dark:text-black";
       case "critical": return "bg-red-600 dark:bg-red-400 text-white dark:text-black";
       default: return "bg-black dark:bg-white text-white dark:text-black";
@@ -61,7 +70,7 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Overall Health Score */}
-      <div className={`relative overflow-hidden rounded-xl border-2 border-black dark:border-white ${getScoreBgColor(overallScore)} p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]`}>
+      <div className={`relative overflow-hidden rounded-xl border-4 ${overallScore >= 90 ? 'border-green-500' : overallScore >= 70 ? 'border-yellow-500' : 'border-red-500'} ${getScoreBgColor(overallScore)} p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]`}>
         <div className="relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-6">
             <div className="flex items-center gap-4">
@@ -69,8 +78,8 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
                 <Heart className="w-8 h-8 text-white dark:text-black" strokeWidth={2.5} />
               </div>
               <div>
-                <h3 className="text-2xl font-extrabold font-mono text-black dark:text-white uppercase tracking-tight">Overall Health Score</h3>
-                <p className="text-sm font-mono text-black dark:text-white opacity-70 mt-1 uppercase">Based on latest vitals & labs</p>
+                <h3 className="text-2xl font-extrabold font-mono text-black dark:text-white capitalize tracking-tight">Overall health score</h3>
+                <p className="text-sm font-mono text-black dark:text-white opacity-70 mt-1 capitalize">Based on latest vitals & labs</p>
               </div>
             </div>
           </div>
@@ -82,10 +91,10 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
 
           <div className="mt-6 flex items-center gap-3 text-base">
             <Activity className="w-5 h-5 text-black dark:text-white" strokeWidth={2.5} />
-            <span className="font-bold font-mono text-black dark:text-white uppercase">
-              {overallScore >= 90 ? "EXCELLENT HEALTH! KEEP UP THE GREAT WORK!" :
-               overallScore >= 70 ? "GOOD HEALTH, CONTINUE MONITORING TRENDS" :
-               "ATTENTION NEEDED - PLEASE CONSULT YOUR DOCTOR"}
+            <span className="font-bold font-mono text-black dark:text-white capitalize">
+              {overallScore >= 90 ? "Excellent health! Keep up the great work!" :
+               overallScore >= 70 ? "Good health, continue monitoring trends" :
+               "Attention needed - please consult your doctor"}
             </span>
           </div>
         </div>
@@ -96,18 +105,18 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
         {metrics.map((metric, index) => (
           <div
             key={index}
-            className={`p-6 rounded-xl border-2 border-black dark:border-white ${getMetricCardBgColor(metric.status)} shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] transition`}
+            className={`p-6 rounded-xl border-4 ${getMetricCardBgColor(metric.status)} ${getMetricCardBorderColor(metric.status)} shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] transition`}
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-sm font-bold font-mono text-black dark:text-white uppercase">
+                <p className="text-sm font-bold font-mono text-black dark:text-white capitalize">
                   {metric.label}
                 </p>
               </div>
-              <span className={`px-2 py-1 rounded-lg text-xs font-bold font-mono border-2 border-black dark:border-white uppercase ${getStatusColor(metric.status)}`}>
-                {metric.status === "normal" ? "NORMAL" :
-                 metric.status === "warning" ? "ELEVATED" :
-                 "CRITICAL"}
+              <span className={`px-2 py-1 rounded-lg text-xs font-bold font-mono border-2 border-black dark:border-white capitalize ${getStatusColor(metric.status)}`}>
+                {metric.status === "normal" ? "Normal" :
+                 metric.status === "warning" ? "Elevated" :
+                 "Critical"}
               </span>
             </div>
 
@@ -125,7 +134,7 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
             {metric.trend && metric.change && (
               <div className="flex items-center gap-2 mt-4 pt-4 border-t-2 border-black dark:border-white">
                 {getTrendIcon(metric.trend)}
-                <span className="text-xs font-bold font-mono text-black dark:text-white opacity-70 uppercase">
+                <span className="text-xs font-bold font-mono text-black dark:text-white opacity-70 capitalize">
                   {metric.change}
                 </span>
               </div>
@@ -137,34 +146,59 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
   );
 }
 
-// Helper function to calculate health score from vitals
-export function calculateHealthScore(vitals: any[]): number {
-  if (vitals.length === 0) return 95;
+// Helper function to calculate health score from vitals and labs
+export function calculateHealthScore(vitals: any[] = [], labs: any[] = []): number {
+  if (vitals.length === 0 && labs.length === 0) return 95;
   
-  const latest = vitals[vitals.length - 1];
   let score = 100;
   
-  // Heart rate scoring (60-100 optimal)
-  if (latest.hr) {
-    if (latest.hr < 60 || latest.hr > 100) {
-      score -= Math.min(15, Math.abs(latest.hr - 80) * 0.3);
+  // Calculate from vitals
+  if (vitals.length > 0) {
+    const latest = vitals[vitals.length - 1];
+    
+    // Heart rate scoring (60-100 optimal)
+    if (latest.hr) {
+      if (latest.hr < 60 || latest.hr > 100) {
+        score -= Math.min(15, Math.abs(latest.hr - 80) * 0.3);
+      }
+    }
+    
+    // SpO2 scoring (95%+ optimal)
+    if (latest.spo2) {
+      if (latest.spo2 < 95) {
+        score -= (95 - latest.spo2) * 2;
+      }
+    }
+    
+    // Blood pressure scoring
+    if (latest.bp) {
+      const { systolic, diastolic } = latest.bp;
+      if (systolic > 140 || diastolic > 90) {
+        score -= 10;
+      } else if (systolic > 130 || diastolic > 85) {
+        score -= 5;
+      }
     }
   }
   
-  // SpO2 scoring (95%+ optimal)
-  if (latest.spo2) {
-    if (latest.spo2 < 95) {
-      score -= (95 - latest.spo2) * 2;
+  // Calculate from labs
+  if (labs.length > 0) {
+    const glucoseLab = labs.find((l: any) => l.name === "Glucose");
+    if (glucoseLab) {
+      const { value, normalRange } = glucoseLab;
+      if (value < normalRange.min || value > normalRange.max) {
+        score -= 5;
+      }
     }
-  }
-  
-  // Blood pressure scoring
-  if (latest.bp) {
-    const { systolic, diastolic } = latest.bp;
-    if (systolic > 140 || diastolic > 90) {
-      score -= 10;
-    } else if (systolic > 130 || diastolic > 85) {
-      score -= 5;
+    
+    // Check lipid profile
+    const hdlLab = labs.find((l: any) => l.name === "HDL");
+    const ldlLab = labs.find((l: any) => l.name === "LDL");
+    if (hdlLab && hdlLab.value < hdlLab.normalRange.min) {
+      score -= 3;
+    }
+    if (ldlLab && ldlLab.value > ldlLab.normalRange.max) {
+      score -= 3;
     }
   }
   

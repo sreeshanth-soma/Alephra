@@ -584,7 +584,7 @@ const MetricCard = ({ label, value, unit, accent }: { label: string; value: stri
   <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }} whileHover={{ y: -2 }}>
     <Card className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] transition">
       <CardContent className="p-4">
-        <div className="text-sm font-bold font-mono text-black dark:text-white mb-1 uppercase opacity-70">{label}</div>
+  <div className="text-sm font-bold font-mono text-black dark:text-white mb-1 capitalize opacity-70">{label}</div>
         <div className="text-2xl font-semibold text-black dark:text-white">
           {value} {unit && <span className="text-base text-black dark:text-white opacity-60">{unit}</span>}
         </div>
@@ -1595,7 +1595,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-black dark:text-white"><span className="bg-black dark:bg-white text-white dark:text-black px-2 py-1">Alephra</span> My Health Space</h1>
-                <p className="text-base font-mono text-black dark:text-white mt-2 uppercase tracking-wide opacity-70">OVERVIEW OF VITALS, LABS, MEDS, AND CARE TIMELINE</p>
+                <p className="text-base font-mono text-black dark:text-white mt-2 capitalize tracking-wide opacity-70">Overview of vitals, labs, meds, and care timeline</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -1633,9 +1633,9 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="relative overflow-hidden border-2 border-black dark:border-white bg-white dark:bg-black rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
             <div className="px-6 py-8 md:px-8 md:py-10 text-center">
-                <div className="text-base font-bold font-mono text-black dark:text-white opacity-70 mb-3 uppercase tracking-wide">Welcome</div>
-              <div className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-mono text-black dark:text-white leading-tight uppercase tracking-tight">Your health at a glance</div>
-              <div className="mt-4 text-base md:text-lg font-mono text-black dark:text-white opacity-70 uppercase tracking-wide">Track vitals, labs and care progress in one place.</div>
+                <div className="text-base font-bold font-mono text-black dark:text-white opacity-70 mb-3 capitalize tracking-wide">Welcome</div>
+              <div className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-mono text-black dark:text-white leading-tight capitalize tracking-tight">Your health at a glance</div>
+              <div className="mt-4 text-base md:text-lg font-mono text-black dark:text-white opacity-70 capitalize tracking-wide">Track vitals, labs and care progress in one place.</div>
             </div>
           </div>
         </div>
@@ -1643,10 +1643,10 @@ export default function DashboardPage() {
         {/* Quick actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Upload Report", description: "Simple upload & chat", classes: "text-white bg-[#26A69A]/70 hover:bg-[#26A69A]/80 dark:text-white dark:bg-[#1E88E5]/70 dark:hover:bg-[#1E88E5]/80", href: "/report" },
-            { label: "Health Analytics", description: "View health insights", classes: "text-black bg-[#B0BEC5]/70 hover:bg-[#B0BEC5]/80 dark:text-white dark:bg-[#43A047]/70 dark:hover:bg-[#43A047]/80", href: "/history" },
-            { label: "Voice Assistant", description: "Talk to AI assistant", classes: "text-white bg-[#3F51B5]/70 hover:bg-[#3F51B5]/80 dark:text-white dark:bg-[#7B1FA2]/70 dark:hover:bg-[#7B1FA2]/80", href: "/voice" },
-            { label: "My Health Space", description: "Medications & appointments", classes: "text-white bg-[#607D8B]/70 hover:bg-[#607D8B]/80 dark:text-white dark:bg-[#F57C00]/70 dark:hover:bg-[#F57C00]/80", href: "/care-plan" },
+            { label: "Upload Report", description: "Simple upload & chat", classes: "text-white bg-[#009688]/85 hover:bg-[#009688]/95 dark:text-white dark:bg-[#1565C0]/85 dark:hover:bg-[#1565C0]/95", href: "/report" },
+            { label: "Health Analytics", description: "View health insights", classes: "text-white bg-[#00897B]/85 hover:bg-[#00897B]/95 dark:text-white dark:bg-[#388E3C]/85 dark:hover:bg-[#388E3C]/95", href: "/history" },
+            { label: "Voice Assistant", description: "Talk to AI assistant", classes: "text-white bg-[#3949AB]/85 hover:bg-[#3949AB]/95 dark:text-white dark:bg-[#8E24AA]/85 dark:hover:bg-[#8E24AA]/95", href: "/voice" },
+            { label: "My Health Space", description: "Medications & appointments", classes: "text-white bg-[#455A64]/85 hover:bg-[#455A64]/95 dark:text-white dark:bg-[#F57C00]/85 dark:hover:bg-[#F57C00]/95", href: "/care-plan" },
           ].map((b, i) => (
             <a key={i} href={b.href} className="block relative group">
               <motion.button 
@@ -1655,8 +1655,8 @@ export default function DashboardPage() {
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="relative z-10 text-center">
-                  <div className="font-bold uppercase text-sm">{b.label}</div>
-                  <div className="text-xs uppercase opacity-90 mt-1">{b.description}</div>
+                  <div className="font-bold capitalize text-sm">{b.label}</div>
+                  <div className="text-xs capitalize opacity-90 mt-1">{b.description}</div>
                 </div>
               </motion.button>
             </a>
@@ -1677,12 +1677,19 @@ export default function DashboardPage() {
         </div>
 
         {/* Health Score Dashboard */}
-        <div className="mb-8" id="health-dashboard-content">
-          <HealthScoreDashboard
-            overallScore={healthScore}
-            metrics={getHealthMetrics(vitals, labData)}
-          />
-        </div>
+        {/* Filter vitals and labs by selected time range for metrics and score */}
+        {(() => {
+          const filteredVitals = filterDataByRange(vitals, timeRange);
+          const filteredLabs = filterDataByRange(labData, timeRange);
+          return (
+            <div className="mb-8" id="health-dashboard-content">
+              <HealthScoreDashboard
+                overallScore={calculateHealthScore(filteredVitals, filteredLabs)}
+                metrics={getHealthMetrics(filteredVitals, filteredLabs)}
+              />
+            </div>
+          );
+        })()}
 
         {/* Next Appointment Countdown */}
         {appointments.length > 0 && (() => {
@@ -1788,7 +1795,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <div className="text-lg font-bold text-black dark:text-white">Record Vitals</div>
-                    <div className="text-sm font-mono text-black dark:text-white uppercase opacity-70">TRACK YOUR HEALTH METRICS</div>
+                    <div className="text-sm font-mono text-black dark:text-white capitalize opacity-70">Track your health metrics</div>
                   </div>
                 </div>
                 <button
@@ -2313,7 +2320,7 @@ export default function DashboardPage() {
                 </div>
                   <div>
                     <h3 className="text-lg font-bold text-black dark:text-white">Lipid Profile Snapshot</h3>
-                    <p className="text-sm font-mono text-black dark:text-white uppercase opacity-70">LATEST CHOLESTEROL AND TRIGLYCERIDE LEVELS</p>
+                    <p className="text-sm font-mono text-black dark:text-white capitalize opacity-70">Latest cholesterol and triglyceride levels</p>
               </div>
                 </div>
                 <div className="text-sm font-mono text-black dark:text-white opacity-60">
@@ -2653,7 +2660,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                 <div>
                 <div className="text-lg font-bold text-black dark:text-white">Medicine Categories</div>
-                  <div className="text-sm font-mono text-black dark:text-white mt-1 uppercase opacity-70">BROWSE AND MANAGE YOUR MEDICINES</div>
+                  <div className="text-sm font-mono text-black dark:text-white mt-1 capitalize opacity-70">Browse and manage your medicines</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-black dark:text-white opacity-70">Selected: {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}</span>
@@ -3205,7 +3212,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-black dark:border-white">
                 <div>
                   <div className="text-lg font-bold text-black dark:text-white">My Prescriptions</div>
-                  <div className="text-sm font-mono text-black dark:text-white mt-1 uppercase opacity-70">TRACK YOUR MEDICATIONS AND DOSAGE SCHEDULE</div>
+                  <div className="text-sm font-mono text-black dark:text-white mt-1 capitalize opacity-70">Track your medications and dosage schedule</div>
                 </div>
                 <div className="flex gap-2">
                   {session?.user?.email && (
@@ -3558,7 +3565,7 @@ export default function DashboardPage() {
             <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
               <div>
                 <h2 className="text-2xl font-bold font-mono text-black dark:text-white tracking-tight">ALL LAB RESULTS</h2>
-                <p className="text-sm font-mono text-black dark:text-white mt-2 uppercase opacity-70">TOTAL: {labData.length} RESULTS</p>
+                <p className="text-sm font-mono text-black dark:text-white mt-2 capitalize opacity-70">Total: {labData.length} results</p>
               </div>
               <button
                 onClick={() => setShowLabsModal(false)}
