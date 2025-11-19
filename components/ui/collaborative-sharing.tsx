@@ -55,32 +55,65 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
   const [password, setPassword] = useState<string>('');
   const [copiedId, setCopiedId] = useState<string>('');
   const [showAccessLog, setShowAccessLog] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  // Generate a shareable link
-  const generateShareLink = () => {
-    const linkId = `share-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    const url = `${baseUrl}/shared/${linkId}`;
-    
-    const newLink: ShareLink = {
-      id: linkId,
-      reportId: prescription.id,
-      url: url,
-      expiresAt: new Date(Date.now() + expiryHours * 60 * 60 * 1000),
-      viewCount: 0,
-      maxViews: maxViews,
-      password: password || undefined,
-      createdAt: new Date(),
-      accessLog: []
-    };
+  // Generate a shareable link via API
+  const generateShareLink = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // Get full report data
+      const { prescriptionStorage } = await import('@/lib/prescription-storage');
+      prescriptionStorage.invalidateCache();
+      const fullReport = await prescriptionStorage.getPrescriptionById(prescription.id);
+      
+      if (!fullReport) {
+        throw new Error('Report not found');
+      }
 
-    setShareLinks([...shareLinks, newLink]);
-    
-    // Store in localStorage
-    const existingLinks = JSON.parse(localStorage.getItem('medscan-share-links') || '[]');
-    localStorage.setItem('medscan-share-links', JSON.stringify([...existingLinks, newLink]));
+      const response = await fetch('/api/share-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportId: prescription.id,
+          fileName: fullReport.fileName,
+          reportData: fullReport.reportData,
+          summary: fullReport.summary,
+          uploadedAt: fullReport.uploadedAt,
+          expiryHours,
+          maxViews,
+          password: password || undefined
+        })
+      });
 
-    return newLink;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create share link');
+      }
+
+      const data = await response.json();
+      const newLink: ShareLink = {
+        id: data.shareLink.shareId,
+        reportId: prescription.id,
+        url: data.shareLink.url,
+        expiresAt: new Date(data.shareLink.expiresAt),
+        viewCount: data.shareLink.viewCount,
+        maxViews: data.shareLink.maxViews,
+        password: data.shareLink.hasPassword ? password : undefined,
+        createdAt: new Date(data.shareLink.createdAt),
+        accessLog: []
+      };
+
+      setShareLinks([...shareLinks, newLink]);
+      setPassword(''); // Clear password field
+      setMaxViews(undefined); // Reset max views
+    } catch (err) {
+      console.error('Error creating share link:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create share link');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Copy link to clipboard
@@ -94,14 +127,22 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
     }
   };
 
-  // Delete a share link
-  const deleteShareLink = (linkId: string) => {
-    const updatedLinks = shareLinks.filter(l => l.id !== linkId);
-    setShareLinks(updatedLinks);
-    
-    const existingLinks = JSON.parse(localStorage.getItem('medscan-share-links') || '[]');
-    const filtered = existingLinks.filter((l: ShareLink) => l.id !== linkId);
-    localStorage.setItem('medscan-share-links', JSON.stringify(filtered));
+  // Delete a share link via API
+  const deleteShareLink = async (linkId: string) => {
+    try {
+      const response = await fetch(`/api/share-links?shareId=${linkId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete share link');
+      }
+
+      setShareLinks(shareLinks.filter(l => l.id !== linkId));
+    } catch (err) {
+      console.error('Error deleting share link:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete share link');
+    }
   };
 
   // Share via email
@@ -138,21 +179,31 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
     return `${minutes}m remaining`;
   };
 
-  // Load existing links on mount
+  // Load existing links on mount from API
   React.useEffect(() => {
-    const existingLinks = JSON.parse(localStorage.getItem('medscan-share-links') || '[]');
-    const reportLinks = existingLinks
-      .filter((l: ShareLink) => l.reportId === prescription.id)
-      .map((l: ShareLink) => ({
-        ...l,
-        createdAt: new Date(l.createdAt),
-        expiresAt: new Date(l.expiresAt),
-        accessLog: l.accessLog.map(log => ({
-          ...log,
-          timestamp: new Date(log.timestamp)
-        }))
-      }));
-    setShareLinks(reportLinks);
+    const loadShareLinks = async () => {
+      try {
+        const response = await fetch(`/api/share-links?reportId=${prescription.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          const reportLinks: ShareLink[] = data.shareLinks.map((l: any) => ({
+            id: l.shareId,
+            reportId: l.reportId,
+            url: l.url,
+            expiresAt: new Date(l.expiresAt),
+            viewCount: l.viewCount,
+            maxViews: l.maxViews,
+            password: l.hasPassword ? undefined : undefined, // Don't expose password
+            createdAt: new Date(l.createdAt),
+            accessLog: l.accessLog || []
+          }));
+          setShareLinks(reportLinks);
+        }
+      } catch (err) {
+        console.error('Error loading share links:', err);
+      }
+    };
+    loadShareLinks();
   }, [prescription.id]);
 
   return (
@@ -248,12 +299,18 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
                   />
                 </div>
 
+                {error && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
+                    {error}
+                  </div>
+                )}
                 <Button
                   onClick={generateShareLink}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white disabled:opacity-50"
                 >
                   <Link2 className="h-4 w-4 mr-2" />
-                  Generate Share Link
+                  {loading ? 'Creating...' : 'Generate Share Link'}
                 </Button>
               </div>
             </div>

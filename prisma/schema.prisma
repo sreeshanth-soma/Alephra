@@ -53,6 +53,7 @@ model User {
   medications   Medication[]
   healthGoals   HealthGoal[]
   carePlanAppointments CarePlanAppointment[]
+  shareLinks    ShareLink[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -224,4 +225,32 @@ model MedicineData {
   updatedAt   DateTime @updatedAt
 
   @@index([userEmail])
+}
+
+model ShareLink {
+  id            String   @id @default(cuid())
+  shareId       String   @unique // The ID used in the URL (e.g., "share-1234567890-abc123")
+  reportId      String   // Can be database ID or localStorage ID
+  userId        String   // User who created the share link
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Report data stored directly (since reportId might be localStorage ID)
+  fileName      String
+  reportData    String   @db.Text
+  summary       String?  @db.Text
+  uploadedAt    DateTime
+  
+  // Share link settings
+  expiresAt     DateTime
+  viewCount     Int      @default(0)
+  maxViews      Int?
+  password      String?  // Encrypted password (optional)
+  accessLog     String   @db.Text // JSON array of access logs
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([shareId])
+  @@index([userId])
+  @@index([expiresAt])
 }
