@@ -10,7 +10,7 @@ import EnhancedHistoryList from "@/components/EnhancedHistory";
 import { PrescriptionRecord, prescriptionStorage } from "@/lib/prescription-storage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, BarChart3, Share2, FileStack, Calendar } from "lucide-react";
+import { Upload, BarChart3, Share2, FileStack, Calendar, Shield } from "lucide-react";
 import Link from "next/link";
 import { HoverButton } from "@/components/ui/hover-button";
 import { Squares } from "@/components/ui/squares-background";
@@ -330,6 +330,35 @@ const AnalysisPage = () => {
       
       
       <div className="container mx-auto px-4 pt-6 pb-6 relative z-10">
+        {/* Floating Share Highlight */}
+        <div className="hidden lg:block">
+          <div className="absolute top-6 right-[-120px] z-20 pr-4">
+            <div className="flex items-center gap-4 rounded-3xl border border-white dark:border-white/100 bg-white/95 dark:bg-black/85 backdrop-blur-xl shadow-lg shadow-black/10 dark:shadow-blue-500/10 px-5 py-3 w-[520px]">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-[10px] md:text-xs font-extrabold text-gray-900 dark:text-white tracking-[0.4em] uppercase">
+                    Share Reports Securely
+                  </p>
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-200 leading-snug">
+                  Share expiring, password-protected links. Track views and revoke anytime.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  document.getElementById("history")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }}
+                className="inline-flex items-center gap-2 rounded-2xl border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black px-5 py-2 text-sm font-semibold tracking-wide uppercase transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.35)] dark:hover:shadow-[0_8px_20px_rgba(255,255,255,0.25)]"
+              >
+                <BarChart3 className="h-4 w-4" />
+                Reports
+              </button>
+            </div>
+          </div>
+        </div>
         <Loader 
           loadingStates={[
             { text: "Uploading report" },
@@ -488,29 +517,31 @@ const AnalysisPage = () => {
             </div>
             
             {prescriptions.length > 0 && (
-              <div className="bg-gradient-to-r from-blue-50 via-white to-purple-50 dark:from-blue-900/30 dark:via-black dark:to-purple-900/30 border border-blue-200/60 dark:border-blue-800/60 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center gap-4 shadow-[0_20px_50px_rgba(8,_112,_184,_0.07)]">
+              <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center gap-4 shadow-[12px_12px_0px_rgba(0,0,0,0.08)] dark:shadow-[12px_12px_0px_rgba(255,255,255,0.08)]">
                 <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 flex items-center justify-center">
-                    <Share2 className="h-6 w-6 text-blue-700 dark:text-blue-300" />
+                  <div className="h-12 w-12 rounded-xl border-2 border-black dark:border-white flex items-center justify-center bg-white dark:bg-black">
+                    <Share2 className="h-6 w-6 text-black dark:text-white" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-blue-600 dark:text-blue-300 uppercase tracking-[0.2em] mb-1">
+                    <p className="text-xs font-semibold text-black dark:text-white uppercase tracking-[0.2em] mb-1">
                       SECURE REPORT SHARING
                     </p>
-                    <p className="text-sm md:text-base text-gray-800 dark:text-gray-200 leading-relaxed">
+                    <p className="text-sm md:text-base text-black dark:text-white leading-relaxed">
                       Instantly generate a password-protected link for your doctor or caregiver. Select a report below and click the Share icon—or use the button to jump right in.
                     </p>
                   </div>
                 </div>
-                <Button
+                <button
                   onClick={handleShareCallout}
-                  className="w-full md:w-auto bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-transparent dark:hover:bg-transparent hover:text-black hover:dark:text-white transition-all"
+                  className="group inline-flex items-center gap-3 rounded-2xl border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black px-5 py-2 text-sm font-semibold tracking-wide uppercase transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.35)] dark:hover:shadow-[0_8px_20px_rgba(255,255,255,0.25)]"
                 >
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/40 dark:border-black/40 text-xs font-bold">
+                    ↗
+                  </span>
                   {selectedPrescription ? "Share selected report" : "Share a report"}
-                </Button>
+                </button>
               </div>
             )}
-            
             <div className="w-full">
               <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden">
                 <div className="p-6 border-b-2 border-black dark:border-white">
