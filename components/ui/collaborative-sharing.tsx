@@ -43,11 +43,13 @@ interface AccessLog {
 interface CollaborativeSharingProps {
   prescription: PrescriptionRecord;
   onClose: () => void;
+  onShareActivity?: () => void;
 }
 
 export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({ 
   prescription,
-  onClose
+  onClose,
+  onShareActivity
 }) => {
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
   const [expiryHours, setExpiryHours] = useState<number>(24);
@@ -105,7 +107,8 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
         accessLog: []
       };
 
-      setShareLinks([...shareLinks, newLink]);
+      setShareLinks((prev) => [...prev, newLink]);
+      onShareActivity?.();
       setPassword(''); // Clear password field
       setMaxViews(undefined); // Reset max views
     } catch (err) {
@@ -138,7 +141,8 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
         throw new Error('Failed to delete share link');
       }
 
-      setShareLinks(shareLinks.filter(l => l.id !== linkId));
+      setShareLinks((prev) => prev.filter(l => l.id !== linkId));
+      onShareActivity?.();
     } catch (err) {
       console.error('Error deleting share link:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete share link');

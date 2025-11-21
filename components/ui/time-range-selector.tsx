@@ -64,8 +64,23 @@ export function filterDataByRange<T extends { date: string | Date }>(
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
   
-  return data.filter(item => {
+  const parseDate = (value: string | Date): Date => {
+    if (value instanceof Date) return value;
+    return new Date(value);
+  };
+
+  const getTimeValue = (value: string | Date): number => {
+    const date = parseDate(value);
+    const time = date.getTime();
+    return Number.isFinite(time) ? time : 0;
+  };
+
+  const filtered = data.filter(item => {
     const itemDate = typeof item.date === 'string' ? new Date(item.date) : item.date;
     return itemDate >= cutoffDate;
+  });
+
+  return filtered.sort((a, b) => {
+    return getTimeValue(a.date) - getTimeValue(b.date);
   });
 }

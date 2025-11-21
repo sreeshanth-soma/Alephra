@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,11 +23,59 @@ export default function SharedHealthData() {
   const [passwordError, setPasswordError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const hasConsumedViewRef = useRef(false);
+
+  const loadReportData = useCallback(
+    async (shareId: string) => {
+      if (hasConsumedViewRef.current) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/share-links/${shareId}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          setError(errorData.error || 'Unable to load shared report.');
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+        const shareLinkData = data.shareLink;
+
+        setData({
+          type: 'report',
+          report: {
+            fileName: shareLinkData.fileName,
+            summary: shareLinkData.summary,
+            reportData: shareLinkData.reportData,
+            uploadedAt: new Date(shareLinkData.uploadedAt)
+          }
+        });
+        setShareType('report');
+        setIsAuthenticated(true);
+        setLoading(false);
+        setShareLink((prev: any) => ({
+          ...(prev || {}),
+          shareId: shareLinkData.shareId,
+          viewCount: shareLinkData.viewCount
+        }));
+        hasConsumedViewRef.current = true;
+      } catch (err) {
+        console.error('Error loading shared report:', err);
+        setError('Unable to load shared report. Please try again.');
+        setLoading(false);
+        hasConsumedViewRef.current = false;
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     const decodeData = async () => {
       try {
         const encoded = params.id as string;
+        hasConsumedViewRef.current = false;
         
         if (!encoded) {
           setError('No share ID provided in the URL.');
@@ -38,8 +86,8 @@ export default function SharedHealthData() {
         // Check if this is a collaborative sharing link (starts with "share-")
         if (encoded.startsWith('share-')) {
           try {
-            // Fetch share link from API
-            const response = await fetch(`/api/share-links/${encoded}`);
+            // Fetch share link metadata from API without consuming view
+            const response = await fetch(`/api/share-links/${encoded}?prefetch=true`);
             
             if (!response.ok) {
               const errorData = await response.json();
@@ -74,22 +122,7 @@ export default function SharedHealthData() {
             }
             
             // No password required, load the report immediately
-            if (shareLinkData.reportData) {
-              setData({
-                type: 'report',
-                report: {
-                  fileName: shareLinkData.fileName,
-                  summary: shareLinkData.summary,
-                  reportData: shareLinkData.reportData,
-                  uploadedAt: new Date(shareLinkData.uploadedAt)
-                }
-              });
-              setIsAuthenticated(true);
-            } else {
-              setError('Report data not available.');
-            }
-            setShareType('report');
-            setLoading(false);
+            await loadReportData(encoded);
             return;
           } catch (apiErr) {
             console.error('Error loading from API:', apiErr);
@@ -143,7 +176,7 @@ export default function SharedHealthData() {
     };
 
     decodeData();
-  }, [params.id]);
+  }, [params.id, loadReportData]);
 
   // Function to load report after password verification
   const loadReport = async (link: any) => {
@@ -183,6 +216,11 @@ export default function SharedHealthData() {
       });
       setIsAuthenticated(true);
       setPasswordError('');
+      hasConsumedViewRef.current = true;
+      setShareLink((prev: any) => ({
+        ...(prev || {}),
+        viewCount: shareLinkData.viewCount
+      }));
     } catch (err) {
       console.error('Error loading report:', err);
       setPasswordError('Unable to load the report. Please try again.');

@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast"
 import ReportComponent from "@/components/ReportComponent";
 import ChatComponent from "@/components/chat/chatcomponent";
@@ -10,7 +10,7 @@ import EnhancedHistoryList from "@/components/EnhancedHistory";
 import { PrescriptionRecord, prescriptionStorage } from "@/lib/prescription-storage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Info, Upload, BarChart3, Share2, FileStack, Calendar } from "lucide-react";
+import { Upload, BarChart3, Share2, FileStack, Calendar } from "lucide-react";
 import Link from "next/link";
 import { HoverButton } from "@/components/ui/hover-button";
 import { Squares } from "@/components/ui/squares-background";
@@ -29,7 +29,28 @@ import {
   ReportComparison,
   HealthMetric
 } from "@/lib/health-analytics";
-import { useMemo } from "react";
+const formatRelativeTime = (input: Date) => {
+  const diff = Date.now() - input.getTime();
+  if (diff < 60 * 1000) return "just now";
+  if (diff < 60 * 60 * 1000) {
+    const mins = Math.floor(diff / (60 * 1000));
+    return `${mins}m ago`;
+  }
+  if (diff < 24 * 60 * 60 * 1000) {
+    const hours = Math.floor(diff / (60 * 60 * 1000));
+    return `${hours}h ago`;
+  }
+  const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+  return `${days}d ago`;
+};
+
+type ShareStatsMap = Record<
+  string,
+  {
+    count: number;
+    lastShared: Date;
+  }
+>;
 
 const AnalysisPage = () => {
   const { toast } = useToast()
@@ -46,6 +67,17 @@ const AnalysisPage = () => {
   const [showSharing, setShowSharing] = useState(false);
   const [reportToShare, setReportToShare] = useState<PrescriptionRecord | null>(null);
   const [showClearModal, setShowClearModal] = useState(false);
+  const [shareStats, setShareStats] = useState<ShareStatsMap>({});
+
+  const selectedPrescription = useMemo(
+    () => prescriptions.find((p) => p.id === selectedPrescriptionId) || null,
+    [prescriptions, selectedPrescriptionId]
+  );
+
+  const prescriptionIdsKey = useMemo(
+    () => prescriptions.map((p) => p.id).sort().join("|"),
+    [prescriptions]
+  );
 
   // Memoized analytics data
   const analytics = useMemo(() => {
@@ -97,13 +129,91 @@ const AnalysisPage = () => {
     loadPrescriptions();
   }, [historyRefreshTrigger]);
 
+  const refreshShareStats = useCallback(async () => {
+    if (!prescriptions.length) {
+      setShareStats({});
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/share-links");
+      if (response.status === 401) {
+        setShareStats({});
+        return;
+      }
+      if (!response.ok) {
+        throw new Error("Failed to fetch share links");
+      }
+
+      const data = await response.json();
+      const now = Date.now();
+      const stats: ShareStatsMap = {};
+
+      if (Array.isArray(data.shareLinks)) {
+        data.shareLinks.forEach((link: any) => {
+          if (!link.reportId) return;
+          const expiresAt = new Date(link.expiresAt);
+          const createdAt = new Date(link.createdAt);
+          const isExpired = expiresAt.getTime() < now;
+          const isMaxed =
+            typeof link.maxViews === "number" &&
+            link.maxViews > 0 &&
+            link.viewCount >= link.maxViews;
+          if (isExpired || isMaxed) {
+            return;
+          }
+
+          if (!stats[link.reportId]) {
+            stats[link.reportId] = {
+              count: 1,
+              lastShared: createdAt,
+            };
+          } else {
+            stats[link.reportId].count += 1;
+            if (createdAt > stats[link.reportId].lastShared) {
+              stats[link.reportId].lastShared = createdAt;
+            }
+          }
+        });
+      }
+
+      setShareStats(stats);
+    } catch (error) {
+      console.error("Failed to load share stats:", error);
+    }
+  }, [prescriptions.length, prescriptionIdsKey]);
+
+  useEffect(() => {
+    refreshShareStats();
+  }, [refreshShareStats]);
+
   const onReportConfirmation = (data: string) => {
     setreportData(data);
     setHistoryRefreshTrigger(prev => prev + 1);
     toast({
       description: "Report loaded successfully! You can now ask questions about it."
     });
-  }
+  };
+
+  const handleShareCallout = () => {
+    if (selectedPrescription) {
+      setReportToShare(selectedPrescription);
+      setShowSharing(true);
+      return;
+    }
+
+    if (prescriptions.length === 0) {
+      toast({
+        description: "Upload a report first to create a secure share link.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      description: "Select a report from the list below, then tap Share.",
+    });
+  };
 
   const handleLoadingChange = (loading: boolean) => {
     setLoading(loading);
@@ -163,6 +273,7 @@ const AnalysisPage = () => {
     toast({
       description: "Report deleted successfully",
     });
+    refreshShareStats();
   };
 
   const handleClearAll = () => {
@@ -174,6 +285,7 @@ const AnalysisPage = () => {
     toast({
       description: "All reports cleared",
     });
+    refreshShareStats();
   };
 
   const handleExport = (prescription: PrescriptionRecord) => {
@@ -375,6 +487,30 @@ const AnalysisPage = () => {
               </p>
             </div>
             
+            {prescriptions.length > 0 && (
+              <div className="bg-gradient-to-r from-blue-50 via-white to-purple-50 dark:from-blue-900/30 dark:via-black dark:to-purple-900/30 border border-blue-200/60 dark:border-blue-800/60 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center gap-4 shadow-[0_20px_50px_rgba(8,_112,_184,_0.07)]">
+                <div className="flex items-start gap-4">
+                  <div className="h-12 w-12 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 flex items-center justify-center">
+                    <Share2 className="h-6 w-6 text-blue-700 dark:text-blue-300" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-blue-600 dark:text-blue-300 uppercase tracking-[0.2em] mb-1">
+                      SECURE REPORT SHARING
+                    </p>
+                    <p className="text-sm md:text-base text-gray-800 dark:text-gray-200 leading-relaxed">
+                      Instantly generate a password-protected link for your doctor or caregiver. Select a report below and click the Share icon—or use the button to jump right in.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleShareCallout}
+                  className="w-full md:w-auto bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-transparent dark:hover:bg-transparent hover:text-black hover:dark:text-white transition-all"
+                >
+                  {selectedPrescription ? "Share selected report" : "Share a report"}
+                </Button>
+              </div>
+            )}
+            
             <div className="w-full">
               <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden">
                 <div className="p-6 border-b-2 border-black dark:border-white">
@@ -440,6 +576,11 @@ const AnalysisPage = () => {
                                 }`}>
                                   {prescription.fileName}
                                 </h4>
+                                {shareStats[prescription.id] && (
+                                  <span className="px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase rounded-full border border-emerald-500 text-emerald-600 dark:text-emerald-300">
+                                    Shared
+                                  </span>
+                                )}
                                 {selectedPrescriptionId === prescription.id && (
                                   <div className="w-2 h-2 bg-white dark:bg-black rounded-full animate-pulse flex-shrink-0"></div>
                                 )}
@@ -456,11 +597,26 @@ const AnalysisPage = () => {
                                   ? 'text-gray-400 dark:text-gray-600' 
                                   : 'text-gray-500 dark:text-gray-500'
                               }`}>
-                                <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
                                   {prescription.uploadedAt.toLocaleDateString()}
                                 </span>
                                 <span>{prescription.uploadedAt.toLocaleTimeString()}</span>
+                                {shareStats[prescription.id] ? (
+                                  <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                    <Share2 className="h-3 w-3" />
+                                    {shareStats[prescription.id].count} active
+                                    {shareStats[prescription.id].count > 1 ? " shares" : " share"}
+                                    <span className="hidden sm:inline">
+                                      · {formatRelativeTime(shareStats[prescription.id].lastShared)}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+                                    <Share2 className="h-3 w-3" />
+                                    Not shared
+                                  </span>
+                                )}
                               </div>
                             </div>
                             <div className="flex items-center gap-1 ml-4">
@@ -475,7 +631,7 @@ const AnalysisPage = () => {
                                     ? 'border-white dark:border-black hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white'
                                     : 'border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
                                 }`}
-                                title="Share report"
+                                title={shareStats[prescription.id] ? "Manage share links" : "Share report"}
                               >
                                 <Share2 className="h-4 w-4" strokeWidth={2.5} />
                               </button>
@@ -541,6 +697,7 @@ const AnalysisPage = () => {
             setShowSharing(false);
             setReportToShare(null);
           }}
+          onShareActivity={refreshShareStats}
         />
       )}
 

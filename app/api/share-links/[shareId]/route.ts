@@ -9,6 +9,8 @@ export async function GET(
 ) {
   try {
     const { shareId } = await Promise.resolve(params);
+    const searchParams = req.nextUrl.searchParams;
+    const isPrefetch = searchParams.get("prefetch") === "true";
 
     if (!shareId) {
       return NextResponse.json(
@@ -28,7 +30,6 @@ export async function GET(
       );
     }
 
-    // Check if link has expired
     if (new Date() > shareLink.expiresAt) {
       return NextResponse.json(
         { error: "This shared link has expired" },
@@ -36,7 +37,6 @@ export async function GET(
       );
     }
 
-    // Check if max views reached
     if (shareLink.maxViews && shareLink.viewCount >= shareLink.maxViews) {
       return NextResponse.json(
         { error: "This shared link has reached its maximum view limit" },
@@ -44,12 +44,31 @@ export async function GET(
       );
     }
 
-    // Increment view count and log access
-    const accessLog = JSON.parse(shareLink.accessLog || '[]');
-    const userAgent = req.headers.get('user-agent') || 'unknown';
-    const ipAddress = req.headers.get('x-forwarded-for') || 
-                     req.headers.get('x-real-ip') || 
-                     'unknown';
+    if (isPrefetch) {
+      return NextResponse.json({
+        shareLink: {
+          id: shareLink.shareId,
+          shareId: shareLink.shareId,
+          reportId: shareLink.reportId,
+          fileName: shareLink.fileName,
+          reportData: null,
+          summary: null,
+          uploadedAt: shareLink.uploadedAt,
+          expiresAt: shareLink.expiresAt,
+          viewCount: shareLink.viewCount,
+          maxViews: shareLink.maxViews,
+          hasPassword: !!shareLink.password,
+          createdAt: shareLink.createdAt
+        }
+      });
+    }
+
+    const accessLog = JSON.parse(shareLink.accessLog || "[]");
+    const userAgent = req.headers.get("user-agent") || "unknown";
+    const ipAddress =
+      req.headers.get("x-forwarded-for") ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
 
     accessLog.push({
       timestamp: new Date().toISOString(),
@@ -57,30 +76,28 @@ export async function GET(
       userAgent
     });
 
-    await prisma.shareLink.update({
+    const updatedShareLink = await prisma.shareLink.update({
       where: { shareId },
       data: {
-        viewCount: shareLink.viewCount + 1,
+        viewCount: { increment: 1 },
         accessLog: JSON.stringify(accessLog)
       }
     });
 
-    // Return share link data (without password hash)
-    // If password protected, don't return reportData until password is verified
     return NextResponse.json({
       shareLink: {
-        id: shareLink.shareId,
-        shareId: shareLink.shareId,
-        reportId: shareLink.reportId,
-        fileName: shareLink.fileName,
-        reportData: shareLink.password ? null : shareLink.reportData, // Don't return data if password protected
-        summary: shareLink.password ? null : shareLink.summary, // Don't return summary if password protected
-        uploadedAt: shareLink.uploadedAt,
-        expiresAt: shareLink.expiresAt,
-        viewCount: shareLink.viewCount + 1,
-        maxViews: shareLink.maxViews,
-        hasPassword: !!shareLink.password,
-        createdAt: shareLink.createdAt
+        id: updatedShareLink.shareId,
+        shareId: updatedShareLink.shareId,
+        reportId: updatedShareLink.reportId,
+        fileName: updatedShareLink.fileName,
+        reportData: updatedShareLink.password ? null : updatedShareLink.reportData,
+        summary: updatedShareLink.password ? null : updatedShareLink.summary,
+        uploadedAt: updatedShareLink.uploadedAt,
+        expiresAt: updatedShareLink.expiresAt,
+        viewCount: updatedShareLink.viewCount,
+        maxViews: updatedShareLink.maxViews,
+        hasPassword: !!updatedShareLink.password,
+        createdAt: updatedShareLink.createdAt
       }
     });
   } catch (error) {
@@ -156,21 +173,41 @@ export async function POST(
       }
     }
 
-    // Return share link data
+    const accessLog = JSON.parse(shareLink.accessLog || "[]");
+    const userAgent = req.headers.get("user-agent") || "unknown";
+    const ipAddress =
+      req.headers.get("x-forwarded-for") ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
+
+    accessLog.push({
+      timestamp: new Date().toISOString(),
+      ipAddress,
+      userAgent
+    });
+
+    const updatedShareLink = await prisma.shareLink.update({
+      where: { shareId },
+      data: {
+        viewCount: { increment: 1 },
+        accessLog: JSON.stringify(accessLog)
+      }
+    });
+
     return NextResponse.json({
       shareLink: {
-        id: shareLink.shareId,
-        shareId: shareLink.shareId,
-        reportId: shareLink.reportId,
-        fileName: shareLink.fileName,
-        reportData: shareLink.reportData,
-        summary: shareLink.summary,
-        uploadedAt: shareLink.uploadedAt,
-        expiresAt: shareLink.expiresAt,
-        viewCount: shareLink.viewCount,
-        maxViews: shareLink.maxViews,
-        hasPassword: !!shareLink.password,
-        createdAt: shareLink.createdAt
+        id: updatedShareLink.shareId,
+        shareId: updatedShareLink.shareId,
+        reportId: updatedShareLink.reportId,
+        fileName: updatedShareLink.fileName,
+        reportData: updatedShareLink.reportData,
+        summary: updatedShareLink.summary,
+        uploadedAt: updatedShareLink.uploadedAt,
+        expiresAt: updatedShareLink.expiresAt,
+        viewCount: updatedShareLink.viewCount,
+        maxViews: updatedShareLink.maxViews,
+        hasPassword: !!updatedShareLink.password,
+        createdAt: updatedShareLink.createdAt
       }
     });
   } catch (error) {

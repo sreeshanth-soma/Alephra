@@ -1,9 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Shield, FileText, AlertTriangle, Clock } from "lucide-react";
 import Link from "next/link";
+
+const LAST_UPDATED = "November 21, 2025";
+const CONTACT_EMAIL = "sreeshanthsoma@gmail.com";
 
 export default function TermsOfService() {
   return (
@@ -18,7 +20,7 @@ export default function TermsOfService() {
             Terms of Service
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            Last updated: {LAST_UPDATED}
           </p>
         </div>
 
@@ -32,9 +34,9 @@ export default function TermsOfService() {
                   Important Medical Disclaimer
                 </h3>
                 <p className="text-orange-700 dark:text-orange-300 text-sm">
-                  Alephra is an AI-powered healthcare assistant designed to provide information and insights. 
-                  It is NOT a substitute for professional medical advice, diagnosis, or treatment. 
-                  Always consult with qualified healthcare professionals for medical decisions.
+                  Alephra is an experimental AI companion that helps you understand personal medical information. 
+                  We do not provide medical care, diagnoses, or prescriptions, and the Service is not certified as a medical device. 
+                  All clinical decisions must be made by licensed professionals who can evaluate your specific situation.
                 </p>
               </div>
             </div>
@@ -52,11 +54,12 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                By accessing and using Alephra ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. 
-                If you do not agree to abide by the above, please do not use this service.
+                By accessing or using Alephra (the “Service”), including via web, mobile, or API, you acknowledge that you have read, understand, and agree to be bound by these Terms and by our{" "}
+                <Link className="text-blue-600 dark:text-blue-400 underline" href="/privacy">Privacy Policy</Link>.
+                If you do not agree, do not use the Service. You may only use Alephra where doing so is lawful.
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                These Terms of Service constitute a legally binding agreement between you and Alephra regarding your use of the Service.
+                These Terms are between you and the Alephra maintainers (currently the MedScan Phase 1 team). We may update them from time to time following the process described below.
               </p>
             </CardContent>
           </Card>
@@ -71,17 +74,17 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                Alephra is an AI-powered healthcare platform that provides:
+                Alephra is an AI-powered healthcare companion that currently offers:
               </p>
               <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
-                <li>Medical report analysis and interpretation using artificial intelligence</li>
-                <li>Voice-based health consultations in multiple languages</li>
-                <li>Appointment scheduling with Google Calendar integration</li>
-                <li>Health reminders and medication tracking</li>
-                <li>Personalized health insights and recommendations</li>
+                <li>Medical report uploads, OCR, and summarization powered by Google Gemini APIs.</li>
+                <li>Multilingual voice input/output processed through Sarvam AI and browser speech tools.</li>
+                <li>Care-plan tracking, medication reminders, vitals logging, and dashboard visualizations.</li>
+                <li>Calendar syncing via Google Calendar (optional) and shareable report links.</li>
+                <li>Contextual chat, Q&A, and recommendations generated using embeddings stored in Pinecone.</li>
               </ul>
               <p className="text-gray-700 dark:text-gray-300">
-                The Service is designed to supplement, not replace, the relationship between you and your healthcare providers.
+                The Service supplements—not replaces—your relationship with licensed healthcare professionals.
               </p>
             </CardContent>
           </Card>
@@ -100,15 +103,15 @@ export default function TermsOfService() {
                   NOT A MEDICAL DEVICE OR PROFESSIONAL MEDICAL ADVICE
                 </p>
                 <p className="text-red-700 dark:text-red-300 text-sm">
-                  Alephra is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease. 
-                  The information provided is for educational and informational purposes only.
+                  Alephra is not cleared or approved by the FDA, CDSCO, EMA, or any other regulator. Output may be incorrect, incomplete, or outdated. 
+                  Never delay or avoid seeking professional medical advice because of something you read inside Alephra.
                 </p>
               </div>
               <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
-                <li>Always consult with qualified healthcare professionals for medical advice</li>
-                <li>Do not disregard professional medical advice based on information from Alephra</li>
-                <li>In case of medical emergencies, contact emergency services immediately</li>
-                <li>AI-generated insights may contain errors or inaccuracies</li>
+                <li>Always consult a licensed clinician who can consider your full medical history.</li>
+                <li>Contact local emergency services immediately if you believe you are experiencing a medical emergency.</li>
+                <li>Use outputs for education and preparation—not diagnosis or treatment.</li>
+                <li>Report incorrect or unsafe responses via in-app feedback so we can improve safeguards.</li>
               </ul>
             </CardContent>
           </Card>
@@ -124,12 +127,12 @@ export default function TermsOfService() {
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">You agree to:</p>
               <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
-                <li>Provide accurate and truthful information when using the Service</li>
-                <li>Use the Service only for lawful purposes</li>
-                <li>Not attempt to reverse engineer or compromise the security of the Service</li>
-                <li>Respect the intellectual property rights of Alephra and third parties</li>
-                <li>Not share your account credentials with others</li>
-                <li>Report any security vulnerabilities or inappropriate content</li>
+                <li>Provide accurate information about yourself and only upload content that you have the right to share.</li>
+                <li>Use the Service solely for personal, non-commercial health-management purposes unless you obtain our written consent.</li>
+                <li>Keep your account credentials secure and notify us immediately of any unauthorized access.</li>
+                <li>Respect intellectual property rights and all applicable laws, including privacy laws covering other people’s data.</li>
+                <li>Refrain from probing or testing the Service for vulnerabilities except through our coordinated disclosure process.</li>
+                <li>Report bugs, safety issues, or abusive behavior via {CONTACT_EMAIL} or GitHub issues.</li>
               </ul>
             </CardContent>
           </Card>
@@ -144,19 +147,18 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                Your privacy is important to us. Our collection and use of your personal information is governed by our{" "}
+                Your use of Alephra is subject to our {" "}
                 <Link href="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
                   Privacy Policy
-                </Link>
-                , which is incorporated into these Terms by reference.
+                </Link>{" "}
+                which explains what we collect, why, and how to exercise your rights. By using the Service you consent to those practices.
               </p>
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                 <p className="text-green-800 dark:text-green-200 font-semibold mb-2">
                   Health Data Security
                 </p>
                 <p className="text-green-700 dark:text-green-300 text-sm">
-                  We implement industry-standard security measures to protect your health information, 
-                  including encryption, access controls, and secure data transmission protocols.
+                  We encrypt data in transit and at rest, limit engineer access, and review processors regularly. Alephra is not yet HIPAA certified; you are responsible for validating whether the Service meets your compliance needs.
                 </p>
               </div>
             </CardContent>
@@ -172,11 +174,10 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                The Service and its original content, features, and functionality are and will remain the exclusive property of Alephra and its licensors. 
-                The Service is protected by copyright, trademark, and other laws.
+                The Service, including text, graphics, UI components, and source code, is owned by the Alephra contributors and protected by intellectual-property laws.
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                You retain ownership of any health data you provide, but grant us a license to process it for providing the Service.
+                You retain ownership of the content you upload. You grant us a limited, revocable, worldwide license to host, process, transform, and transmit that content solely to provide and improve the Service. We may use aggregated and de-identified data to improve quality, provided it cannot reasonably identify you.
               </p>
             </CardContent>
           </Card>
@@ -195,13 +196,11 @@ export default function TermsOfService() {
                   IMPORTANT LIMITATION
                 </p>
                 <p className="text-yellow-700 dark:text-yellow-300 text-sm">
-                  To the fullest extent permitted by law, Alephra shall not be liable for any indirect, incidental, 
-                  special, consequential, or punitive damages, including but not limited to loss of profits, data, 
-                  or other intangible losses resulting from your use of the Service.
+                  To the maximum extent permitted by applicable law, Alephra and its contributors are not liable for indirect, incidental, special, consequential, exemplary, or punitive damages—or any loss of data, profit, or goodwill—arising from or related to your use of the Service.
                 </p>
               </div>
               <p className="text-gray-700 dark:text-gray-300">
-                We make no warranties about the accuracy, completeness, or reliability of AI-generated health insights.
+                The Service is provided “as is,” without warranties of any kind—express or implied—including merchantability, fitness for a particular purpose, quiet enjoyment, accuracy, or non-infringement. We do not warrant uninterrupted availability or that defects will be corrected.
               </p>
             </CardContent>
           </Card>
@@ -216,11 +215,10 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                We may terminate or suspend your account and access to the Service immediately, without prior notice, 
-                for conduct that we believe violates these Terms or is harmful to other users, us, or third parties.
+                We may suspend or terminate your account immediately (with notice when feasible) if we believe you violated these Terms, compromised security, uploaded unlawful content, or engaged in abusive behavior.
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                You may terminate your account at any time by contacting us or using the account deletion feature in the Service.
+                You may delete your account at any time via in-app settings or by emailing {CONTACT_EMAIL}. Termination does not relieve you of obligations incurred before the effective date.
               </p>
             </CardContent>
           </Card>
@@ -235,11 +233,54 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
-                We reserve the right to modify these Terms at any time. We will notify users of significant changes 
-                via email or through the Service. Continued use of the Service after changes constitutes acceptance of the new Terms.
+                We may update these Terms when we release new features, onboard new processors, or respond to legal requirements. We will notify you via email or in-app notice before material changes take effect. Continued use after the effective date means you accept the updated Terms.
               </p>
             </CardContent>
           </Card>
+
+          {/* Section 10: Third-Party Services */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <span className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-sm">10</span>
+                <span>Third-Party Services & Open Source</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-700 dark:text-gray-300">
+                Alephra relies on external APIs and infrastructure. By using the Service you also agree to the terms and privacy notices of:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
+                <li>Google OAuth and Google Calendar (authentication and scheduling).</li>
+                <li>Google Gemini APIs (OCR, reasoning, and embeddings).</li>
+                <li>Sarvam AI and browser speech APIs (speech recognition and synthesis).</li>
+                <li>Pinecone (vector database) and Vercel (hosting, logging, analytics).</li>
+              </ul>
+              <p className="text-gray-700 dark:text-gray-300">
+                The Service includes open-source components licensed by their respective authors. Those licenses govern your use of those components. If a conflict exists between these Terms and an open-source license, the open-source license controls for that component.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Section 11: Governing Law */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <span className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">11</span>
+                <span>Governing Law & Dispute Resolution</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-700 dark:text-gray-300">
+                These Terms are governed by the laws of India, without regard to conflict-of-law principles. If you access the Service from another jurisdiction you are responsible for complying with local laws.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300">
+                We prefer to resolve disputes amicably. Please contact us first so we can try to work things out. If we cannot, any dispute must be brought in the courts located in Hyderabad, Telangana, India, and you consent to their jurisdiction.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Section 12: Contact */}
 
           {/* Contact Information */}
           <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
@@ -251,12 +292,15 @@ export default function TermsOfService() {
             </CardHeader>
             <CardContent>
               <p className="text-blue-700 dark:text-blue-300">
-                If you have any questions about these Terms of Service, please contact us at:
+                Questions about these Terms, notices of infringement, or security concerns can be sent to:
               </p>
               <div className="mt-4 space-y-2 text-blue-700 dark:text-blue-300">
-                <p><strong>Email:</strong> legal@alephra.ai</p>
-                <p><strong>Support:</strong> support@alephra.ai</p>
-                <p><strong>Address:</strong> Alephra Legal Department</p>
+                <p><strong>Email:</strong> {CONTACT_EMAIL}</p>
+                <p><strong>Discord:</strong> <Link className="text-blue-700 dark:text-blue-200 underline" href="https://discord.gg/c3jtPPVh" target="_blank">Alephra Community</Link></p>
+                <p><strong>GitHub:</strong> <Link className="text-blue-700 dark:text-blue-200 underline" href="https://github.com/yourusername/alephra-phase1/issues" target="_blank">Open an issue</Link></p>
+                <p className="text-sm">
+                  We operate as a remote-first team in India. If you require a physical mailing address for legal correspondence, email us and we will provide the appropriate contact details.
+                </p>
               </div>
             </CardContent>
           </Card>

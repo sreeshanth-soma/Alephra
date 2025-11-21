@@ -149,60 +149,75 @@ export function HealthScoreDashboard({ overallScore, metrics, className = "" }: 
 // Helper function to calculate health score from vitals and labs
 export function calculateHealthScore(vitals: any[] = [], labs: any[] = []): number {
   if (vitals.length === 0 && labs.length === 0) return 95;
-  
-  let score = 100;
-  
-  // Calculate from vitals
-  if (vitals.length > 0) {
-    const latest = vitals[vitals.length - 1];
-    
-    // Heart rate scoring (60-100 optimal)
-    if (latest.hr) {
-      if (latest.hr < 60 || latest.hr > 100) {
-        score -= Math.min(15, Math.abs(latest.hr - 80) * 0.3);
+
+  const clampScore = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
+
+  const scoreVitalPoint = (point: any) => {
+    let pointScore = 100;
+
+    if (typeof point.hr === "number") {
+      if (point.hr < 60 || point.hr > 100) {
+        pointScore -= Math.min(15, Math.abs(point.hr - 80) * 0.3);
       }
     }
-    
-    // SpO2 scoring (95%+ optimal)
-    if (latest.spo2) {
-      if (latest.spo2 < 95) {
-        score -= (95 - latest.spo2) * 2;
+
+    if (typeof point.spo2 === "number") {
+      if (point.spo2 < 95) {
+        pointScore -= (95 - point.spo2) * 2;
       }
     }
-    
-    // Blood pressure scoring
-    if (latest.bp) {
-      const { systolic, diastolic } = latest.bp;
+
+    if (point.bp) {
+      const { systolic, diastolic } = point.bp;
       if (systolic > 140 || diastolic > 90) {
-        score -= 10;
+        pointScore -= 10;
       } else if (systolic > 130 || diastolic > 85) {
-        score -= 5;
+        pointScore -= 5;
       }
     }
-  }
-  
-  // Calculate from labs
+
+    if (typeof point.temperature === "number") {
+      if (point.temperature > 37.5 || point.temperature < 36.1) {
+        pointScore -= 5;
+      }
+    }
+
+    return clampScore(pointScore);
+  };
+
+  const vitalScores = Array.isArray(vitals) ? vitals.map(scoreVitalPoint) : [];
+  const averageVitalScore =
+    vitalScores.length > 0
+      ? vitalScores.reduce((sum, val) => sum + val, 0) / vitalScores.length
+      : 100;
+
+  let score = averageVitalScore;
+
   if (labs.length > 0) {
+    const withinRange = (lab: any) => {
+      if (!lab?.normalRange) return true;
+      const { min, max } = lab.normalRange;
+      if (typeof min !== "number" || typeof max !== "number") return true;
+      return lab.value >= min && lab.value <= max;
+    };
+
     const glucoseLab = labs.find((l: any) => l.name === "Glucose");
-    if (glucoseLab) {
-      const { value, normalRange } = glucoseLab;
-      if (value < normalRange.min || value > normalRange.max) {
-        score -= 5;
-      }
+    if (glucoseLab && !withinRange(glucoseLab)) {
+      score -= 5;
     }
-    
-    // Check lipid profile
+
     const hdlLab = labs.find((l: any) => l.name === "HDL");
-    const ldlLab = labs.find((l: any) => l.name === "LDL");
-    if (hdlLab && hdlLab.value < hdlLab.normalRange.min) {
+    if (hdlLab && !withinRange(hdlLab) && hdlLab.value < hdlLab.normalRange.min) {
       score -= 3;
     }
-    if (ldlLab && ldlLab.value > ldlLab.normalRange.max) {
+
+    const ldlLab = labs.find((l: any) => l.name === "LDL");
+    if (ldlLab && !withinRange(ldlLab) && ldlLab.value > ldlLab.normalRange.max) {
       score -= 3;
     }
   }
-  
-  return Math.max(0, Math.min(100, Math.round(score)));
+
+  return clampScore(score);
 }
 
 // Helper to get health metrics from data
