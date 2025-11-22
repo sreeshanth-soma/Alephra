@@ -332,8 +332,8 @@ const AnalysisPage = () => {
       <div className="container mx-auto px-4 pt-6 pb-6 relative z-10">
         {/* Floating Share Highlight */}
         <div className="hidden lg:block">
-          <div className="absolute top-6 right-[-120px] z-20 pr-4">
-            <div className="flex items-center gap-4 rounded-3xl border border-white dark:border-white/100 bg-white/95 dark:bg-black/85 backdrop-blur-xl shadow-lg shadow-black/10 dark:shadow-blue-500/10 px-5 py-3 w-[520px]">
+            <div className="absolute top-6 right-[-120px] z-20 pr-4">
+            <div className="flex items-center gap-4 rounded-3xl border border-black dark:border-white bg-white/95 dark:bg-black/85 backdrop-blur-xl shadow-lg shadow-black/10 dark:shadow-blue-500/10 px-5 py-3 w-[520px]">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="text-[10px] md:text-xs font-extrabold text-gray-900 dark:text-white tracking-[0.4em] uppercase">
@@ -379,60 +379,60 @@ const AnalysisPage = () => {
           
           {/* Quick Actions - Enhanced User-Friendly Buttons */}
           <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 mt-4">
-            <HoverButton
-              onClick={() => {
-                setShowTimeline(!showTimeline);
-                if (!showTimeline) setShowTemplates(false);
-              }}
-              className={`px-5 py-2.5 text-sm font-medium ${
-                showTimeline
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                  : ''
-              }`}
-              title="View your reports in chronological order"
-            >
-              {showTimeline ? (
-                <>
-                  <svg className="h-4 w-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span>Close Timeline</span>
-                </>
-              ) : (
-                <>
-                  <Calendar className="h-4 w-4 mr-2 inline" />
-                  <span>Report Timeline</span>
-                </>
-              )}
-            </HoverButton>
+              <HoverButton
+                onClick={() => {
+                  setShowTimeline(!showTimeline);
+                  if (!showTimeline) setShowTemplates(false);
+                }}
+                className={`px-5 py-2.5 text-sm font-medium ${
+                  showTimeline
+                    ? 'bg-black text-white dark:bg-white dark:text-black'
+                    : ''
+                }`}
+                title="View your reports in chronological order"
+              >
+                {showTimeline ? (
+                  <>
+                    <svg className="h-4 w-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>Close Timeline</span>
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="h-4 w-4 mr-2 inline" />
+                    <span>Report Timeline</span>
+                  </>
+                )}
+              </HoverButton>
             
-            <HoverButton
-              data-templates-button
-              onClick={() => {
-                setShowTemplates(!showTemplates);
-                if (!showTemplates) setShowTimeline(false);
-              }}
-              className={`px-5 py-2.5 text-sm font-medium ${
-                showTemplates
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                  : ''
-              }`}
-              title="Use pre-filled templates for common medical tests"
-            >
-              {showTemplates ? (
-                <>
-                  <svg className="h-4 w-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span>Close Templates</span>
-                </>
-              ) : (
-                <>
-                  <FileStack className="h-4 w-4 mr-2 inline" />
-                  <span>Quick Templates</span>
-                </>
-              )}
-            </HoverButton>
+              <HoverButton
+                data-templates-button
+                onClick={() => {
+                  setShowTemplates(!showTemplates);
+                  if (!showTemplates) setShowTimeline(false);
+                }}
+                className={`px-5 py-2.5 text-sm font-medium ${
+                  showTemplates
+                    ? 'bg-black text-white dark:bg-white dark:text-black'
+                    : ''
+                }`}
+                title="Use pre-filled templates for common medical tests"
+              >
+                {showTemplates ? (
+                  <>
+                    <svg className="h-4 w-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>Close Templates</span>
+                  </>
+                ) : (
+                  <>
+                    <FileStack className="h-4 w-4 mr-2 inline" />
+                    <span>Quick Templates</span>
+                  </>
+                )}
+              </HoverButton>
             
             <a href="#history">
               <HoverButton
@@ -507,13 +507,10 @@ const AnalysisPage = () => {
             </div>
           </div>
           <div id="history" className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold font-mono text-black dark:text-white mb-2 tracking-tight">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-bold font-mono text-black dark:text-white tracking-tight">
                 YOUR REPORTS
               </h2>
-              <p className="text-base font-mono text-black dark:text-white opacity-70">
-                SELECT A REPORT TO ANALYZE OR UPLOAD A NEW ONE
-              </p>
             </div>
             
             {prescriptions.length > 0 && (
@@ -546,16 +543,27 @@ const AnalysisPage = () => {
               <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden">
                 <div className="p-6 border-b-2 border-black dark:border-white">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-black dark:text-white tracking-tight font-mono">
-                      REPORT HISTORY · {filteredPrescriptions.length}
-                    </h3>
-                    <Link 
-                      href="/history"
-                      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold font-mono bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-all"
-                    >
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      ANALYTICS
-                    </Link>
+                    <div className="flex-shrink-0">
+                      <h3 className="text-xl font-bold text-black dark:text-white tracking-tight font-mono">
+                        REPORT HISTORY · {filteredPrescriptions.length}
+                      </h3>
+                    </div>
+
+                    <div className="flex-1 text-center px-4">
+                      <p className="text-sm md:text-base font-bold font-mono uppercase tracking-wide text-black dark:text-white">
+                        CLICK ANY REPORT TO LOAD IT.
+                      </p>
+                    </div>
+
+                    <div className="flex-shrink-0">
+                      <Link 
+                        href="/history"
+                        className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold font-mono bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-all"
+                      >
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        ANALYTICS
+                      </Link>
+                    </div>
                   </div>
                   
                   {/* Search Bar */}
@@ -590,16 +598,23 @@ const AnalysisPage = () => {
                         <div
                           key={prescription.id}
                           onClick={() => handlePrescriptionSelect(prescription)}
-                          className={`p-5 cursor-pointer transition-all ${
+                          className={`p-5 cursor-pointer transition-all border-2 ${
                             selectedPrescriptionId === prescription.id 
-                              ? 'bg-black dark:bg-white text-white dark:text-black' 
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-900'
+                              ? 'bg-black dark:bg-white text-white dark:text-black border-white dark:border-black shadow-[0_0_0_3px_rgba(255,255,255,0.9)] dark:shadow-[0_0_0_3px_rgba(0,0,0,0.9)]' 
+                              : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-900'
                           }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-3 mb-2">
                                 <FileStack className="h-5 w-5 flex-shrink-0" strokeWidth={2.5} />
+                                <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase rounded-full ${
+                                  selectedPrescriptionId === prescription.id
+                                    ? 'bg-white text-black dark:bg-black dark:text-white border border-white dark:border-black'
+                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'
+                                }`}>
+                                  REPORT
+                                </span>
                                 <h4 className={`text-base font-bold font-mono truncate ${
                                   selectedPrescriptionId === prescription.id 
                                     ? 'text-white dark:text-black' 
@@ -613,7 +628,9 @@ const AnalysisPage = () => {
                                   </span>
                                 )}
                                 {selectedPrescriptionId === prescription.id && (
-                                  <div className="w-2 h-2 bg-white dark:bg-black rounded-full animate-pulse flex-shrink-0"></div>
+                                  <span className="px-2 py-0.5 text-[10px] font-black uppercase border border-white dark:border-black rounded-full">
+                                    Active
+                                  </span>
                                 )}
                               </div>
                               <p className={`text-sm font-mono mt-2 line-clamp-2 ${

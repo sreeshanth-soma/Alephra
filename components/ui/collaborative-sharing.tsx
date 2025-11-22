@@ -215,7 +215,7 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
       onClick={onClose}
     >
       <motion.div
@@ -225,34 +225,34 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
-        <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-          <CardContent className="p-6">
+        <Card className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-[32px] shadow-[20px_20px_0_rgba(0,0,0,0.25)] dark:shadow-[20px_20px_0_rgba(255,255,255,0.15)] text-black dark:text-white">
+          <CardContent className="p-8 space-y-6">
             {/* Header */}
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-                  <Share2 className="h-6 w-6 text-white" />
+                <div className="w-12 h-12 rounded-full border-2 border-black dark:border-white bg-black dark:bg-white flex items-center justify-center shadow-[4px_4px_0_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0_rgba(255,255,255,0.15)]">
+                  <Share2 className="h-6 w-6 text-white dark:text-black" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-black dark:text-white">
+                  <h2 className="text-2xl font-bold text-black dark:text-white tracking-tight uppercase">
                     Share Report
                   </h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm font-mono text-gray-700 dark:text-gray-300 uppercase tracking-[0.2em]">
                     {prescription.fileName}
                   </p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 border-2 border-black dark:border-white rounded-xl text-black dark:text-white hover:-translate-y-0.5 transition-all shadow-[4px_4px_0_rgba(0,0,0,0.25)] dark:shadow-[4px_4px_0_rgba(255,255,255,0.2)]"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Create New Share Link */}
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-black dark:text-white mb-4">
+            <div className="mb-6 p-5 bg-white dark:bg-black rounded-2xl border-2 border-black dark:border-white shadow-[8px_8px_0_rgba(0,0,0,0.15)] dark:shadow-[8px_8px_0_rgba(255,255,255,0.1)]">
+              <h3 className="text-lg font-black text-black dark:text-white mb-4 uppercase tracking-[0.2em]">
                 Create Share Link
               </h3>
               
@@ -311,7 +311,7 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
                 <Button
                   onClick={generateShareLink}
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white disabled:opacity-50"
+                  className="w-full border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black uppercase font-semibold tracking-[0.2em] hover:-translate-y-0.5 transition-all disabled:opacity-40 rounded-2xl"
                 >
                   <Link2 className="h-4 w-4 mr-2" />
                   {loading ? 'Creating...' : 'Generate Share Link'}
@@ -335,16 +335,16 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
                     return (
                       <div
                         key={link.id}
-                        className={`p-4 rounded-lg border ${
+                        className={`p-4 rounded-2xl border-2 ${
                           isDisabled
-                            ? 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 opacity-60'
-                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600'
+                            ? 'bg-gray-100 dark:bg-gray-900 border-black/10 dark:border-white/10 opacity-60'
+                            : 'bg-white dark:bg-black border-black dark:border-white shadow-[6px_6px_0_rgba(0,0,0,0.15)] dark:shadow-[6px_6px_0_rgba(255,255,255,0.12)]'
                         }`}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1 min-w-0 mr-4">
                             <div className="flex items-center gap-2 mb-1">
-                              <code className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-700 dark:text-gray-300 truncate">
+                              <code className="text-xs bg-white dark:bg-black px-2 py-1 rounded text-gray-900 dark:text-gray-100 truncate border border-black dark:border-white">
                                 {link.url}
                               </code>
                               {isDisabled && (
@@ -354,7 +354,7 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
                               )}
                             </div>
                             
-                            <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-4 text-xs text-gray-900 dark:text-gray-100 font-mono">
                               <span className="flex items-center gap-1">
                                 <Eye className="h-3 w-3" />
                                 {link.viewCount} {link.maxViews ? `/ ${link.maxViews}` : ''} views
@@ -376,7 +376,7 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
                             <button
                               onClick={() => copyToClipboard(link)}
                               disabled={isDisabled}
-                              className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="p-2 border-2 border-black dark:border-white text-black dark:text-white rounded-xl hover:-translate-y-0.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                               title="Copy link"
                             >
                               {copiedId === link.id ? (
@@ -389,7 +389,7 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
                             <button
                               onClick={() => shareViaEmail(link)}
                               disabled={isDisabled}
-                              className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="p-2 border-2 border-black dark:border-white text-black dark:text-white rounded-xl hover:-translate-y-0.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                               title="Share via email"
                             >
                               <Mail className="h-4 w-4" />
@@ -397,7 +397,7 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
                             
                             <button
                               onClick={() => setShowAccessLog(showAccessLog === link.id ? '' : link.id)}
-                              className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              className="p-2 border-2 border-black dark:border-white text-black dark:text-white rounded-xl hover:-translate-y-0.5 transition-all"
                               title="View access log"
                             >
                               <Users className="h-4 w-4" />
@@ -405,7 +405,7 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
                             
                             <button
                               onClick={() => deleteShareLink(link.id)}
-                              className="p-2 text-red-500 hover:text-red-700 dark:hover:text-red-300 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              className="p-2 border-2 border-black dark:border-white text-red-600 dark:text-red-300 rounded-xl hover:-translate-y-0.5 transition-all"
                               title="Delete link"
                             >
                               <X className="h-4 w-4" />
@@ -420,7 +420,7 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: 'auto', opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700"
+                              className="mt-3 pt-3 border-t-4 border-black dark:border-white"
                             >
                               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Access Log ({link.accessLog.length})
@@ -453,14 +453,14 @@ export const CollaborativeSharing: React.FC<CollaborativeSharingProps> = ({
             )}
 
             {/* Security Notice */}
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="mt-6 p-4 bg-white dark:bg-black rounded-2xl border-2 border-black dark:border-white shadow-[6px_6px_0_rgba(0,0,0,0.12)] dark:shadow-[6px_6px_0_rgba(255,255,255,0.12)]">
               <div className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <Shield className="h-5 w-5 text-black dark:text-white mt-0.5" />
                 <div className="flex-1">
-                  <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  <h4 className="text-sm font-semibold text-black dark:text-white mb-1 uppercase tracking-[0.2em]">
                     Privacy & Security
                   </h4>
-                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                  <p className="text-xs text-gray-800 dark:text-gray-200">
                     Share links are secure and can be revoked at any time. Recipients can only view the report, not edit or download it. All access is logged for your security.
                   </p>
                 </div>

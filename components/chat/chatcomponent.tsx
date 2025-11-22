@@ -132,34 +132,36 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
     
   return (
     <div className="h-[600px] bg-white dark:bg-black relative flex flex-col rounded-xl border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
-      <div className="absolute -top-3 left-6 z-20 px-4 py-2 rounded-lg bg-white dark:bg-black border-2 border-black dark:border-white">
-        <Badge 
-          variant="secondary" 
-          className={`text-xs font-bold font-mono transition-all duration-200 cursor-pointer ${
-            reportData || allReportsData
-              ? "bg-black dark:bg-white text-white dark:text-black border-0" 
-              : "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-0"
-          }`}
-          onClick={() => {
-            if (localStorage.getItem('selectedReportId') || selectedReportId) {
-              localStorage.removeItem('selectedReportId');
-              window.location.reload();
-            }
-          }}
-        >
-          {selectedReportName 
-            ? `✓ ${selectedReportName.toUpperCase()}` 
-            : reportData || (allReportsData && prescriptionCount === 1) 
-              ? "✓ REPORT LOADED" 
-              : allReportsData 
-                ? `✓ ${prescriptionCount} ${prescriptionCount === 1 ? 'REPORT' : 'REPORTS'} AVAILABLE` 
-                : "NO REPORT"}
-        </Badge>
+      <div className="absolute -top-3 left-6 z-20">
+        <div className="px-4 py-2 rounded-lg bg-white dark:bg-black border-2 border-black dark:border-white flex items-center gap-3">
+          <Badge 
+            variant="secondary" 
+            className={`text-xs font-bold font-mono transition-all duration-200 ${
+              reportData || allReportsData
+                ? "bg-black dark:bg-white text-white dark:text-black border-0" 
+                : "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-0"
+            }`}
+          >
+            {selectedReportName 
+              ? `✓ ${selectedReportName.toUpperCase()}` 
+              : reportData || (allReportsData && prescriptionCount === 1) 
+                ? "✓ REPORT LOADED" 
+                : allReportsData 
+                  ? `✓ ${prescriptionCount} ${prescriptionCount === 1 ? 'REPORT' : 'REPORTS'} AVAILABLE` 
+                  : "NO REPORT"}
+          </Badge>
+          <button
+            onClick={() => document.getElementById('history')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className="text-[10px] font-bold tracking-[0.3em] uppercase py-1 px-3 border-2 border-black dark:border-white rounded-full text-black dark:text-white hover:-translate-y-0.5 transition-all"
+          >
+            CHANGE
+          </button>
+        </div>
       </div>
       
-      {/* Clear Chat Button */}
-      {messages.length > 0 && (
-        <div className="absolute -top-3 right-6 z-10">
+      {/* Clear Chat Button (right header) - keep only Clear to avoid duplication with the left badge */}
+      <div className="absolute -top-3 right-6 z-10 flex items-center gap-2">
+        {messages.length > 0 && (
           <Button
             onClick={() => setShowClearModal(true)}
             size="sm"
@@ -170,8 +172,8 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
             <Trash2 className="h-3 w-3 mr-1" strokeWidth={2.5} />
             CLEAR
           </Button>
-        </div>
-      )}
+        )}
+      </div>
       
       <div className="flex-1 px-6 pt-12 pb-4 overflow-y-auto">
         <Messages messages={messages} isLoading={isLoading} data={data} />

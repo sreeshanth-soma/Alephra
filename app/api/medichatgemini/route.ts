@@ -76,6 +76,8 @@ export async function POST(req: Request, res: Response) {
             
             Respond naturally and conversationally. If they're thanking you, just say "You're welcome!" or similar. Keep it brief and friendly.`;
         } else {
+            const isMedicationContext = /(medicine|medication|tablet|drug|dose|what is .* (for|used)|what are those)/i.test(userQuestion);
+
             // Handle medical questions
             finalPrompt = `You are a medical assistant. Answer the user's question about their clinical report concisely and directly.
 
@@ -88,6 +90,9 @@ ${reportData ? `**Patient's Clinical Report:** \n${reportData}\n` : ''}
 ${retrievals !== "<nomatches>" ? `**Reference Information:**\n${retrievals}\n` : ''}
 
 Provide a brief, direct answer. If the question is about concerns or issues, mention only the key points (2-3 main concerns max).
+
+${isMedicationContext ? `If the user is asking what a medication is "generally used for", you may mention common high-level indications (e.g., "Vomilast is typically used to control nausea"). Make sure to clearly state that this is informational and remind them to follow their doctor's prescription.
+` : ""}
 
 **Answer:**`;
         }
