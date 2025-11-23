@@ -224,6 +224,7 @@ const AnalysisPage = () => {
     if (selectedPrescriptionId === prescription.id) {
       setSelectedPrescriptionId("");
       setreportData("");
+      localStorage.removeItem('selectedReportId'); // Clear from localStorage to switch back to All Reports
       console.log('Report deselected');
       toast({
         description: "Report deselected"

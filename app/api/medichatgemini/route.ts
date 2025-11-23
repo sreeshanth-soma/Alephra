@@ -78,22 +78,40 @@ export async function POST(req: Request, res: Response) {
         } else {
             const isMedicationContext = /(medicine|medication|tablet|drug|dose|what is .* (for|used)|what are those)/i.test(userQuestion);
 
+            // Detect if multiple reports are present
+            const hasMultipleReports = reportData.includes('**Report 1') && reportData.includes('**Report 2');
+            
             // Handle medical questions
-            finalPrompt = `You are a medical assistant. Answer the user's question about their clinical report concisely and directly.
+            finalPrompt = `You are a medical assistant. Answer the user's question about their clinical report${hasMultipleReports ? 's' : ''} concisely and directly.
 
 **IMPORTANT:** Keep your response brief (2-4 sentences maximum). Focus only on what the user asked. Do not provide lengthy explanations or detailed medication analysis unless specifically requested.
 
-${reportData ? `**Patient's Clinical Report:** \n${reportData}\n` : ''}
+${hasMultipleReports ? `**MULTIPLE REPORTS DETECTED:** The patient has provided multiple medical reports. 
 
+**CRITICAL INSTRUCTIONS FOR MULTIPLE REPORTS:**
+1. When asked "what reports are there?" - List ALL report names/files that are present
+2. When asked "what are in those?" or "what's in the reports?" - Extract and provide ANY available information from each report's data section, even if minimal
+3. Look carefully at the report data between the "**Report X (filename):**" markers - there may be extracted text, medical data, or findings
+4. DO NOT say "content pending extraction" or "not yet extracted" - instead, look for ANY text after the report header and summarize it
+5. If a report truly has no data after its header (completely empty), ONLY THEN say "no extracted content available"
+6. DO NOT focus on only one report when multiple are present - cover ALL reports
+
+` : ''}${reportData ? `**Patient's Clinical Report${hasMultipleReports ? 's' : ''}:** 
+${reportData}
+` : ''}
 **User Question:** ${userQuestion}
 
 ${retrievals !== "<nomatches>" ? `**Reference Information:**\n${retrievals}\n` : ''}
 
-Provide a brief, direct answer. If the question is about concerns or issues, mention only the key points (2-3 main concerns max).
+${hasMultipleReports ? `**Response Format for Multiple Reports:**
+- If asked "what reports?": List each report name (e.g., "You have 3 reports: Report 1 (hand2.png), Report 2 (hand.png), Report 3 (malaria report.png)")
+- If asked "what's in them?": For EACH report, extract and summarize ANY text/data found after the report header. Even partial data should be mentioned.
+- ALWAYS acknowledge ALL reports and provide whatever information is available for each
+
+` : ''}Provide a brief, direct answer. If the question is about concerns or issues, mention only the key points (2-3 main concerns max).
 
 ${isMedicationContext ? `If the user is asking what a medication is "generally used for", you may mention common high-level indications (e.g., "Vomilast is typically used to control nausea"). Make sure to clearly state that this is informational and remind them to follow their doctor's prescription.
 ` : ""}
-
 **Answer:**`;
         }
 
