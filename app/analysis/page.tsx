@@ -181,7 +181,7 @@ const AnalysisPage = () => {
     } catch (error) {
       console.error("Failed to load share stats:", error);
     }
-  }, [prescriptions.length, prescriptionIdsKey]);
+  }, [prescriptions.length]);
 
   useEffect(() => {
     refreshShareStats();
@@ -329,36 +329,7 @@ const AnalysisPage = () => {
       
       
       
-      <div className="container mx-auto px-4 pt-6 pb-6 relative z-10">
-        {/* Floating Share Highlight */}
-        <div className="hidden lg:block">
-            <div className="absolute top-6 right-[-120px] z-20 pr-4">
-            <div className="flex items-center gap-4 rounded-3xl border border-black dark:border-white bg-white/95 dark:bg-black/85 backdrop-blur-xl shadow-lg shadow-black/10 dark:shadow-blue-500/10 px-5 py-3 w-[520px]">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-[10px] md:text-xs font-extrabold text-gray-900 dark:text-white tracking-[0.4em] uppercase">
-                    Share Reports Securely
-                  </p>
-                </div>
-                <p className="text-sm text-gray-700 dark:text-gray-200 leading-snug">
-                  Share expiring, password-protected links. Track views and revoke anytime.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  document.getElementById("history")?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }}
-                className="inline-flex items-center gap-2 rounded-2xl border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black px-5 py-2 text-sm font-semibold tracking-wide uppercase transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.35)] dark:hover:shadow-[0_8px_20px_rgba(255,255,255,0.25)]"
-              >
-                <BarChart3 className="h-4 w-4" />
-                Reports
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="w-full max-w-[80%] mx-auto px-4 pt-6 pb-6 relative z-10">
         <Loader 
           loadingStates={[
             { text: "Uploading report" },
@@ -446,7 +417,31 @@ const AnalysisPage = () => {
           </div>
         </div>
         
-        <div className="max-w-7xl mx-auto space-y-6">
+        
+        {/* Top-Right Share Feature Highlight - Compact Horizontal */}
+        {prescriptions.length > 0 && (
+          <div className="absolute top-6 right-8 z-40">
+            <button
+              onClick={() => document.getElementById('history')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="flex items-center gap-3 bg-white dark:bg-black border-2 border-black dark:border-white rounded-lg px-4 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:active:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all"
+            >
+              <div className="h-8 w-8 rounded border-2 border-black dark:border-white bg-blue-500 flex items-center justify-center shrink-0">
+                <Share2 className="h-4 w-4 text-white" strokeWidth={2.5} />
+              </div>
+              <div className="text-left">
+                <p className="text-xs font-bold text-black dark:text-white uppercase tracking-wide leading-tight">
+                  Share Reports
+                </p>
+                <p className="text-[10px] text-gray-600 dark:text-gray-400 font-mono">
+                  Secure Links
+                </p>
+              </div>
+            </button>
+          </div>
+        )}
+        
+        
+        <div className="w-full space-y-6">
           {/* Timeline Section */}
           {showTimeline && (
             <div className="mb-8">
@@ -492,18 +487,16 @@ const AnalysisPage = () => {
             </div>
           )}
 
-          <div id="upload" className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[calc(100vh-220px)]">
-            <div className="space-y-4 h-full">
+          <div id="upload" className="grid grid-cols-1 lg:grid-cols-11 gap-6 items-start">
+            <div className="w-full lg:col-span-5">
               <ReportComponent onReportConfirmation={onReportConfirmation} onLoadingChange={handleLoadingChange} />
             </div>
-            <div className="space-y-4 h-full">
-              <div className="h-full">
-                <ChatComponent 
-                  reportData={reportData} 
-                  selectedReportId={selectedPrescriptionId}
-                  allPrescriptions={prescriptions}
-                />
-              </div>
+            <div className="w-full lg:col-span-6 sticky top-6">
+              <ChatComponent 
+                reportData={reportData} 
+                selectedReportId={selectedPrescriptionId}
+                allPrescriptions={prescriptions}
+              />
             </div>
           </div>
           <div id="history" className="space-y-6">
@@ -543,16 +536,10 @@ const AnalysisPage = () => {
               <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden">
                 <div className="p-6 border-b-2 border-black dark:border-white">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex-shrink-0">
+                    <div className="flex-1">
                       <h3 className="text-xl font-bold text-black dark:text-white tracking-tight font-mono">
                         REPORT HISTORY · {filteredPrescriptions.length}
                       </h3>
-                    </div>
-
-                    <div className="flex-1 text-center px-4">
-                      <p className="text-sm md:text-base font-bold font-mono uppercase tracking-wide text-black dark:text-white">
-                        CLICK ANY REPORT TO LOAD IT.
-                      </p>
                     </div>
 
                     <div className="flex-shrink-0">
@@ -584,13 +571,30 @@ const AnalysisPage = () => {
                 <div className="max-h-96 overflow-y-auto bg-white dark:bg-black">
                   {filteredPrescriptions.length === 0 ? (
                     <div className="text-center py-16 border-t-2 border-black dark:border-white">
-                      <BarChart3 className="mx-auto h-16 w-16 text-black dark:text-white mb-4" strokeWidth={2.5} />
+                      <div className="relative inline-block mb-6">
+                        <BarChart3 className="mx-auto h-16 w-16 text-black dark:text-white" strokeWidth={2.5} />
+                        <div className="absolute -top-1 -right-1 h-4 w-4 bg-blue-500 rounded-full animate-pulse" />
+                      </div>
                       <h4 className="text-lg font-bold font-mono text-black dark:text-white mb-2">
-                        {searchTerm ? "NO MATCHING REPORTS" : "NO REPORTS YET"}
+                        {searchTerm ? "No Matching Reports" : "Get Started"}
                       </h4>
-                      <p className="text-sm font-mono text-black dark:text-white opacity-70 mb-4">
-                        {searchTerm ? "TRY A DIFFERENT SEARCH TERM" : "UPLOAD YOUR FIRST MEDICAL REPORT TO GET STARTED"}
+                      <p className="text-sm font-mono text-black dark:text-white opacity-70 mb-6">
+                        {searchTerm ? "Try a different search term" : "Upload your first medical report above"}
                       </p>
+                      {!searchTerm && (
+                        <button
+                          onClick={() => {
+                            document.getElementById("upload")?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                          }}
+                          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-semibold text-sm uppercase tracking-wide transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] dark:hover:shadow-[0_8px_20px_rgba(255,255,255,0.25)]"
+                        >
+                          <Upload className="h-4 w-4" />
+                          Upload Report
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="divide-y-2 divide-black dark:divide-white">
@@ -598,10 +602,10 @@ const AnalysisPage = () => {
                         <div
                           key={prescription.id}
                           onClick={() => handlePrescriptionSelect(prescription)}
-                          className={`p-5 cursor-pointer transition-all border-2 ${
+                          className={`group p-5 cursor-pointer transition-all duration-300 border-2 rounded-lg ${
                             selectedPrescriptionId === prescription.id 
-                              ? 'bg-black dark:bg-white text-white dark:text-black border-white dark:border-black shadow-[0_0_0_3px_rgba(255,255,255,0.9)] dark:shadow-[0_0_0_3px_rgba(0,0,0,0.9)]' 
-                              : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-900'
+                              ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] dark:shadow-[0_8px_24px_rgba(255,255,255,0.25)] scale-[1.02]' 
+                              : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-900 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:scale-[1.01] hover:border-gray-200 dark:hover:border-gray-700'
                           }`}
                         >
                           <div className="flex items-start justify-between">
@@ -667,14 +671,14 @@ const AnalysisPage = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-1 ml-4">
+                            <div className="flex items-center gap-1 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setReportToShare(prescription);
                                   setShowSharing(true);
                                 }}
-                                className={`p-2 border-2 transition-all ${
+                                className={`p-2 rounded-lg border-2 transition-all ${
                                   selectedPrescriptionId === prescription.id
                                     ? 'border-white dark:border-black hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white'
                                     : 'border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
@@ -688,7 +692,7 @@ const AnalysisPage = () => {
                                   e.stopPropagation();
                                   handleExport(prescription);
                                 }}
-                                className={`p-2 border-2 transition-all ${
+                                className={`p-2 rounded-lg border-2 transition-all ${
                                   selectedPrescriptionId === prescription.id
                                     ? 'border-white dark:border-black hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white'
                                     : 'border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
@@ -702,7 +706,7 @@ const AnalysisPage = () => {
                                   e.stopPropagation();
                                   handleDelete(prescription.id);
                                 }}
-                                className={`p-2 border-2 transition-all ${
+                                className={`p-2 rounded-lg border-2 transition-all ${
                                   selectedPrescriptionId === prescription.id
                                     ? 'border-white dark:border-black hover:bg-red-600 hover:border-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:border-red-600 dark:hover:text-white'
                                     : 'border-black dark:border-white hover:bg-red-600 hover:border-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:border-red-600 dark:hover:text-white'
