@@ -61,7 +61,7 @@ export default function Home() {
             }}
             className="text-center"
           >
-            <h1 className="text-8xl md:text-[12rem] lg:text-[14rem] font-extrabold tracking-tight text-black dark:text-white mb-8">
+            <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-[12rem] xl:text-[14rem] font-extrabold tracking-tight text-black dark:text-white mb-6 sm:mb-8">
               Alephra
             </h1>
             <motion.p
@@ -71,9 +71,9 @@ export default function Home() {
                 delay: 0.5,
                 duration: 0.8,
               }}
-              className="text-2xl md:text-4xl lg:text-5xl text-black dark:text-gray-200 font-medium tracking-wide max-w-5xl mx-auto"
+              className="text-base sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl text-black dark:text-gray-200 font-medium tracking-wide max-w-5xl mx-auto px-4"
             >
-              <span className="inline-block px-4 py-2 rounded-full bg-white/70 dark:bg-black/70 backdrop-blur-md border-2 border-blue-300/30 dark:border-blue-500/30 shadow-xl shadow-blue-500/10 whitespace-nowrap">
+              <span className="inline-block px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/70 dark:bg-black/70 backdrop-blur-md border-2 border-blue-300/30 dark:border-blue-500/30 shadow-xl shadow-blue-500/10 whitespace-nowrap text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl">
                 Where care meets technology
               </span>
             </motion.p>
@@ -84,7 +84,7 @@ export default function Home() {
                 delay: 0.8,
                 duration: 0.8,
               }}
-              className="text-lg md:text-2xl lg:text-3xl text-black dark:text-gray-300 font-normal mt-6 max-w-4xl mx-auto leading-relaxed"
+              className="text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl text-black dark:text-gray-300 font-normal mt-4 sm:mt-6 max-w-4xl mx-auto leading-relaxed px-4"
             >
               RAG-driven healthcare intelligence with a conversational voice interface
             </motion.p>
@@ -95,11 +95,11 @@ export default function Home() {
                 delay: 1.1,
                 duration: 0.8,
               }}
-              className="mt-12"
+              className="mt-8 sm:mt-12"
             >
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 px-4">
                 <Link href="/analysis">
-                  <HoverButton className="px-10 py-4 text-lg">
+                  <HoverButton className="px-6 py-3 sm:px-8 sm:py-3.5 md:px-10 md:py-4 text-base sm:text-lg w-full sm:w-auto">
                     Get Started
                   </HoverButton>
                 </Link>
@@ -110,7 +110,7 @@ export default function Home() {
                       block: 'start'
                     });
                   }}
-                  className="px-10 py-4 rounded-3xl text-lg font-medium leading-6 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100"
+                  className="px-6 py-3 sm:px-8 sm:py-3.5 md:px-10 md:py-4 rounded-3xl text-base sm:text-lg font-medium leading-6 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100 w-full sm:w-auto"
                 >
                   Learn More
                 </button>
@@ -124,16 +124,16 @@ export default function Home() {
           <ContainerScroll
           titleComponent={
             <>
-              <h1 className="text-5xl md:text-6xl font-bold text-black dark:text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white px-4">
                 Your AI-Powered <br />
-                <span className="relative inline-block text-5xl md:text-7xl lg:text-8xl font-extrabold mt-2 leading-none">
+                <span className="relative inline-block text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-extrabold mt-2 leading-none">
                   {/* Foreground text with gradient */}
                   <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-gray-600 to-black dark:from-gray-300 dark:to-white">
                     Medical Assistant
                   </span>
                   {/* Shadow text below */}
                   <span 
-                    className="absolute top-0 left-0 text-5xl md:text-7xl lg:text-8xl font-extrabold leading-none -z-10 text-black dark:text-white"
+                    className="absolute top-0 left-0 text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-extrabold leading-none -z-10 text-black dark:text-white"
                     style={{
                       transform: 'translate(1px, 3px)'
                     }}
@@ -142,7 +142,7 @@ export default function Home() {
                   </span>
                 </span>
               </h1>
-              <p className="text-lg text-gray-800 dark:text-gray-200 mt-4 max-w-2xl mx-auto text-center">
+              <p className="text-sm sm:text-base md:text-lg text-gray-800 dark:text-gray-200 mt-4 max-w-2xl mx-auto text-center px-4">
                 Upload reports, ask questions, and get instant medical insights powered by advanced AI technology.
               </p>
               {/* Buttons moved below the image */}
@@ -194,10 +194,10 @@ export default function Home() {
                 <Brain className="w-4 h-4 mr-2" />
                 How Alephra Works
               </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4 px-4">
                 A simple flow from report to recommendations
               </h2>
-              <p className="text-xl text-gray-800 dark:text-gray-200 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-gray-800 dark:text-gray-200 max-w-3xl mx-auto leading-relaxed px-4">
                 Follow the steps to see how uploads become structured data, AI insights, and actions you can take.
               </p>
             </div>
@@ -217,7 +217,7 @@ export default function Home() {
               <Badge variant="outline" className="mb-4 text-sm font-medium">
                 What you can do
               </Badge>
-              <h3 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4 px-4">
                 Explore Alephra's Capabilities
               </h3>
             </div>
@@ -232,22 +232,22 @@ export default function Home() {
         {/* Call to Action Section */}
         <div className="py-24 px-4 relative z-30">
           <div className="max-w-4xl mx-auto text-center">
-            <h3 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-6">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black dark:text-white mb-6 px-4">
               Ready to Experience AI-Powered Healthcare?
             </h3>
-            <p className="text-xl text-gray-800 dark:text-gray-200 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-gray-800 dark:text-gray-200 mb-10 max-w-2xl mx-auto leading-relaxed px-4">
               Start a conversation with your intelligent medical assistant. Ask questions about your health, 
               get insights from your reports, and receive personalized guidance in your preferred language.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 px-4">
               <Link href="/voice">
-                <Button className="h-14 rounded-xl bg-black text-white dark:bg-white dark:text-black px-10 text-lg font-semibold hover:scale-105 transition-transform duration-200">
+                <Button className="h-12 sm:h-14 rounded-xl bg-black text-white dark:bg-white dark:text-black px-6 sm:px-10 text-base sm:text-lg font-semibold hover:scale-105 transition-transform duration-200 w-full sm:w-auto">
                   <Mic className="w-5 h-5 mr-2" />
                   Try Voice Assistant
                 </Button>
               </Link>
               <Link href="/analysis">
-                <Button variant="outline" className="h-14 rounded-xl px-10 text-lg font-semibold hover:scale-105 transition-transform duration-200">
+                <Button variant="outline" className="h-12 sm:h-14 rounded-xl px-6 sm:px-10 text-base sm:text-lg font-semibold hover:scale-105 transition-transform duration-200 w-full sm:w-auto">
                   Upload Medical Report
                 </Button>
               </Link>

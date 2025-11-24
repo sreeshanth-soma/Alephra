@@ -160,7 +160,7 @@ export default function HistoryPage() {
                         <div>
                             <CardTitle className="text-xl font-bold font-mono text-black dark:text-white">{selected.fileName.toUpperCase()}</CardTitle>
                             <p className="text-sm font-mono text-black dark:text-white opacity-60 mt-1">{new Date(selected.uploadedAt).toLocaleString().toUpperCase()}</p>
-                            <Link href="/dashboard">
+                            <Link href={`/analysis?reportId=${selected.id}`}>
                               <Button size="sm" className="mt-2 gap-1 border-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white font-bold font-mono text-xs" variant="outline">
                                 <ArrowRight className="h-3 w-3" />
                                 DISCUSS WITH AI

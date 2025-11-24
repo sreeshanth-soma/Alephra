@@ -57,7 +57,7 @@ const Message = ({ from, children }: MessageProps) => (
   >
     <div
       className={cn(
-        'px-3 py-2 rounded-xl max-w-[80%] shadow-md border-2',
+        'px-2.5 py-2 sm:px-3 sm:py-2 rounded-xl max-w-[90%] sm:max-w-[80%] shadow-md border-2 text-xs sm:text-sm',
         from === 'user'
           ? 'bg-white text-black font-semibold border-gray-500 dark:border-gray-700'
           : 'bg-black text-white border-white/25'
@@ -114,6 +114,7 @@ export default function VoiceAgentPage() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // Default to true for SSR
 
   const MIN_TRANSCRIPT_LENGTH = 12;
 
@@ -315,6 +316,21 @@ export default function VoiceAgentPage() {
         speechSynthesis.onvoiceschanged = null;
       }
     };
+  }, []);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Check on mount
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Persist messages to localStorage whenever they change
@@ -1114,8 +1130,8 @@ export default function VoiceAgentPage() {
       <div className="w-full h-full flex flex-col p-3 md:p-6 gap-2 md:gap-3 overflow-hidden">
         {/* Header - Enhanced */}
         <div className="flex-shrink-0 text-center">
-          <h1 className="text-2xl md:text-4xl font-bold text-black dark:text-white mb-1 md:mb-2">Voice Agent</h1>
-          <p className="text-xs md:text-base text-gray-600 dark:text-gray-400">
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-bold text-black dark:text-white mb-1 md:mb-2">Voice Agent</h1>
+          <p className="text-[10px] sm:text-xs md:text-base text-gray-600 dark:text-gray-400">
             Speak naturally in any Indian language for medical assistance
           </p>
         </div>
@@ -1215,19 +1231,21 @@ export default function VoiceAgentPage() {
         {/* Main Content Layout */}
         <div className="flex flex-col md:flex-row gap-2 md:gap-4 flex-1 min-h-0 overflow-hidden">
           {/* Left Side - Voice Interface */}
-          <div className="w-full md:w-[30%] h-48 md:h-full rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden relative flex-shrink-0">
+          <div className="w-full md:w-[30%] h-56 sm:h-64 md:h-full rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden relative flex-shrink-0">
             {/* Floating Particles */}
             <FloatingParticles isActive={showParticles} count={15} />
             
-            {/* Voice Visualizer */}
-            <div className="absolute inset-0 z-10">
-              <VoiceVisualizer
-                isRecording={isRecording}
-                isPlaying={isPlaying}
-                isProcessing={isProcessing}
-                className="w-full h-full"
-              />
-            </div>
+            {/* Voice Visualizer - Only render on desktop to save mobile resources */}
+            {!isMobile && (
+              <div className="absolute inset-0 z-10">
+                <VoiceVisualizer
+                  isRecording={isRecording}
+                  isPlaying={isPlaying}
+                  isProcessing={isProcessing}
+                  className="w-full h-full"
+                />
+              </div>
+            )}
             
             <VoiceChatInteractive
               onStart={startRecording}

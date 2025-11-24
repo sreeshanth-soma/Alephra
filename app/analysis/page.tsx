@@ -3,6 +3,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast"
 import ReportComponent from "@/components/ReportComponent";
 import ChatComponent from "@/components/chat/chatcomponent";
@@ -10,7 +11,7 @@ import EnhancedHistoryList from "@/components/EnhancedHistory";
 import { PrescriptionRecord, prescriptionStorage } from "@/lib/prescription-storage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, BarChart3, Share2, FileStack, Calendar, Shield } from "lucide-react";
+import { Upload, BarChart3, Share2, FileStack, Calendar, Shield, X } from "lucide-react";
 import Link from "next/link";
 import { HoverButton } from "@/components/ui/hover-button";
 import { Squares } from "@/components/ui/squares-background";
@@ -54,6 +55,7 @@ type ShareStatsMap = Record<
 
 const AnalysisPage = () => {
   const { toast } = useToast()
+  const searchParams = useSearchParams();
   const [reportData, setreportData] = useState("");
   const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<string>("");
   const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
@@ -128,6 +130,20 @@ const AnalysisPage = () => {
     };
     loadPrescriptions();
   }, [historyRefreshTrigger]);
+
+  // Handle report selection from URL parameter (from history page)
+  useEffect(() => {
+    const reportIdFromUrl = searchParams.get('reportId');
+    if (reportIdFromUrl && prescriptions.length > 0) {
+      const reportExists = prescriptions.find(p => p.id === reportIdFromUrl);
+      if (reportExists) {
+        setSelectedPrescriptionId(reportIdFromUrl);
+        setreportData(reportExists.reportData);
+        // Clear the URL parameter after selecting
+        window.history.replaceState({}, '', '/analysis');
+      }
+    }
+  }, [searchParams, prescriptions]);
 
   const refreshShareStats = useCallback(async () => {
     if (!prescriptions.length) {
@@ -384,62 +400,64 @@ const AnalysisPage = () => {
                   setShowTemplates(!showTemplates);
                   if (!showTemplates) setShowTimeline(false);
                 }}
-                className={`px-5 py-2.5 text-sm font-medium ${
-                  showTemplates
-                    ? 'bg-black text-white dark:bg-white dark:text-black'
-                    : ''
-                }`}
-                title="Use pre-filled templates for common medical tests"
+                className="px-4 md:px-5 py-2 md:py-2.5 text-xs sm:text-sm font-medium"
+                title="Browse pre-made templates for common report types"
               >
                 {showTemplates ? (
                   <>
-                    <svg className="h-4 w-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span>Close Templates</span>
+                    <X className="h-4 w-4 mr-2 inline" />
+                    <span className="hidden sm:inline">Close Templates</span>
+                    <span className="sm:hidden">Close</span>
                   </>
                 ) : (
                   <>
                     <FileStack className="h-4 w-4 mr-2 inline" />
-                    <span>Quick Templates</span>
+                    <span className="hidden sm:inline">Quick Templates</span>
+                    <span className="sm:hidden">Templates</span>
                   </>
                 )}
               </HoverButton>
+
             
             <a href="#history">
               <HoverButton
-                className="px-5 py-2.5 text-sm font-medium"
+                className="px-4 md:px-5 py-2 md:py-2.5 text-xs sm:text-sm font-medium"
                 title="View and manage all your uploaded reports"
               >
                 <BarChart3 className="h-4 w-4 mr-2 inline" />
-                <span>My Reports</span>
+                <span className="hidden sm:inline">My Reports</span>
+                <span className="sm:hidden">Reports</span>
               </HoverButton>
             </a>
           </div>
         </div>
         
-        
-        {/* Top-Right Share Feature Highlight - Compact Horizontal */}
+        {/* Floating Share Reports Section - Top Right */}
         {prescriptions.length > 0 && (
-          <div className="absolute top-6 right-8 z-40">
-            <button
-              onClick={() => document.getElementById('history')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="flex items-center gap-3 bg-white dark:bg-black border-2 border-black dark:border-white rounded-lg px-4 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:active:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all"
-            >
-              <div className="h-8 w-8 rounded border-2 border-black dark:border-white bg-blue-500 flex items-center justify-center shrink-0">
-                <Share2 className="h-4 w-4 text-white" strokeWidth={2.5} />
+          <div className="hidden lg:block absolute top-0 right-0 z-40">
+            <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl p-4 shadow-[8px_8px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_rgba(255,255,255,0.2)] max-w-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-1">
+                    SHARE REPORTS SECURELY
+                  </p>
+                  <p className="text-[10px] text-black dark:text-white opacity-70 font-mono">
+                    Share expiring, password-protected links. Track views and revoke anytime.
+                  </p>
+                </div>
+                <button
+                  onClick={() => document.getElementById('share-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 font-mono text-[10px] rounded-lg border-2 border-black dark:border-white transition-colors whitespace-nowrap"
+                >
+                  <BarChart3 className="h-3 w-3" />
+                  REPORTS
+                </button>
               </div>
-              <div className="text-left">
-                <p className="text-xs font-bold text-black dark:text-white uppercase tracking-wide leading-tight">
-                  Share Reports
-                </p>
-                <p className="text-[10px] text-gray-600 dark:text-gray-400 font-mono">
-                  Secure Links
-                </p>
-              </div>
-            </button>
+            </div>
           </div>
         )}
+        
+
         
         
         <div className="w-full space-y-6">
@@ -488,11 +506,11 @@ const AnalysisPage = () => {
             </div>
           )}
 
-          <div id="upload" className="grid grid-cols-1 lg:grid-cols-11 gap-6 items-start">
+          <div id="upload" className="grid grid-cols-1 lg:grid-cols-11 gap-4 md:gap-6 items-start">
             <div className="w-full lg:col-span-5">
               <ReportComponent onReportConfirmation={onReportConfirmation} onLoadingChange={handleLoadingChange} />
             </div>
-            <div className="w-full lg:col-span-6 sticky top-6">
+            <div className="w-full lg:col-span-6 lg:sticky lg:top-6">
               <ChatComponent 
                 reportData={reportData} 
                 selectedReportId={selectedPrescriptionId}
@@ -500,37 +518,52 @@ const AnalysisPage = () => {
               />
             </div>
           </div>
-          <div id="history" className="space-y-6">
+          <div id="history" className="space-y-4 md:space-y-6 mt-8 md:mt-12">
             <div className="text-center space-y-2">
-              <h2 className="text-3xl font-bold font-mono text-black dark:text-white tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-bold font-mono text-black dark:text-white tracking-tight">
                 YOUR REPORTS
               </h2>
             </div>
             
             {prescriptions.length > 0 && (
 
-              <div className="bg-white dark:bg-black border-2 border-slate-200 dark:border-slate-800 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center gap-4 shadow-[12px_12px_0px_rgba(15,118,110,0.1)] dark:shadow-[12px_12px_0px_rgba(255,255,255,0.05)]">
-                <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-xl border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-                    <Share2 className="h-6 w-6 text-teal-700 dark:text-teal-400" />
+              <div id="share-section" className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl md:rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 shadow-[8px_8px_0px_rgba(0,0,0,0.2)] md:shadow-[12px_12px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_rgba(255,255,255,0.2)] md:dark:shadow-[12px_12px_0px_rgba(255,255,255,0.2)]">
+                <div className="flex items-start gap-3 md:gap-4 w-full md:w-auto">
+                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl border-2 border-black dark:border-white flex items-center justify-center bg-white dark:bg-black shrink-0">
+                    <Share2 className="h-5 w-5 md:h-6 md:w-6 text-black dark:text-white" />
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold text-black dark:text-white uppercase tracking-[0.2em] mb-1">
+                  <div className="flex-1">
+                    <p className="text-[10px] md:text-xs font-semibold text-black dark:text-white uppercase tracking-[0.15em] md:tracking-[0.2em] mb-1">
                       SECURE REPORT SHARING
                     </p>
-                    <p className="text-sm md:text-base text-black dark:text-white leading-relaxed">
-                      Instantly generate a password-protected link for your doctor or caregiver. Select a report below and click the Share icon—or use the button to jump right in.
+                    <p className="text-xs md:text-sm text-black dark:text-white font-mono opacity-70">
+                      {selectedPrescriptionId 
+                        ? "Generate secure links to share reports"
+                        : "Instantly generate a password-protected link for your doctor or caregiver. Select a report below and click the Share icon—or use the button to jump right in."}
                     </p>
                   </div>
                 </div>
                 <button
-                  onClick={handleShareCallout}
-                  className="group inline-flex items-center gap-3 rounded-2xl border-2 border-slate-900 dark:border-white bg-slate-900 text-white dark:bg-white dark:text-black px-5 py-2 text-sm font-semibold tracking-wide uppercase transition-all hover:-translate-y-0.5 hover:shadow-lg hover:bg-teal-700 dark:hover:bg-teal-400 border-transparent"
+                  onClick={() => {
+                    if (selectedPrescriptionId) {
+                      // If a report is selected, open the sharing modal
+                      const selected = prescriptions.find(p => p.id === selectedPrescriptionId);
+                      if (selected) {
+                        setReportToShare(selected);
+                        setShowSharing(true);
+                      }
+                    } else {
+                      // If no report selected, show toast
+                      toast({
+                        title: "No Report Selected",
+                        description: "Please select a report first to share it.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="w-full md:w-auto md:ml-auto px-4 py-2 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 font-mono text-xs md:text-sm rounded-lg border-2 border-black dark:border-white transition-colors"
                 >
-                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/40 dark:border-black/40 text-xs font-bold">
-                    ↗
-                  </span>
-                  {selectedPrescription ? "Share selected report" : "Share a report"}
+                  {selectedPrescriptionId ? 'SHARE SELECTED REPORT' : 'SHARE A REPORT'}
                 </button>
               </div>
             )}
@@ -604,16 +637,16 @@ const AnalysisPage = () => {
                         <div
                           key={prescription.id}
                           onClick={() => handlePrescriptionSelect(prescription)}
-                          className={`group p-5 cursor-pointer transition-all duration-300 border-2 rounded-lg ${
+                          className={`group p-4 md:p-5 cursor-pointer transition-all duration-300 border-2 rounded-lg ${
                             selectedPrescriptionId === prescription.id 
                               ? 'bg-slate-900 dark:bg-white text-white dark:text-black border-slate-900 dark:border-white shadow-lg scale-[1.02]' 
                               : 'border-black dark:border-white hover:bg-slate-50 dark:hover:bg-slate-900 hover:shadow-md hover:scale-[1.01] hover:border-black dark:hover:border-white'
                           }`}
                         >
-                          <div className="flex items-start justify-between">
+                          <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-3 mb-2">
-                                <FileStack className="h-5 w-5 flex-shrink-0" strokeWidth={2.5} />
+                              <div className="flex flex-wrap items-center gap-2">
+                                <FileStack className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" strokeWidth={2.5} />
                                 <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase rounded-full ${
                                   selectedPrescriptionId === prescription.id
                                     ? 'bg-white text-black dark:bg-black dark:text-white border border-white dark:border-black'
@@ -621,7 +654,7 @@ const AnalysisPage = () => {
                                 }`}>
                                   REPORT
                                 </span>
-                                <h4 className={`text-base font-bold font-mono truncate ${
+                                <h4 className={`text-sm md:text-base font-bold font-mono truncate ${
                                   selectedPrescriptionId === prescription.id 
                                     ? 'text-white dark:text-black' 
                                     : 'text-black dark:text-white'
@@ -647,14 +680,14 @@ const AnalysisPage = () => {
                                   </span>
                                 )}
                               </div>
-                              <p className={`text-sm font-mono mt-2 line-clamp-2 ${
+                              <p className={`text-xs md:text-sm font-mono mt-2 line-clamp-2 ${
                                 selectedPrescriptionId === prescription.id 
                                   ? 'text-white dark:text-black opacity-70' 
                                   : 'text-black dark:text-white opacity-70'
                               }`}>
                                 {prescription.summary}
                               </p>
-                              <div className={`flex items-center gap-4 mt-3 text-xs font-mono font-bold ${
+                              <div className={`flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2 md:gap-4 mt-3 text-[10px] md:text-xs font-mono font-bold ${
                                 selectedPrescriptionId === prescription.id 
                                   ? 'text-gray-400 dark:text-gray-600' 
                                   : 'text-gray-500 dark:text-gray-500'
@@ -663,7 +696,7 @@ const AnalysisPage = () => {
                                   <Calendar className="h-3 w-3" />
                                   {prescription.uploadedAt.toLocaleDateString()}
                                 </span>
-                                <span>{prescription.uploadedAt.toLocaleTimeString()}</span>
+                                <span className="hidden sm:inline">{prescription.uploadedAt.toLocaleTimeString()}</span>
                                 {shareStats[prescription.id] ? (
                                   <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
                                     <Share2 className="h-3 w-3" />

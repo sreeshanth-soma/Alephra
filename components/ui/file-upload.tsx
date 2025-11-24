@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { IconUpload } from "@tabler/icons-react";
+import { IconUpload, IconX } from "@tabler/icons-react";
 import { useDropzone } from "react-dropzone";
 
 const mainVariant = {
@@ -31,11 +31,41 @@ export const FileUpload = ({
   onChange?: (files: File[]) => void;
 }) => {
   const [files, setFiles] = useState<File[]>([]);
+  const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (newFiles: File[]) => {
-    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+    setFiles((prevFiles) => {
+      const updatedFiles = [...prevFiles, ...newFiles];
+      // Automatically select the newly added file (last index)
+      setSelectedFileIndex(updatedFiles.length - 1);
+      return updatedFiles;
+    });
     onChange && onChange(newFiles);
+  };
+
+  const handleFileSelect = (file: File, index: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the dropzone click
+    setSelectedFileIndex(index);
+    // Trigger onChange with the selected file so parent treats it as "new" selection
+    onChange && onChange([file]);
+  };
+
+  const handleRemoveFile = (indexToRemove: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFiles((prevFiles) => {
+      const updatedFiles = prevFiles.filter((_, idx) => idx !== indexToRemove);
+      
+      // Adjust selected index
+      if (selectedFileIndex === indexToRemove) {
+        setSelectedFileIndex(null); // Deselect if removed
+      } else if (selectedFileIndex !== null && selectedFileIndex > indexToRemove) {
+        setSelectedFileIndex(selectedFileIndex - 1); // Shift index down
+      }
+      
+      return updatedFiles;
+    });
+    // We don't trigger onChange here to avoid re-analyzing, just updating the list
   };
 
   const handleClick = () => {
@@ -75,9 +105,12 @@ export const FileUpload = ({
                 <motion.div
                   key={"file" + idx}
                   layoutId={idx === 0 ? "file-upload" : "file-upload-" + idx}
+                  onClick={(e) => handleFileSelect(file, idx, e)}
                   className={cn(
-                    "relative overflow-hidden z-40 bg-white dark:bg-neutral-900 flex flex-col items-start justify-start md:h-24 p-4 mt-4 w-full mx-auto rounded-md",
-                    "shadow-sm"
+                    "relative overflow-hidden z-40 flex flex-col items-start justify-start md:h-24 p-4 mt-4 w-full mx-auto rounded-md transition-all duration-200 group/item",
+                    selectedFileIndex === idx 
+                      ? "bg-black dark:bg-white border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] scale-[1.02]" 
+                      : "bg-white dark:bg-neutral-900 border border-transparent shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-800"
                   )}
                 >
                   <div className="flex justify-between w-full items-center gap-4">
@@ -85,18 +118,40 @@ export const FileUpload = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="text-base text-neutral-700 dark:text-neutral-300 truncate max-w-xs"
+                      className={cn(
+                        "text-base truncate max-w-xs font-bold font-mono",
+                        selectedFileIndex === idx ? "text-white dark:text-black" : "text-neutral-700 dark:text-neutral-300"
+                      )}
                     >
                       {file.name}
                     </motion.p>
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      layout
-                      className="rounded-lg px-2 py-1 w-fit shrink-0 text-sm text-neutral-600 dark:bg-neutral-800 dark:text-white shadow-input"
-                    >
-                      {(file.size / (1024 * 1024)).toFixed(2)} MB
-                    </motion.p>
+                    <div className="flex items-center gap-2">
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        layout
+                        className={cn(
+                          "rounded-lg px-2 py-1 w-fit shrink-0 text-sm font-mono shadow-input",
+                          selectedFileIndex === idx 
+                            ? "bg-white text-black dark:bg-black dark:text-white" 
+                            : "text-neutral-600 dark:bg-neutral-800 dark:text-white"
+                        )}
+                      >
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB
+                      </motion.p>
+                      <button
+                        onClick={(e) => handleRemoveFile(idx, e)}
+                        className={cn(
+                          "p-1 rounded-full transition-colors opacity-0 group-hover/item:opacity-100",
+                          selectedFileIndex === idx
+                            ? "hover:bg-white/20 text-white dark:text-black dark:hover:bg-black/10"
+                            : "hover:bg-red-100 text-neutral-500 hover:text-red-600 dark:hover:bg-red-900/30"
+                        )}
+                        title="Remove file"
+                      >
+                        <IconX className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex text-sm md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-neutral-600 dark:text-neutral-400">
@@ -104,7 +159,10 @@ export const FileUpload = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="px-1 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 "
+                      className={cn(
+                        "px-1 py-0.5 rounded-md font-mono text-xs",
+                        selectedFileIndex === idx ? "bg-white/20 text-white dark:bg-black/10 dark:text-black" : "bg-gray-100 dark:bg-neutral-800"
+                      )}
                     >
                       {file.type}
                     </motion.p>
@@ -114,8 +172,11 @@ export const FileUpload = ({
                       animate={{ opacity: 1 }}
                       layout
                     >
-                      modified{" "}
-                      {new Date(file.lastModified).toLocaleDateString()}
+                      {selectedFileIndex === idx ? (
+                        <span className="font-bold text-white dark:text-black uppercase text-xs tracking-wider border border-white dark:border-black px-1 rounded">Active</span>
+                      ) : (
+                        <span className="font-mono text-xs">modified {new Date(file.lastModified).toLocaleDateString()}</span>
+                      )}
                     </motion.p>
                   </div>
                 </motion.div>

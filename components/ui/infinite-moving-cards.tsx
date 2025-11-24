@@ -124,7 +124,7 @@ export const InfiniteMovingCards = ({
             
             return (
               <li
-                className={`relative w-[350px] max-w-full shrink-0 rounded-2xl px-8 py-7 md:w-[450px] overflow-hidden group hover:scale-105 transition-all duration-300
+                className={`relative w-[280px] sm:w-[350px] md:w-[450px] max-w-full shrink-0 rounded-xl md:rounded-2xl px-5 py-5 sm:px-6 sm:py-6 md:px-8 md:py-7 overflow-hidden group hover:scale-105 transition-all duration-300
                            ${gradient}
                            border-2 ${borderColor}
                            shadow-xl hover:shadow-2xl
@@ -137,23 +137,23 @@ export const InfiniteMovingCards = ({
                 
                 <blockquote className="relative z-10">
                   {/* Card content */}
-                  <span className="relative z-20 text-base leading-[1.7] font-semibold text-gray-900 dark:text-white block">
+                  <span className="relative z-20 text-sm sm:text-base leading-[1.7] font-semibold text-gray-900 dark:text-white block">
                     {item.quote}
                   </span>
                   
-                  <div className="relative z-20 mt-6 flex flex-row items-center justify-between border-t-2 border-white/30 dark:border-white/20 pt-4">
+                  <div className="relative z-20 mt-4 sm:mt-6 flex flex-row items-center justify-between border-t-2 border-white/30 dark:border-white/20 pt-3 sm:pt-4">
                     <span className="flex flex-col gap-1">
-                      <span className={`text-base leading-[1.6] font-bold ${textAccent}`}>
+                      <span className={`text-sm sm:text-base leading-[1.6] font-bold ${textAccent}`}>
                         {item.name}
                       </span>
-                      <span className="text-sm leading-[1.6] font-semibold text-gray-700 dark:text-gray-200">
+                      <span className="text-xs sm:text-sm leading-[1.6] font-semibold text-gray-700 dark:text-gray-200">
                         {item.title}
                       </span>
                     </span>
                     
                     {/* Step number badge with vibrant gradient */}
-                    <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 ${badgeGradient}`}>
-                      <span className="text-white font-bold text-xl">{idx + 1}</span>
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 ${badgeGradient}`}>
+                      <span className="text-white font-bold text-lg sm:text-xl">{idx + 1}</span>
                     </div>
                   </div>
                 </blockquote>

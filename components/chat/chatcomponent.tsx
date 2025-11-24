@@ -130,18 +130,18 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
   };
     
   return (
-    <div className="h-[620px] bg-white dark:bg-black relative flex flex-col rounded-xl border-2 border-slate-800 dark:border-slate-200 shadow-[8px_8px_0px_0px_rgba(15,118,110,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]">
+    <div className="h-[500px] sm:h-[620px] bg-white dark:bg-black relative flex flex-col rounded-xl border-2 border-slate-800 dark:border-slate-200 shadow-[8px_8px_0px_0px_rgba(15,118,110,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]">
       {/* New Prominent Header */}
-      <div className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-t-lg flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3 min-w-0 flex-1 mr-4">
-          <div className="bg-white dark:bg-black border-2 border-slate-200 dark:border-slate-700 p-2.5 rounded-xl shrink-0 shadow-sm">
-            <FileText className="w-6 h-6 text-teal-700 dark:text-teal-400" strokeWidth={2} />
+      <div className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-4 rounded-t-lg flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-3 sm:mr-4">
+          <div className="bg-white dark:bg-black border-2 border-slate-200 dark:border-slate-700 p-2 sm:p-2.5 rounded-lg sm:rounded-xl shrink-0 shadow-sm">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-teal-700 dark:text-teal-400" strokeWidth={2} />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-0.5">
+            <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-0.5">
               Current Context
             </p>
-            <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-white leading-tight truncate font-mono">
+            <h3 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white leading-tight truncate font-mono">
               {selectedReportName 
                 ? selectedReportName
                 : reportData || (allReportsData && prescriptionCount === 1) 
@@ -153,14 +153,14 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
           </div>
         </div>
         
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <Button 
             variant="outline" 
             onClick={() => document.getElementById('history')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="h-9 px-4 border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-black text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs uppercase tracking-wide shadow-sm hover:shadow-md active:translate-y-[1px] transition-all"
+            className="h-8 sm:h-9 px-2 sm:px-4 border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-black text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs uppercase tracking-wide shadow-sm hover:shadow-md active:translate-y-[1px] transition-all"
           >
-            <RefreshCw className="w-3.5 h-3.5 mr-2" />
-            Change
+            <RefreshCw className="w-3.5 h-3.5 sm:mr-2" />
+            <span className="hidden sm:inline">Change</span>
           </Button>
           
           {messages.length > 0 && (
@@ -168,16 +168,16 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
               onClick={() => setShowClearModal(true)}
               size="sm"
               variant="ghost"
-              className="h-9 w-9 p-0 rounded-lg hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors"
+              className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors"
               title="Clear chat history"
             >
-              <Trash2 className="h-4 w-4" strokeWidth={2.5} />
+              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
             </Button>
           )}
         </div>
       </div>
       
-      <div className="flex-1 px-6 pt-4 pb-4 overflow-y-auto">
+      <div className="flex-1 px-3 sm:px-6 pt-3 sm:pt-4 pb-3 sm:pb-4 overflow-y-auto">
         <Messages messages={messages} isLoading={isLoading} data={data} />
       </div>
       
