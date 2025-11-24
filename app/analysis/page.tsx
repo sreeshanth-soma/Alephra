@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast"
 import ReportComponent from "@/components/ReportComponent";
@@ -827,6 +827,17 @@ const AnalysisPage = () => {
   );
 };
 
-export default AnalysisPage;
-
+// Wrap in Suspense to fix Next.js build error with useSearchParams
+export default function AnalysisPageWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-8 h-8 border-4 border-gray-300 dark:border-gray-700 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-2"></div>
+        <p className="text-sm font-mono text-black dark:text-white">Loading...</p>
+      </div>
+    </div>}>
+      <AnalysisPage />
+    </Suspense>
+  );
+}
 
