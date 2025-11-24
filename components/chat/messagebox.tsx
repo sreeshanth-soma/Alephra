@@ -2,6 +2,7 @@ import React from 'react'
 import Markdown from '../markdown'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 type Props = {
   role: string,
@@ -23,25 +24,48 @@ const MessageBox = ({ role, content }: Props) => {
   
   return (
     <motion.div
-      className={cn('flex', isUser ? 'justify-end' : 'justify-start')}
+      className={cn('flex w-full', isUser ? 'justify-end' : 'justify-start')}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div
-        className={cn(
-          'overflow-hidden max-w-[85%] px-4 py-3 rounded-xl shadow-md backdrop-blur-md text-sm border-2',
-          isUser
-            ? 'bg-white text-black border-gray-500 dark:border-gray-700'
-            : 'bg-black text-white border-white/25 dark:border-white/20'
-        )}
-      >
-        <Markdown text={displayContent} />
-        {!isUser && displayContent && displayContent.length > 20 && !displayContent.toLowerCase().includes("you're welcome") && !displayContent.toLowerCase().includes('hello') && (
-          <div className="mt-2 pt-2 border-t border-white/10 text-[11px] opacity-80">
-            Disclaimer: Medical advice is for informational purposes only and should not replace professional medical diagnosis.
-          </div>
-        )}
+      <div className={cn("flex max-w-[85%] gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
+        {/* Avatar/Icon */}
+        <div className={cn(
+          "w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm overflow-hidden border border-black dark:border-white",
+          isUser 
+            ? "bg-black dark:bg-white hidden" // Hide user avatar
+            : "bg-white dark:bg-black"
+        )}>
+          {isUser ? (
+            <div className="w-2 h-2 bg-white dark:bg-black rounded-full" />
+          ) : (
+            <div className="relative w-full h-full">
+               <Image 
+                 src="/logo.jpg" 
+                 alt="Bot" 
+                 fill
+                 className="object-cover"
+               />
+            </div>
+          )}
+        </div>
+
+        <div
+          className={cn(
+            'px-5 py-3.5 shadow-sm text-sm leading-relaxed border-2',
+            isUser
+              ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white rounded-2xl rounded-tr-sm'
+              : 'bg-white dark:bg-black text-black dark:text-white border-black dark:border-white rounded-2xl rounded-tl-sm'
+          )}
+        >
+          <Markdown text={displayContent} />
+          {!isUser && displayContent && displayContent.length > 20 && !displayContent.toLowerCase().includes("you're welcome") && !displayContent.toLowerCase().includes('hello') && (
+            <div className="mt-3 pt-2 border-t border-black/10 dark:border-white/10 text-[11px] text-gray-500 dark:text-gray-400 font-mono">
+              Medical advice is for informational purposes only.
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   )

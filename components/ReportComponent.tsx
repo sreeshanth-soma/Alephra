@@ -226,11 +226,11 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
     }
 
     return (
-        <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] p-6 h-full">
+        <div className="bg-white dark:bg-black border-2 border-slate-800 dark:border-slate-200 rounded-xl shadow-[8px_8px_0px_0px_rgba(15,118,110,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] p-6 h-full">
             <div className="space-y-6 h-full flex flex-col">
-                <div className="text-center border-b-2 border-black dark:border-white pb-4">
-                    <h3 className="text-2xl font-bold text-black dark:text-white mb-2 font-mono tracking-tight">MEDICAL REPORT ANALYSIS</h3>
-                    <p className="text-sm font-mono text-gray-600 dark:text-gray-400">UPLOAD YOUR MEDICAL REPORT FOR AI-POWERED ANALYSIS</p>
+                <div className="text-center border-b-2 border-slate-200 dark:border-slate-800 pb-4">
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 font-mono tracking-tight">MEDICAL REPORT ANALYSIS</h3>
+                    <p className="text-sm font-mono text-slate-500 dark:text-slate-400">UPLOAD YOUR MEDICAL REPORT FOR AI-POWERED ANALYSIS</p>
                 </div>
 
                 <div className="relative">
@@ -238,22 +238,22 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                 </div>
                 
                 {/* Template Quick Access */}
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-white dark:bg-black border-2 border-black dark:border-white">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-black dark:bg-white border-2 border-black dark:border-white flex items-center justify-center text-2xl">
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-200 dark:border-slate-700">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white dark:bg-black border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center text-2xl shadow-sm">
                     💡
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold font-mono text-black dark:text-white">
+                    <p className="text-sm font-bold font-mono text-slate-900 dark:text-white">
                       USE TEMPLATES FOR COMMON TESTS
                     </p>
-                    <p className="text-xs font-mono text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1">
                       AUTO-FILL FIELDS FOR CBC, LIPID PANEL, AND MORE
                     </p>
                   </div>
                   <Button
                     variant="default"
                     size="sm"
-                    className="rounded-lg bg-black dark:bg-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white text-white dark:text-black font-bold font-mono border-2 border-black dark:border-white transition-all"
+                    className="rounded-lg bg-slate-900 dark:bg-white hover:bg-teal-600 hover:text-white dark:hover:bg-teal-400 dark:hover:text-black text-white dark:text-black font-bold font-mono border-2 border-transparent transition-all shadow-md hover:shadow-lg"
                     onClick={() => {
                       // Scroll to templates section
                       const templatesBtn = document.querySelector('[data-templates-button]');
@@ -277,7 +277,7 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                         extractDetails();
                     }}
                     disabled={!base64Data || isLoading}
-                    className="w-full rounded-lg bg-black dark:bg-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white disabled:bg-gray-400 disabled:text-gray-600 disabled:border-gray-400 dark:disabled:bg-gray-700 dark:disabled:text-gray-500 dark:disabled:border-gray-700 transition-all border-2 border-black dark:border-white font-bold font-mono text-white dark:text-black py-3"
+                    className="w-full rounded-lg bg-teal-700 dark:bg-teal-600 hover:bg-teal-600 hover:text-white dark:hover:bg-teal-500 dark:hover:text-white disabled:bg-slate-300 disabled:text-slate-500 disabled:border-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 dark:disabled:border-slate-800 transition-all border-2 border-teal-700 dark:border-teal-600 font-bold font-mono text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 py-3"
                 >
                     {isLoading ? (
                         <div className="flex items-center space-x-2">
@@ -291,12 +291,12 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
 
 
                 <div className="space-y-3">
-                    <Label className="text-base font-bold font-mono text-black dark:text-white">REPORT SUMMARY</Label>
+                    <Label className="text-base font-bold font-mono text-slate-900 dark:text-white">REPORT SUMMARY</Label>
                     <Textarea
                         value={reportData}
                         onChange={(e) => setReportData(e.target.value)}
                         placeholder="SUMMARY WILL APPEAR HERE (YOU CAN ADD ADDITIONAL INFORMATION FOR BETTER INSIGHTS)" 
-                        className="h-32 resize-none rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black font-mono text-sm focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                        className="h-32 resize-none rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-black font-mono text-sm focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-500 transition-all"
                     />
                 </div>
 
@@ -304,7 +304,7 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                     variant="outline"
                     onClick={() => onReportConfirmation(reportData)}
                     disabled={!reportData.trim()}
-                    className="w-full rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-400 dark:disabled:bg-gray-800 dark:disabled:text-gray-600 dark:disabled:border-gray-600 transition-all font-bold font-mono py-3"
+                    className="w-full rounded-lg border-2 border-slate-800 dark:border-white bg-white dark:bg-black text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-black disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 dark:disabled:bg-slate-900 dark:disabled:text-slate-600 dark:disabled:border-slate-800 transition-all font-bold font-mono py-3"
                 >
                     CONFIRM & CONTINUE
                 </Button>

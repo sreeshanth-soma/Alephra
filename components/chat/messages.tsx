@@ -53,10 +53,11 @@ const Messages = ({ messages, isLoading, data }: Props) => {
       {/* Assistant reply is appended to messages by the client handler; avoid duplicate rendering from data */}
 
       {/* Display streaming/extra data if array */}
+      {/* Display streaming/extra data if array */}
       {Array.isArray(data) && data.map((item, index) => {
         if (item.type === "vector_conversion") {
           return (
-            <div key={`vector-${index}`} className="flex justify-start">
+            <div key={`vector-${index}`} className="flex justify-start pl-11">
               <Card className="max-w-[85%] bg-white dark:bg-black border-2 border-black dark:border-white">
                 <CardContent className="p-3">
                   <div className="flex items-center space-x-2 text-sm">
@@ -76,7 +77,7 @@ const Messages = ({ messages, isLoading, data }: Props) => {
         
         if (item.type === "pinecone_results") {
           return (
-            <div key={`pinecone-${index}`} className="flex justify-start">
+            <div key={`pinecone-${index}`} className="flex justify-start pl-11">
               <Card className="max-w-[85%] bg-white dark:bg-black border-2 border-black dark:border-white">
                 <CardContent className="p-3">
                   <div className="flex items-center space-x-2 text-sm mb-2">
@@ -84,13 +85,13 @@ const Messages = ({ messages, isLoading, data }: Props) => {
                     <span className="font-bold font-mono text-black dark:text-white">
                       {item.message}
                     </span>
-                    <Badge variant="secondary" className="text-xs font-mono bg-black dark:bg-white text-white dark:text-black">
+                    <Badge variant="secondary" className="text-xs font-mono bg-black dark:bg-white text-white dark:text-black border-none">
                       {item.matchCount} MATCHES
                     </Badge>
                   </div>
                   {item.retrievals && !item.retrievals.includes("<nomatches>") && (
-                    <div className="text-xs font-mono text-gray-600 dark:text-gray-400 max-h-20 overflow-y-auto">
-                      <div className="font-bold mb-1">RETRIEVED FINDINGS:</div>
+                    <div className="text-xs font-mono text-gray-600 dark:text-gray-400 max-h-32 overflow-y-auto custom-scrollbar">
+                      <div className="font-bold mb-1 text-black dark:text-white">RETRIEVED FINDINGS:</div>
                       <div className="space-y-1">
                         {item.retrievals.split("Clinical Finding").slice(1).map((finding: string, idx: number) => (
                           <div key={idx} className="text-xs bg-gray-100 dark:bg-gray-900 p-2 border border-black dark:border-white">
@@ -113,7 +114,7 @@ const Messages = ({ messages, isLoading, data }: Props) => {
         
         if (item.type === "error") {
           return (
-            <div key={`error-${index}`} className="flex justify-start">
+            <div key={`error-${index}`} className="flex justify-start pl-11">
               <Card className="max-w-[85%] bg-white dark:bg-black border-2 border-red-600">
                 <CardContent className="p-3">
                   <div className="flex items-center space-x-2 text-sm">
@@ -138,7 +139,7 @@ const Messages = ({ messages, isLoading, data }: Props) => {
       
       {isLoading && (
         <motion.div
-          className="flex items-center space-x-2 text-sm"
+          className="flex items-center space-x-2 text-sm pl-11"
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.6, 1] }}
           transition={{ repeat: Infinity, duration: 1.2 }}

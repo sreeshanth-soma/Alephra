@@ -75,9 +75,8 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
   useEffect(() => {
     const loadReports = async () => {
       if (!reportData) {
-        // Check if a specific report ID is selected (from props or localStorage)
-        const storedReportId = localStorage.getItem('selectedReportId');
-        const effectiveReportId = selectedReportId || storedReportId;
+        // Check if a specific report ID is selected (from props only)
+        const effectiveReportId = selectedReportId;
         
         const prescriptionsToUse = allPrescriptions || await prescriptionStorage.getAllPrescriptions();
         const count = await prescriptionStorage.getPrescriptionsCount();
@@ -131,18 +130,18 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
   };
     
   return (
-    <div className="h-[600px] bg-white dark:bg-black relative flex flex-col rounded-xl border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
+    <div className="h-[620px] bg-white dark:bg-black relative flex flex-col rounded-xl border-2 border-slate-800 dark:border-slate-200 shadow-[8px_8px_0px_0px_rgba(15,118,110,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]">
       {/* New Prominent Header */}
-      <div className="border-b-2 border-black dark:border-white bg-gray-50 dark:bg-gray-900/50 p-4 rounded-t-lg flex items-center justify-between shrink-0">
+      <div className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-t-lg flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3 min-w-0 flex-1 mr-4">
-          <div className="bg-white dark:bg-black border-2 border-black dark:border-white p-2.5 rounded-xl shrink-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
-            <FileText className="w-6 h-6 text-black dark:text-white" strokeWidth={2} />
+          <div className="bg-white dark:bg-black border-2 border-slate-200 dark:border-slate-700 p-2.5 rounded-xl shrink-0 shadow-sm">
+            <FileText className="w-6 h-6 text-teal-700 dark:text-teal-400" strokeWidth={2} />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-0.5">
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-0.5">
               Current Context
             </p>
-            <h3 className="text-base md:text-lg font-bold text-black dark:text-white leading-tight truncate font-mono">
+            <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-white leading-tight truncate font-mono">
               {selectedReportName 
                 ? selectedReportName
                 : reportData || (allReportsData && prescriptionCount === 1) 
@@ -158,7 +157,7 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
           <Button 
             variant="outline" 
             onClick={() => document.getElementById('history')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="h-9 px-4 border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs uppercase tracking-wide shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:shadow-none transition-all"
+            className="h-9 px-4 border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-black text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs uppercase tracking-wide shadow-sm hover:shadow-md active:translate-y-[1px] transition-all"
           >
             <RefreshCw className="w-3.5 h-3.5 mr-2" />
             Change

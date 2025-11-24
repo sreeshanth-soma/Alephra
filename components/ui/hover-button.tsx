@@ -88,8 +88,8 @@ const HoverButton = React.forwardRef<HTMLButtonElement, HoverButtonProps>(
         ref={buttonRef}
         className={cn(
           "relative isolate px-8 py-3 rounded-3xl",
-          "text-black dark:text-foreground font-semibold text-base leading-6",
-          "backdrop-blur-lg bg-[rgba(43,55,80,0.25)] dark:bg-[rgba(43,55,80,0.1)]",
+          "text-slate-900 dark:text-white font-semibold text-base leading-6",
+          "backdrop-blur-lg bg-white dark:bg-slate-900/50 border-2 border-slate-200 dark:border-slate-700",
           "cursor-pointer overflow-hidden shadow-lg",
           "hover:shadow-xl transition-shadow duration-300",
           "before:content-[''] before:absolute before:inset-0",

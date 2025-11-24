@@ -15,7 +15,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Optimized: Single query, exclude huge TEXT fields, limited to 20 reports
+    const { searchParams } = new URL(req.url);
+    const fetchFullData = searchParams.get('full') === 'true';
+
+    // Optimized: Single query, exclude huge TEXT fields unless requested
     const reports = await prisma.medicalReport.findMany({
       where: { 
         user: { email: session.user.email }
@@ -33,20 +36,22 @@ export async function GET(req: NextRequest) {
         reportDate: true,
         category: true,
         status: true,
-        // Exclude reportText and extractedData for list view - fetch separately when needed
+        // Conditionally fetch heavy fields
+        reportText: fetchFullData,
+        extractedData: fetchFullData,
       }
     });
 
-    // Transform to match frontend format (lightweight for list view)
+    // Transform to match frontend format
     const formattedReports = reports.map((report: any) => ({
       id: report.id,
       fileName: report.fileName,
       fileUrl: report.fileUrl || "",
       fileType: report.fileType || "",
       fileSize: report.fileSize || 0,
-      reportText: "", // Excluded for performance - fetch individually when selected
+      reportText: report.reportText || "", // Will be present if fetchFullData is true
       summary: report.summary || "",
-      extractedData: null, // Excluded for performance - fetch individually when selected
+      extractedData: report.extractedData ? JSON.parse(report.extractedData) : null,
       uploadDate: report.uploadDate.toISOString(),
       reportDate: report.reportDate?.toISOString() || null,
       category: report.category || "General",

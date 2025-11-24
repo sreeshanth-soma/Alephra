@@ -77,7 +77,7 @@ export function Squares({
 
           // Boost contrast slightly in dark mode
           const isDark = document.documentElement.classList.contains("dark")
-          ctx.strokeStyle = isDark ? "#777" : borderColor
+          ctx.strokeStyle = isDark ? "#E5E5E5" : borderColor
           ctx.strokeRect(squareX, squareY, squareSize, squareSize)
         }
       }
@@ -90,8 +90,21 @@ export function Squares({
         canvas.height / 2,
         Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2)) / 2,
       )
-      gradient.addColorStop(0, "rgba(6, 6, 6, 0)")
-      gradient.addColorStop(1, "#050505")
+      
+      // Theme-aware gradient
+      const isDark = document.documentElement.classList.contains("dark")
+      
+      if (isDark) {
+        // Dark Mode: Add stops for a defined "fade" effect
+        gradient.addColorStop(0, "rgba(6, 6, 6, 0)")
+        gradient.addColorStop(0.2, "rgba(6, 6, 6, 0)")
+        gradient.addColorStop(0.6, "rgba(6, 6, 6, 0.5)")
+        gradient.addColorStop(1, "#050505")
+      } else {
+        // Light Mode: Keep user's simple gradient for "brown-white" effect
+        gradient.addColorStop(0, "rgba(6, 6, 6, 0)")
+        gradient.addColorStop(1, "#050505")
+      }
 
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, canvas.width, canvas.height)

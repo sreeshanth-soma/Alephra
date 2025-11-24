@@ -142,7 +142,7 @@ class PrescriptionStorage {
   private async fetchPrescriptions(): Promise<PrescriptionRecord[]> {
     try {
       // Try to fetch from server
-      const response = await fetch('/api/reports');
+      const response = await fetch('/api/reports?full=true');
       
       if (response.ok) {
         const data = await response.json();
