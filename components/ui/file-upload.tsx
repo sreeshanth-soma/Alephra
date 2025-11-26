@@ -86,7 +86,7 @@ export const FileUpload = ({
       <motion.div
         onClick={handleClick}
         whileHover="animate"
-        className="p-6 group/file block rounded-lg cursor-pointer w-full relative overflow-hidden border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
+        className="p-6 group/file block rounded-lg cursor-pointer w-full relative overflow-hidden border-[3px] border-dashed border-neutral-400 dark:border-neutral-400 bg-neutral-50 dark:bg-neutral-900/50"
       >
         <input
           ref={fileInputRef}
@@ -202,10 +202,10 @@ export const FileUpload = ({
                     className="text-neutral-800 dark:text-neutral-100 flex flex-col items-center"
                   >
                     Drop it
-                    <IconUpload className="h-8 w-8 text-neutral-800 dark:text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
+                    <IconUpload className="h-8 w-8 text-black dark:text-white" />
                   </motion.p>
                 ) : (
-                  <IconUpload className="h-8 w-8 text-neutral-800 dark:text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
+                  <IconUpload className="h-8 w-8 text-black dark:text-white" />
                 )}
               </motion.div>
             )}
@@ -213,7 +213,7 @@ export const FileUpload = ({
             {!files.length && (
               <motion.div
                 variants={secondaryVariant}
-                className="absolute opacity-0 border border-dashed border-teal-400 inset-0 z-30 bg-transparent flex items-center justify-center h-32 aspect-square mt-2 w-full max-w-[9rem] mx-auto rounded-lg"
+                className="absolute opacity-0 border border-dashed border-black dark:border-white inset-0 z-30 bg-transparent flex items-center justify-center h-32 aspect-square mt-2 w-full max-w-[9rem] mx-auto rounded-lg"
               ></motion.div>
             )}
           </div>
@@ -227,7 +227,7 @@ export function GridPattern() {
   const columns = 41;
   const rows = 11;
   return (
-    <div className="flex bg-slate-400 dark:bg-neutral-600 shrink-0 flex-wrap justify-center items-center gap-x-px gap-y-px  scale-105">
+    <div className="flex bg-neutral-500 dark:bg-neutral-500 shrink-0 flex-wrap justify-center items-center gap-x-[2px] gap-y-[2px] scale-105">
       {Array.from({ length: rows }).map((_, row) =>
         Array.from({ length: columns }).map((_, col) => {
           const index = row * columns + col;

@@ -130,18 +130,18 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
   };
     
   return (
-    <div className="h-[500px] sm:h-[620px] bg-white dark:bg-black relative flex flex-col rounded-xl border-2 border-slate-800 dark:border-slate-200 shadow-[8px_8px_0px_0px_rgba(15,118,110,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]">
+    <div className="h-[500px] sm:h-[620px] bg-white dark:bg-black relative flex flex-col rounded-xl border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]">
       {/* New Prominent Header */}
-      <div className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-4 rounded-t-lg flex items-center justify-between shrink-0">
+      <div className="border-b-2 border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-3 sm:p-4 rounded-t-lg flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-3 sm:mr-4">
-          <div className="bg-white dark:bg-black border-2 border-slate-200 dark:border-slate-700 p-2 sm:p-2.5 rounded-lg sm:rounded-xl shrink-0 shadow-sm">
-            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-teal-700 dark:text-teal-400" strokeWidth={2} />
+          <div className="bg-white dark:bg-black border-2 border-neutral-200 dark:border-neutral-700 p-2 sm:p-2.5 rounded-lg sm:rounded-xl shrink-0 shadow-sm">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-black dark:text-white" strokeWidth={2} />
           </div>
           <div className="min-w-0">
-            <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-0.5">
+            <p className="text-[9px] sm:text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest mb-0.5">
               Current Context
             </p>
-            <h3 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white leading-tight truncate font-mono">
+            <h3 className="text-sm sm:text-base md:text-lg font-bold text-black dark:text-white leading-tight truncate font-mono">
               {selectedReportName 
                 ? selectedReportName
                 : reportData || (allReportsData && prescriptionCount === 1) 
@@ -157,7 +157,7 @@ const ChatComponent = ({ reportData, selectedReportId, allPrescriptions }: Props
           <Button 
             variant="outline" 
             onClick={() => document.getElementById('history')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="h-8 sm:h-9 px-2 sm:px-4 border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-black text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs uppercase tracking-wide shadow-sm hover:shadow-md active:translate-y-[1px] transition-all"
+            className="h-8 sm:h-9 px-2 sm:px-4 border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black font-bold font-mono text-xs uppercase tracking-wide shadow-sm hover:shadow-md active:translate-y-[1px] transition-all"
           >
             <RefreshCw className="w-3.5 h-3.5 sm:mr-2" />
             <span className="hidden sm:inline">Change</span>

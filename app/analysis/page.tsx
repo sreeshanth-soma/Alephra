@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
+import { useState, useEffect, useMemo, useCallback, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast"
 import ReportComponent from "@/components/ReportComponent";
@@ -235,6 +235,22 @@ const AnalysisPage = () => {
     setLoading(loading);
   }
 
+  // Track if we've already auto-scrolled to prevent repeated scrolling
+  const hasAutoScrolled = useRef(false);
+
+  // Auto-scroll only once when report data is first loaded
+  useEffect(() => {
+    if (reportData && !hasAutoScrolled.current) {
+      hasAutoScrolled.current = true;
+      setTimeout(() => {
+        document.getElementById('upload')?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 500);
+    }
+  }, [reportData]);
+
   const handlePrescriptionSelect = async (prescription: PrescriptionRecord) => {
     // Toggle selection: if already selected, deselect it
     if (selectedPrescriptionId === prescription.id) {
@@ -337,7 +353,7 @@ const AnalysisPage = () => {
           speed={0.5}
           squareSize={40}
           borderColor="#333333" 
-          hoverFillColor="#0f766e"
+          hoverFillColor="#ffffff"
         />
       </div>
       
@@ -360,10 +376,20 @@ const AnalysisPage = () => {
           onClose={() => setLoading(false)}
         />
         
-        <div className="text-center mb-6">
-          <p className="text-base md:text-lg text-slate-900 dark:text-slate-400 uppercase tracking-widest font-medium">
-            AI-POWERED MEDICAL REPORT ANALYSIS
+        {/* Premium Header Section */}
+        <div className="text-center mb-8 relative">
+          <div className="inline-block mb-3">
+            <div className="h-1 w-16 bg-gradient-to-r from-transparent via-black to-transparent dark:via-white mx-auto mb-4"></div>
+          </div>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black dark:text-white mb-3 tracking-tight">
+            MEDICAL REPORT ANALYSIS
+          </h1>
+          <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.3em] font-semibold">
+            AI-POWERED CLINICAL INTELLIGENCE
           </p>
+          <div className="inline-block mt-3">
+            <div className="h-1 w-16 bg-gradient-to-r from-transparent via-black to-transparent dark:via-white mx-auto"></div>
+          </div>
           
           {/* Quick Actions - Enhanced User-Friendly Buttons */}
           <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 mt-4">
@@ -434,7 +460,7 @@ const AnalysisPage = () => {
         
         {/* Floating Share Reports Section - Top Right */}
         {prescriptions.length > 0 && (
-          <div className="hidden lg:block absolute top-0 right-0 z-40">
+          <div className="hidden lg:block absolute top-6 right-4 z-40">
             <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl p-4 shadow-[8px_8px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_rgba(255,255,255,0.2)] max-w-sm">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
@@ -506,23 +532,39 @@ const AnalysisPage = () => {
             </div>
           )}
 
-          <div id="upload" className="grid grid-cols-1 lg:grid-cols-11 gap-4 md:gap-6 items-start">
-            <div className="w-full lg:col-span-5">
-              <ReportComponent onReportConfirmation={onReportConfirmation} onLoadingChange={handleLoadingChange} />
-            </div>
-            <div className="w-full lg:col-span-6 lg:sticky lg:top-6">
-              <ChatComponent 
-                reportData={reportData} 
-                selectedReportId={selectedPrescriptionId}
-                allPrescriptions={prescriptions}
-              />
+          {/* Premium Analysis Section */}
+          <div className="mb-12">
+            <div id="upload" className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
+              <div className="w-full lg:col-span-6">
+                <div className="relative">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-neutral-200 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 rounded-xl blur opacity-30"></div>
+                  <div className="relative">
+                    <ReportComponent onReportConfirmation={onReportConfirmation} onLoadingChange={handleLoadingChange} />
+                  </div>
+                </div>
+              </div>
+              <div className="w-full lg:col-span-6 lg:sticky lg:top-6">
+                <div className="relative">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-neutral-100 to-neutral-200 dark:from-neutral-900 dark:to-neutral-800 rounded-xl blur opacity-30"></div>
+                  <div className="relative">
+                    <ChatComponent 
+                      reportData={reportData} 
+                      selectedReportId={selectedPrescriptionId}
+                      allPrescriptions={prescriptions}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div id="history" className="space-y-4 md:space-y-6 mt-8 md:mt-12">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-bold font-mono text-black dark:text-white tracking-tight">
-                YOUR REPORTS
+          {/* Premium Reports Section */}
+          <div id="history" className="space-y-6 md:space-y-8">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-neutral-300 to-neutral-300 dark:via-neutral-700 dark:to-neutral-700"></div>
+              <h2 className="text-sm font-bold text-black dark:text-white uppercase tracking-[0.2em]">
+                Report Archive
               </h2>
+              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-neutral-300 to-neutral-300 dark:via-neutral-700 dark:to-neutral-700"></div>
             </div>
             
             {prescriptions.length > 0 && (
@@ -568,7 +610,7 @@ const AnalysisPage = () => {
               </div>
             )}
             <div className="w-full">
-              <div className="bg-white dark:bg-black border-2 border-slate-200 dark:border-slate-800 rounded-xl shadow-[8px_8px_0px_0px_rgba(15,118,110,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] overflow-hidden">
+              <div className="bg-white dark:bg-black border-2 border-slate-200 dark:border-slate-800 rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] overflow-hidden">
                 <div className="p-6 border-b-2 border-slate-200 dark:border-slate-800">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex-1">
@@ -580,7 +622,7 @@ const AnalysisPage = () => {
                     <div className="flex-shrink-0">
                       <Link 
                         href="/history"
-                        className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold font-mono bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-slate-200 dark:border-slate-700 hover:bg-teal-600 hover:text-white hover:border-teal-600 dark:hover:bg-teal-500 dark:hover:text-black transition-all"
+                        className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold font-mono bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-slate-200 dark:border-slate-700 hover:bg-black hover:text-white hover:border-black dark:hover:bg-white dark:hover:text-black transition-all"
                       >
                         <BarChart3 className="h-4 w-4 mr-2" />
                         ANALYTICS
@@ -595,7 +637,7 @@ const AnalysisPage = () => {
                       placeholder="SEARCH REPORTS..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-black text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 font-mono text-sm transition-all"
+                      className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-black text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-black dark:focus:ring-white dark:focus:border-white font-mono text-sm transition-all"
                     />
                     <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -603,12 +645,12 @@ const AnalysisPage = () => {
                   </div>
                 </div>
                 
-                <div className="max-h-96 overflow-y-auto bg-white dark:bg-black">
+                <div className="max-h-96 overflow-y-auto bg-white dark:bg-black scrollbar-hide">
                   {filteredPrescriptions.length === 0 ? (
                     <div className="text-center py-16 border-t-2 border-black dark:border-white">
                       <div className="relative inline-block mb-6">
                         <BarChart3 className="mx-auto h-16 w-16 text-black dark:text-white" strokeWidth={2.5} />
-                        <div className="absolute -top-1 -right-1 h-4 w-4 bg-blue-500 rounded-full animate-pulse" />
+                        <div className="absolute -top-1 -right-1 h-4 w-4 bg-black dark:bg-white rounded-full animate-pulse" />
                       </div>
                       <h4 className="text-lg font-bold font-mono text-black dark:text-white mb-2">
                         {searchTerm ? "No Matching Reports" : "Get Started"}
@@ -723,8 +765,8 @@ const AnalysisPage = () => {
                                 }}
                                 className={`p-2 rounded-lg border-2 transition-all ${
                                   selectedPrescriptionId === prescription.id
-                                    ? 'border-white/20 dark:border-black/20 hover:bg-white hover:text-teal-700 dark:hover:bg-black dark:hover:text-teal-400'
-                                    : 'border-slate-200 dark:border-slate-700 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-700 dark:hover:bg-slate-800 dark:hover:border-slate-600 dark:hover:text-teal-400'
+                                    ? 'border-white/20 dark:border-black/20 hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white'
+                                    : 'border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:border-slate-300 hover:text-black dark:hover:bg-slate-800 dark:hover:border-slate-600 dark:hover:text-white'
                                 }`}
                                 title={shareStats[prescription.id] ? "Manage share links" : "Share report"}
                               >
@@ -737,8 +779,8 @@ const AnalysisPage = () => {
                                 }}
                                 className={`p-2 rounded-lg border-2 transition-all ${
                                   selectedPrescriptionId === prescription.id
-                                    ? 'border-white/20 dark:border-black/20 hover:bg-white hover:text-blue-700 dark:hover:bg-black dark:hover:text-blue-400'
-                                    : 'border-slate-200 dark:border-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 dark:hover:bg-slate-800 dark:hover:border-slate-600 dark:hover:text-blue-400'
+                                    ? 'border-white/20 dark:border-black/20 hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white'
+                                    : 'border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:border-slate-300 hover:text-black dark:hover:bg-slate-800 dark:hover:border-slate-600 dark:hover:text-white'
                                 }`}
                                 title="Export report"
                               >
