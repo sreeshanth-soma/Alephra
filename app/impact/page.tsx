@@ -29,7 +29,7 @@ export default function ImpactPage() {
             transition={{ duration: 1, delay: 0.2 }}
           >
             <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight">
-              Healthcare Shouldn't Be <br />
+              Healthcare Shouldn&apos;t Be <br />
               <span className="text-red-500">A Struggle.</span>
             </h1>
           </motion.div>
@@ -68,12 +68,12 @@ export default function ImpactPage() {
             <h2 className="text-4xl font-bold mb-6 text-gray-100">The Fear of the Unknown</h2>
             <div className="space-y-6 text-lg text-gray-400">
               <p>
-                For 600 million Indians, a medical report isn't just data. It's a wall.
+                For 600 million Indians, a medical report isn&apos;t just data. It&apos;s a wall.
                 A wall between them and their health. Between them and their peace of mind.
               </p>
               <p>
-                <strong className="text-white">It's the shame of asking for help to read a prescription.</strong> 
-                It's the silent anxiety of taking a pill and wondering, <em className="text-gray-500">"Is this the right one?"</em>
+                <strong className="text-white">It&apos;s the shame of asking for help to read a prescription.</strong> 
+                It&apos;s the silent anxiety of taking a pill and wondering, <em className="text-gray-500">&quot;Is this the right one?&quot;</em>
               </p>
             </div>
             
@@ -106,7 +106,7 @@ export default function ImpactPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
             <div className="absolute bottom-6 left-6 right-6">
               <div className="bg-red-500/20 backdrop-blur-md border border-red-500/30 p-4 rounded-xl">
-                <p className="text-red-200 italic">"I feel like a burden to my children..."</p>
+                <p className="text-red-200 italic">&quot;I feel like a burden to my children...&quot;</p>
               </div>
             </div>
           </motion.div>
@@ -141,7 +141,7 @@ export default function ImpactPage() {
              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
              <div className="absolute bottom-6 left-6 right-6">
               <div className="bg-indigo-500/20 backdrop-blur-md border border-indigo-500/30 p-4 rounded-xl">
-                <p className="text-indigo-200 italic">"It speaks my language. It understands me."</p>
+                <p className="text-indigo-200 italic">&quot;It speaks my language. It understands me.&quot;</p>
               </div>
             </div>
           </motion.div>
@@ -163,7 +163,7 @@ export default function ImpactPage() {
             </h2>
             <div className="space-y-6 text-lg text-gray-300">
               <p>
-                MedScan doesn't just translate words; it translates care. It gives our elders the power to understand their own health, 
+                MedScan doesn&apos;t just translate words; it translates care. It gives our elders the power to understand their own health, 
                 in their own voice, on their own terms.
               </p>
               <ul className="space-y-4 mt-6">
@@ -209,7 +209,7 @@ export default function ImpactPage() {
           transition={{ duration: 0.8 }}
         >
           <h3 className="text-2xl md:text-3xl font-serif italic text-gray-400 max-w-4xl mx-auto leading-relaxed">
-            "We are not just processing data. We are giving our elders their dignity back."
+            &quot;We are not just processing data. We are giving our elders their dignity back.&quot;
           </h3>
           <p className="mt-6 text-gray-600">- The Alephra Mission</p>
         </motion.div>
