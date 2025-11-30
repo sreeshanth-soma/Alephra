@@ -53,7 +53,7 @@ const MessageBox = ({ role, content }: Props) => {
 
         <div
           className={cn(
-            'px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-sm text-xs sm:text-sm leading-relaxed border-2',
+            'px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-sm text-sm sm:text-base leading-relaxed border-2 font-sans',
             isUser
               ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white rounded-2xl rounded-tr-sm'
               : 'bg-white dark:bg-black text-black dark:text-white border-black dark:border-white rounded-2xl rounded-tl-sm'

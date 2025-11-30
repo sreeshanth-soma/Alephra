@@ -57,7 +57,7 @@ const Message = ({ from, children }: MessageProps) => (
   >
     <div
       className={cn(
-        'px-2.5 py-2 sm:px-3 sm:py-2 rounded-xl max-w-[90%] sm:max-w-[80%] shadow-md border-2 text-xs sm:text-sm',
+        'px-2.5 py-2 sm:px-3 sm:py-2.5 rounded-xl max-w-[90%] sm:max-w-[80%] shadow-md border-2 text-sm sm:text-base font-sans leading-relaxed',
         from === 'user'
           ? 'bg-white text-black font-semibold border-gray-500 dark:border-gray-700'
           : 'bg-black text-white border-white/25'
@@ -1126,19 +1126,25 @@ export default function VoiceAgentPage() {
 
   return (
     <>
-    <div className="fixed inset-0 bg-gray-50 dark:bg-black pt-16 pb-20 md:pb-6">
-      <div className="w-full h-full flex flex-col p-3 md:p-6 gap-2 md:gap-3 overflow-hidden">
-        {/* Header - Enhanced */}
-        <div className="flex-shrink-0 text-center">
-          <h1 className="text-xl sm:text-2xl md:text-4xl font-bold text-black dark:text-white mb-1 md:mb-2">Voice Agent</h1>
-          <p className="text-[10px] sm:text-xs md:text-base text-gray-600 dark:text-gray-400">
-            Speak naturally in any Indian language for medical assistance
+    <div className="fixed inset-0 bg-gray-50 dark:bg-black pt-14 pb-16 md:pb-4">
+      <div className="w-full h-full flex flex-col px-2 md:px-4 py-3 md:py-4 gap-2 md:gap-3 overflow-hidden">
+        {/* Premium Header Section */}
+        <div className="flex-shrink-0 text-center mb-1">
+          <div className="inline-block mb-2">
+            <div className="h-0.5 w-12 bg-gradient-to-r from-transparent via-black to-transparent dark:via-white mx-auto mb-2"></div>
+          </div>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-black dark:text-white mb-1 tracking-tight">VOICE MEDICAL ASSISTANT</h1>
+          <p className="text-[10px] sm:text-xs md:text-sm text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.2em] font-semibold">
+            AI-Powered Multilingual Healthcare
           </p>
+          <div className="inline-block mt-2">
+            <div className="h-0.5 w-12 bg-gradient-to-r from-transparent via-black to-transparent dark:via-white mx-auto"></div>
+          </div>
         </div>
 
         {/* Language / Voice Controls */}
-        <Card className="flex-shrink-0 rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
-          <CardContent className="p-2 md:p-4">
+        <Card className="flex-shrink-0 rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)]">
+          <CardContent className="p-2 md:p-3">
             <div className="flex flex-col gap-2 md:gap-4">
               {/* Report Selector Row */}
               {availableReports.length > 0 && (
@@ -1229,9 +1235,9 @@ export default function VoiceAgentPage() {
         </Card>
 
         {/* Main Content Layout */}
-        <div className="flex flex-col md:flex-row gap-2 md:gap-4 flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-2 md:gap-3 flex-1 min-h-0 overflow-hidden">
           {/* Left Side - Voice Interface */}
-          <div className="w-full md:w-[30%] h-56 sm:h-64 md:h-full rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden relative flex-shrink-0">
+          <div className="w-full md:w-[30%] h-48 sm:h-56 md:h-full rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)] overflow-hidden relative flex-shrink-0">
             {/* Floating Particles */}
             <FloatingParticles isActive={showParticles} count={15} />
             
@@ -1264,7 +1270,7 @@ export default function VoiceAgentPage() {
           <div className="w-full md:w-[70%] flex flex-col gap-2 min-h-0 flex-1 overflow-hidden">
             {/* Current Text Display - Compact */}
             {currentText && (
-              <Card className="flex-shrink-0 rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]">
+              <Card className="flex-shrink-0 rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)]">
                 <CardHeader className="pb-1 pt-2">
                   <CardTitle className="text-xs md:text-sm font-bold text-black dark:text-white">You said:</CardTitle>
                 </CardHeader>
@@ -1275,7 +1281,7 @@ export default function VoiceAgentPage() {
             )}
 
             {/* Messages - Glassy Chat UI */}
-            <div className="flex-1 min-h-0 rounded-xl border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden relative">
+            <div className="flex-1 min-h-0 rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)] overflow-hidden relative">
               {/* Subtle animated background */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-zinc-900 dark:via-black dark:to-zinc-900"

@@ -150,37 +150,54 @@ export default function Home() {
           }
         >
           <div className="relative mx-auto rounded-2xl overflow-hidden z-10">
-          <Image
-            key={currentTheme}
-            src={currentTheme === "dark" ? "/landing-hero-dark1.jpg" : "/landing-hero-light.jpg"}
-              alt="Alephra AI Medical Assistant Dashboard"
-            height={720}
-            width={1400}
-            className="mx-auto rounded-2xl object-cover h-full object-left-top"
-            draggable={false}
-            priority
-              onError={(e) => {
-                // Fallback to gradient background if image fails to load
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent) {
-                  parent.innerHTML = `
-                    <div class="w-full h-[720px] bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl flex items-center justify-center">
-                      <div class="text-center p-8">
-                        <div class="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
+            {/* Desktop view - show on md and larger */}
+            <div className="hidden md:block">
+              <Image
+                key={`desktop-${currentTheme}`}
+                src={currentTheme === "dark" ? "/landing-hero-dark1.jpg" : "/landing-hero-light.jpg"}
+                alt="Alephra AI Medical Assistant Dashboard"
+                height={720}
+                width={1400}
+                className="mx-auto rounded-2xl object-cover h-full object-left-top"
+                draggable={false}
+                priority
+                onError={(e) => {
+                  // Fallback to gradient background if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = `
+                      <div class="w-full h-[720px] bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl flex items-center justify-center">
+                        <div class="text-center p-8">
+                          <div class="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                          </div>
+                          <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">AI Medical Assistant</h3>
+                          <p class="text-gray-600 dark:text-gray-400">Upload your medical reports and get instant AI-powered insights</p>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">AI Medical Assistant</h3>
-                        <p class="text-gray-600 dark:text-gray-400">Upload your medical reports and get instant AI-powered insights</p>
                       </div>
-                    </div>
-                  `;
-                }
-              }}
-            />
+                    `;
+                  }
+                }}
+              />
+            </div>
+            
+            {/* Mobile view - show on smaller than md */}
+            <div className="block md:hidden w-full max-w-md mx-auto">
+              <Image
+                key={`mobile-${currentTheme}`}
+                src={currentTheme === "dark" ? "/mobile-screen-dark.png" : "/mobile-screen-light.png"}
+                alt="Alephra Mobile App"
+                height={800}
+                width={400}
+                className="mx-auto rounded-2xl object-contain w-full h-auto"
+                draggable={false}
+                priority
+              />
+            </div>
           </div>
         </ContainerScroll>
         </div>

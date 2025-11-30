@@ -224,17 +224,6 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
         } finally {
             setIsLoading(false);
             onLoadingChange?.(false);
-            
-            // Auto-scroll to show the confirm button after analysis (delay to ensure state update)
-            setTimeout(() => {
-                const summarySection = document.querySelector('[data-summary-section]');
-                if (summarySection) {
-                    summarySection.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'end'
-                    });
-                }
-            }, 1000);
         }
     }
 
@@ -320,19 +309,17 @@ const ReportComponent = ({ onReportConfirmation, onLoadingChange }: Props) => {
                     </div>
                 </div>
 
-                <div data-summary-section>
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            onReportConfirmation(reportData);
-                            setReportData(""); // Clear the summary after confirmation
-                        }}
-                        disabled={!reportData.trim()}
-                        className="w-full rounded-lg border-2 border-black dark:border-white bg-white dark:bg-white text-black dark:text-black hover:bg-black hover:text-white dark:hover:bg-black dark:hover:text-white disabled:bg-neutral-100 disabled:text-neutral-400 disabled:border-neutral-200 dark:disabled:bg-neutral-900 dark:disabled:text-neutral-600 dark:disabled:border-neutral-800 transition-all font-bold font-mono py-3 shadow-md"
-                    >
-                        CONFIRM & CONTINUE
-                    </Button>
-                </div>
+                <Button
+                    variant="outline"
+                    onClick={() => {
+                        onReportConfirmation(reportData);
+                        setReportData(""); // Clear the summary after confirmation
+                    }}
+                    disabled={!reportData.trim()}
+                    className="w-full rounded-lg border-2 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black disabled:bg-neutral-100 disabled:text-neutral-400 disabled:border-neutral-200 dark:disabled:bg-neutral-900 dark:disabled:text-neutral-600 dark:disabled:border-neutral-800 transition-all font-bold font-mono py-3"
+                >
+                    CONFIRM & CONTINUE
+                </Button>
 
                 {/* Summary Edit Modal */}
                 {showSummaryModal && (
